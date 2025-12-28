@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  jwt?: string; // Added JWT to user type just in case
 }
 
 interface AuthContextType {
@@ -23,34 +24,46 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start true to wait for checking localStorage
 
-  // Load user from localStorage on mount
+  // 1. FIXED: Load user AND token from localStorage on mount
   useEffect(() => {
-    const authToken = localStorage.getItem('auth-token');
-    if (authToken) {
-      // Try to fetch user info if token exists
-      // For now, we'll just check if token exists
-      // In a real app, you'd validate the token and fetch user data
-    }
+    const checkLoggedIn = () => {
+      const authToken = localStorage.getItem('auth-token');
+      const storedUser = localStorage.getItem('user-data'); // We will look for this now
+
+      if (authToken && storedUser) {
+        try {
+          // Restore the user from the "Hard Drive"
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          console.error("Failed to parse user data");
+          localStorage.removeItem('auth-token');
+          localStorage.removeItem('user-data');
+        }
+      }
+      setIsLoading(false);
+    };
+
+    checkLoggedIn();
   }, []);
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => setIsLoginModalOpen(false);
 
+  // 2. FIXED: Save User Data to LocalStorage on Login
   const login = (user: User, authToken: string) => {
-    // Store auth token in localStorage
     localStorage.setItem('auth-token', authToken);
+    localStorage.setItem('user-data', JSON.stringify(user)); // Save user details!
     setUser(user);
     closeLoginModal();
   };
 
   const register = async (name: string, email: string, password: string): Promise<User> => {
     setIsLoading(true);
-    // Simulate API call with 1-second delay
+    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
     
-    // Mock user data
     const mockUser: User = {
       id: '1',
       name: name,
@@ -58,15 +71,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
     };
     
-    setUser(mockUser);
+    // Auto-login after register
+    login(mockUser, 'mock-token-123');
+    
     setIsLoading(false);
-    closeLoginModal();
     return mockUser;
   };
 
+  // 3. FIXED: Remove User Data on Logout
   const logout = () => {
     localStorage.removeItem('auth-token');
+    localStorage.removeItem('user-data');
     setUser(null);
+    window.location.reload(); // Optional: Refresh to clear any other state
   };
 
   return (
@@ -94,4 +111,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
