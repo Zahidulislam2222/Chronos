@@ -78,36 +78,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return mockUser;
   };
 
-  // 3. FIXED: Remove User Data on Logout
-  const logout = () => {
+// 3. FIXED: Logout without destroying the browser session
+const logout = () => {
+    // 1. Remove only the User Identity
     localStorage.removeItem('auth-token');
     localStorage.removeItem('user-data');
+    
+    // 2. Update the App State (Instantly changes UI)
     setUser(null);
-    window.location.reload(); // Optional: Refresh to clear any other state
+    
+    // 3. OPTIONAL: If you want to send them to the homepage softly:
+    // (We use window.location.pathname to check if they are on a protected page)
+    if (window.location.pathname === '/account' || window.location.pathname === '/checkout') {
+         window.location.href = '/'; 
+    }
+    
+    // CRITICAL: We removed "window.location.reload()". 
+    // This stops the Cart from being wiped out.
   };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoginModalOpen,
-        openLoginModal,
-        closeLoginModal,
-        login,
-        register,
-        logout,
-        isLoading,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};

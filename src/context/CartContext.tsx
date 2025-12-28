@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
 import { Product } from '@/lib/mockData';
 
 // --- Types ---
@@ -18,7 +18,8 @@ type CartAction =
   | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
   | { type: 'CLEAR_CART' }
   | { type: 'TOGGLE_CART' }
-  | { type: 'CLOSE_CART' };
+  | { type: 'CLOSE_CART' }
+  | { type: 'SET_CART'; payload: CartItem[] };
 
 const CartContext = createContext<{
   state: CartState;
@@ -31,44 +32,34 @@ const CartContext = createContext<{
   closeCart: () => void;
   totalItems: number;
   totalPrice: number;
+  isLoading: boolean; // Tells the Checkout page if we are still working
 } | null>(null);
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
+    case 'SET_CART':
+      return { ...state, items: action.payload };
     case 'ADD_ITEM': {
       if (!action.payload || !action.payload.id) return state;
-      const existingItem = state.items.find(
-        (item) => item.product.id === action.payload.id
-      );
+      const existingItem = state.items.find((item) => item.product.id === action.payload.id);
       if (existingItem) {
         return {
           ...state,
           items: state.items.map((item) =>
-            item.product.id === action.payload.id
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
+            item.product.id === action.payload.id ? { ...item, quantity: item.quantity + 1 } : item
           ),
-          isOpen: true, // Open cart when adding
+          isOpen: true,
         };
       }
-      return {
-        ...state,
-        items: [...state.items, { product: action.payload, quantity: 1 }],
-        isOpen: true, // Open cart when adding
-      };
+      return { ...state, items: [...state.items, { product: action.payload, quantity: 1 }], isOpen: true };
     }
     case 'REMOVE_ITEM':
-      return {
-        ...state,
-        items: state.items.filter((item) => item.product.id !== action.payload),
-      };
+      return { ...state, items: state.items.filter((item) => item.product.id !== action.payload) };
     case 'UPDATE_QUANTITY':
       return {
         ...state,
         items: state.items.map((item) =>
-          item.product.id === action.payload.id
-            ? { ...item, quantity: action.payload.quantity }
-            : item
+          item.product.id === action.payload.id ? { ...item, quantity: action.payload.quantity } : item
         ),
       };
     case 'CLEAR_CART':
@@ -82,45 +73,36 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   }
 };
 
-// --- SYNCHRONOUS INITIALIZER (The Fix) ---
-// This runs BEFORE React paints the screen.
-const initCartState = (initialState: CartState): CartState => {
-  if (typeof window === 'undefined') return initialState;
-  
-  try {
-    const storedCart = localStorage.getItem('chronos_cart');
-    if (storedCart) {
-      console.log("🛒 Loaded cart from storage:", storedCart);
-      const items = JSON.parse(storedCart);
-      // Validate data to prevent crashes
-      if (Array.isArray(items)) {
-        return { ...initialState, items };
-      }
-    }
-  } catch (error) {
-    console.error("Failed to load cart:", error);
-  }
-  return initialState;
-};
-
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // We pass 'initCartState' as the 3rd argument to useReducer.
-  // This guarantees data is loaded BEFORE the first effect runs.
-  const [state, dispatch] = useReducer(
-    cartReducer,
-    { items: [], isOpen: false },
-    initCartState
-  );
+  const [state, dispatch] = useReducer(cartReducer, { items: [], isOpen: false });
+  const [isInitialized, setIsInitialized] = useState(false); // <--- THE SAFETY LOCK
 
-  // SAVE EFFECT
+  // 1. LOAD DATA (Runs once)
   useEffect(() => {
-    // Only save if we actually have items, OR if we previously had items and cleared them.
-    // This simple line prevents overwriting with empty array on bad loads.
-    console.log("💾 Saving cart:", state.items.length, "items");
-    localStorage.setItem('chronos_cart', JSON.stringify(state.items));
-  }, [state.items]);
+    if (typeof window !== 'undefined') {
+      const storedCart = localStorage.getItem('chronos_cart');
+      if (storedCart) {
+        try {
+          const parsed = JSON.parse(storedCart);
+          if (Array.isArray(parsed)) {
+            dispatch({ type: 'SET_CART', payload: parsed });
+          }
+        } catch (error) {
+          console.error("Cart corrupted", error);
+        }
+      }
+      setIsInitialized(true); // <--- UNLOCK SAVING
+    }
+  }, []);
 
-  // Actions
+  // 2. SAVE DATA (Runs only when UNLOCKED)
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem('chronos_cart', JSON.stringify(state.items));
+    }
+  }, [state.items, isInitialized]);
+
+  // Actions...
   const addToCart = (product: Product) => dispatch({ type: 'ADD_ITEM', payload: product });
   const removeFromCart = (productId: string) => dispatch({ type: 'REMOVE_ITEM', payload: productId });
   const updateQuantity = (productId: string, quantity: number) => {
@@ -133,24 +115,14 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Safe Calculations
   const totalItems = state.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
-  const totalPrice = state.items.reduce(
-    (sum, item) => sum + (item.product?.price || 0) * (item.quantity || 1),
-    0
-  );
+  const totalPrice = state.items.reduce((sum, item) => sum + (item.product?.price || 0) * (item.quantity || 1), 0);
 
   return (
     <CartContext.Provider
       value={{
-        state,
-        dispatch,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        toggleCart,
-        closeCart,
-        totalItems,
-        totalPrice,
+        state, dispatch, addToCart, removeFromCart, updateQuantity, clearCart, toggleCart, closeCart,
+        totalItems, totalPrice,
+        isLoading: !isInitialized // Export this so Checkout knows to wait
       }}
     >
       {children}
