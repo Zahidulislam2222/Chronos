@@ -1,8 +1,9 @@
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
 import Layout from '@/components/Layout';
-import { mockProducts } from '@/lib/mockData';
+import { fetchProductBySlug } from '@/utils/api'; 
+import { Product } from '@/lib/mockData'; 
 import { formatPrice } from '@/lib/parseWPContent';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
@@ -10,13 +11,44 @@ import { ShoppingBag, Heart, Share2, ChevronRight, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const ProductDetail = () => {
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [selectedImage, setSelectedImage] = useState(0);
 
-  const product = mockProducts.find((p) => p.slug === slug);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!slug) return;
+      setLoading(true);
+      try {
+        console.log("Fetching product for slug:", slug); // Debug Log
+        const data = await fetchProductBySlug(slug);
+        console.log("Fetched Data:", data); // Debug Log
+        setProduct(data);
+      } catch (error) {
+        console.error("Error loading product", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProduct();
+  }, [slug]);
+
+  // 1. Loading State
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <p className="text-primary font-display animate-pulse text-xl">Loading Timepiece...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  // 2. Not Found State
   if (!product) {
     return (
       <Layout>
@@ -31,6 +63,9 @@ const ProductDetail = () => {
       </Layout>
     );
   }
+
+  // Helper to safely get image
+  const mainImage = product.gallery?.[selectedImage] || product.image || "";
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -66,13 +101,16 @@ const ProductDetail = () => {
               className="space-y-4"
             >
               <div className="aspect-square bg-secondary rounded-lg overflow-hidden">
-                <img
-                  src={product.gallery[selectedImage] || product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
+                {mainImage && (
+                    <img
+                    src={mainImage}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                    />
+                )}
               </div>
-              {product.gallery.length > 1 && (
+              {/* Gallery Safety Check */}
+              {product.gallery && product.gallery.length > 1 && (
                 <div className="flex gap-4">
                   {product.gallery.map((img, index) => (
                     <button
@@ -97,34 +135,38 @@ const ProductDetail = () => {
             >
               <div>
                 <span className="text-primary tracking-widest uppercase text-sm">
-                  {product.category}
+                  {product.category || "Collection"}
                 </span>
                 <h1 className="font-display text-4xl md:text-5xl mt-2 mb-4">
                   {product.name}
                 </h1>
                 <p className="text-3xl font-display text-primary">
-                  {formatPrice(product.price)}
+                  {/* Safety check for price formatting */}
+                  {product.price ? formatPrice(product.price) : "Price on Request"}
                 </p>
               </div>
 
-              <p className="text-muted-foreground leading-relaxed">
-                {product.description}
-              </p>
+              <div 
+                className="text-muted-foreground leading-relaxed prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: product.description || product.shortDescription || "" }}
+              />
 
-              {/* Specifications */}
-              <div className="border border-border rounded-lg p-6 space-y-4">
-                <h3 className="font-display text-lg">Specifications</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {Object.entries(product.specifications).map(([key, value]) => (
-                    <div key={key}>
-                      <span className="text-muted-foreground capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').trim()}
-                      </span>
-                      <p className="font-medium">{value}</p>
+              {/* Specifications Safety Check */}
+              {product.specifications && (
+                <div className="border border-border rounded-lg p-6 space-y-4">
+                    <h3 className="font-display text-lg">Specifications</h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    {Object.entries(product.specifications).map(([key, value]) => (
+                        <div key={key}>
+                        <span className="text-muted-foreground capitalize">
+                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                        <p className="font-medium">{value || "N/A"}</p>
+                        </div>
+                    ))}
                     </div>
-                  ))}
                 </div>
-              </div>
+              )}
 
               {/* Actions */}
               <div className="space-y-4">

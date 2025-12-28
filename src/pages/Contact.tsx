@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { submitContactForm } from '@/utils/api'; // Import the real function
 
 const contactInfo = [
   {
@@ -32,13 +34,56 @@ const contactInfo = [
 
 const Contact = () => {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: 'Message Sent',
-      description: 'Thank you for reaching out. We will respond within 24 hours.',
+  // New: State to capture user input
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  });
+
+  // New: Handle typing in inputs
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value
     });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      // Real API call to WordPress
+      await submitContactForm({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject, // Passed for context
+        message: formData.message // Phone isn't sent to API to keep it simple, or you can append it
+      });
+      
+      toast({
+        title: 'Message Sent Successfully',
+        description: 'Thank you. We have received your inquiry in our WordPress system.',
+      });
+      
+      // Reset form
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send message. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -133,6 +178,8 @@ const Contact = () => {
                         placeholder="Your name"
                         required
                         className="bg-background border-border"
+                        value={formData.name}
+                        onChange={handleInputChange}
                       />
                     </div>
                     <div>
@@ -143,6 +190,8 @@ const Contact = () => {
                         placeholder="your@email.com"
                         required
                         className="bg-background border-border"
+                        value={formData.email}
+                        onChange={handleInputChange}
                       />
                     </div>
                   </div>
@@ -154,6 +203,8 @@ const Contact = () => {
                       type="tel"
                       placeholder="+1 (555) 000-0000"
                       className="bg-background border-border"
+                      value={formData.phone}
+                      onChange={handleInputChange}
                     />
                   </div>
 
@@ -164,6 +215,8 @@ const Contact = () => {
                       placeholder="How can we help?"
                       required
                       className="bg-background border-border"
+                      value={formData.subject}
+                      onChange={handleInputChange}
                     />
                   </div>
 
@@ -175,11 +228,13 @@ const Contact = () => {
                       rows={5}
                       required
                       className="bg-background border-border resize-none"
+                      value={formData.message}
+                      onChange={handleInputChange}
                     />
                   </div>
 
-                  <Button variant="gold" size="lg" type="submit" className="w-full">
-                    Send Message
+                  <Button variant="gold" size="lg" type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
                   </Button>
                 </form>
               </div>

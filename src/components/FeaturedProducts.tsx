@@ -1,16 +1,34 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Product } from '@/lib/mockData';
 import ProductCard from './ProductCard';
 import { Button } from '@/components/ui/button';
+import { fetchProducts } from '@/utils/api'; // Use the REAL API
 
-interface FeaturedProductsProps {
-  products: Product[];
-}
+const FeaturedProducts = () => {
+  const [products, setProducts] = useState<Product[]>([]);
 
-const FeaturedProducts = ({ products }: FeaturedProductsProps) => {
-  const featuredProducts = products.filter((p) => p.featured).slice(0, 4);
+  // Fetch products when the component loads
+  useEffect(() => {
+    const loadFeaturedProducts = async () => {
+      try {
+        const allProducts = await fetchProducts();
+        // Filter for featured products and take the first 4
+        const featured = allProducts.filter((p) => p.featured).slice(0, 4);
+        setProducts(featured);
+      } catch (error) {
+        console.error("Failed to fetch featured products:", error);
+      }
+    };
+    loadFeaturedProducts();
+  }, []);
+
+  // If there are no featured products, don't render the section
+  if (products.length === 0) {
+    return null; 
+  }
 
   return (
     <section className="py-24 bg-background">
@@ -34,7 +52,7 @@ const FeaturedProducts = ({ products }: FeaturedProductsProps) => {
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {featuredProducts.map((product, index) => (
+          {products.map((product, index) => (
             <ProductCard key={product.id} product={product} index={index} />
           ))}
         </div>

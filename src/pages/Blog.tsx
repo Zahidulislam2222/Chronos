@@ -1,12 +1,32 @@
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 import BlogCard from '@/components/BlogCard';
-import { mockBlogPosts } from '@/lib/mockData';
+import { fetchPosts } from '@/utils/api'; // Import the API connector
+import { BlogPost } from '@/lib/mockData'; // Import the type
 
 const Blog = () => {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real posts when the page loads
+  useEffect(() => {
+    const loadPosts = async () => {
+      try {
+        const data = await fetchPosts();
+        setPosts(data);
+      } catch (error) {
+        console.error("Failed to load blog posts", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadPosts();
+  }, []);
+
   return (
     <Layout>
-      {/* Hero */}
+      {/* Hero Section (Unchanged) */}
       <section className="py-24 bg-card">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
@@ -27,14 +47,23 @@ const Blog = () => {
         </div>
       </section>
 
-      {/* Blog Grid */}
+      {/* Blog Grid (Updated to use Real Data) */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {mockBlogPosts.map((post, index) => (
-              <BlogCard key={post.id} post={post} index={index} />
-            ))}
-          </div>
+          {loading ? (
+            // Simple Loading State
+            <div className="text-center py-20 text-gold">Loading Journal...</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {posts.length > 0 ? (
+                posts.map((post, index) => (
+                  <BlogCard key={post.id} post={post} index={index} />
+                ))
+              ) : (
+                <div className="text-center col-span-3">No articles found.</div>
+              )}
+            </div>
+          )}
         </div>
       </section>
     </Layout>

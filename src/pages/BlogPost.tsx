@@ -1,27 +1,115 @@
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
-import { mockBlogPosts } from '@/lib/mockData';
-import { formatDate, parseWPContent } from '@/lib/parseWPContent';
+import { fetchPostBySlug, fetchPosts, createComment } from '@/utils/api'; // Added createComment
+import { BlogPost as BlogPostType } from '@/lib/mockData';
+import { parseWPContent } from '@/lib/parseWPContent';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Clock, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ChevronLeft, Clock, ArrowLeft, ArrowRight, MessageSquare, Send } from 'lucide-react';
+
+// Extend the type to include comments locally since mockData might not have it
+interface ExtendedBlogPost extends BlogPostType {
+  databaseId: number;
+  comments: Array<{
+    id: string;
+    content: string;
+    date: string;
+    author: { node: { name: string; avatar?: { url: string } } };
+  }>;
+}
 
 const BlogPost = () => {
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
+  const { user, openLoginModal } = useAuth();
   
-  const postIndex = mockBlogPosts.findIndex((p) => p.slug === slug);
-  const post = mockBlogPosts[postIndex];
-  const prevPost = postIndex > 0 ? mockBlogPosts[postIndex - 1] : null;
-  const nextPost = postIndex < mockBlogPosts.length - 1 ? mockBlogPosts[postIndex + 1] : null;
+  // --- STATE ---
+  const [post, setPost] = useState<ExtendedBlogPost | null>(null);
+  const [allPosts, setAllPosts] = useState<BlogPostType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Comment Form State
+  const [commentForm, setCommentForm] = useState({ author: '', email: '', content: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  // --- FETCHING LOGIC ---
+  useEffect(() => {
+    const loadData = async () => {
+      if (!slug) return;
+      setLoading(true);
+      try {
+        const currentPost = await fetchPostBySlug(slug);
+        setPost(currentPost);
+        const postsList = await fetchPosts();
+        setAllPosts(postsList);
+      } catch (error) {
+        console.error("Error loading article:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [slug]);
+
+  // --- COMMENT SUBMISSION LOGIC ---
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!post) return;
+    
+    // Check if user is logged in
+    if (!user) {
+      openLoginModal();
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      const result = await createComment(
+        post.databaseId, 
+        commentForm.author, 
+        commentForm.email, 
+        commentForm.content
+      );
+      
+      if (result.success) {
+        setSubmitStatus('success');
+        setCommentForm({ author: '', email: '', content: '' }); // Reset form
+        // Optional: Reload post to see new comment (or wait for approval)
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --- CALCULATE NEIGHBORS ---
+  const postIndex = allPosts.findIndex((p) => p.slug === slug);
+  const prevPost = postIndex > 0 ? allPosts[postIndex - 1] : null;
+  const nextPost = (postIndex !== -1 && postIndex < allPosts.length - 1) ? allPosts[postIndex + 1] : null;
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-black text-white">
+          <p className="text-gold font-serif animate-pulse text-xl">Loading Article...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!post) {
     return (
       <Layout>
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center bg-black text-white">
           <div className="text-center">
-            <h1 className="font-display text-4xl mb-4">Article Not Found</h1>
-            <Button variant="luxuryOutline" asChild>
-              <Link to="/blog">Return to Journal</Link>
+            <h1 className="font-serif text-4xl mb-4">Article Not Found</h1>
+            <Button variant="outline" className="border-gold text-gold hover:bg-gold hover:text-black" asChild>
+              <Link to="/journal">Return to Journal</Link>
             </Button>
           </div>
         </div>
@@ -38,11 +126,11 @@ const BlogPost = () => {
           alt={post.title}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
       </section>
 
       {/* Content */}
-      <section className="py-16 bg-background -mt-32 relative z-10">
+      <section className="py-16 bg-black text-white -mt-32 relative z-10">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.article
             initial={{ opacity: 0, y: 30 }}
@@ -51,21 +139,21 @@ const BlogPost = () => {
           >
             <Link
               to="/blog"
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
+              className="inline-flex items-center gap-2 text-gray-400 hover:text-gold transition-colors mb-8"
             >
               <ChevronLeft className="w-4 h-4" />
               Back to Journal
             </Link>
 
-            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-sm font-medium tracking-wider uppercase rounded mb-6">
+            <span className="inline-block px-3 py-1 bg-gold/10 text-gold text-sm font-medium tracking-wider uppercase rounded mb-6">
               {post.category}
             </span>
 
-            <h1 className="font-display text-4xl md:text-5xl leading-tight mb-6">
+            <h1 className="font-serif text-4xl md:text-5xl leading-tight mb-6">
               {post.title}
             </h1>
 
-            <div className="flex items-center gap-6 text-muted-foreground mb-12">
+            <div className="flex items-center gap-6 text-gray-400 mb-12">
               <div className="flex items-center gap-3">
                 <img
                   src={post.author.avatar}
@@ -75,7 +163,7 @@ const BlogPost = () => {
                 <span>{post.author.name}</span>
               </div>
               <span>·</span>
-              <span>{formatDate(post.date)}</span>
+              <span>{post.date}</span>
               <span>·</span>
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
@@ -84,35 +172,12 @@ const BlogPost = () => {
             </div>
 
             {/* Article Content */}
-            <div className="prose prose-invert prose-lg max-w-none">
-              <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-                {post.excerpt}
-              </p>
-
-              <div
-                dangerouslySetInnerHTML={{ __html: parseWPContent(post.content) }}
-              />
-
-              {/* Placeholder content for demo */}
-              <p className="leading-relaxed">
-                The world of haute horlogerie is one of extraordinary precision and artistry. 
-                Each component, no matter how small, is crafted with an attention to detail 
-                that borders on obsession. This dedication to perfection has been passed down 
-                through generations of watchmakers, creating a tradition that continues to 
-                evolve while honoring its roots.
-              </p>
-
-              <p className="leading-relaxed">
-                From the intricate movements that power these mechanical marvels to the 
-                exquisite finishing of cases and dials, every element represents countless 
-                hours of human skill and ingenuity. It is this combination of technical 
-                excellence and artistic expression that makes luxury watches more than 
-                mere timekeeping instruments—they are wearable works of art.
-              </p>
+            <div className="prose prose-invert prose-lg max-w-none text-gray-300">
+              <div dangerouslySetInnerHTML={{ __html: parseWPContent(post.content) }} />
             </div>
 
             {/* Author Bio */}
-            <div className="mt-16 p-8 bg-card rounded-lg border border-border">
+            <div className="mt-16 p-8 bg-gray-900 rounded-lg border border-gray-800">
               <div className="flex items-center gap-4">
                 <img
                   src={post.author.avatar}
@@ -120,43 +185,132 @@ const BlogPost = () => {
                   className="w-16 h-16 rounded-full object-cover"
                 />
                 <div>
-                  <p className="font-display text-lg">{post.author.name}</p>
-                  <p className="text-muted-foreground text-sm">
-                    Contributing Writer
-                  </p>
+                  <p className="font-serif text-lg text-white">{post.author.name}</p>
+                  <p className="text-gray-400 text-sm">Contributing Writer</p>
                 </div>
               </div>
             </div>
 
+            {/* --- COMMENT SECTION (NEW) --- */}
+            <div className="mt-20 pt-12 border-t border-gray-800">
+              <h3 className="text-2xl font-serif mb-8 flex items-center gap-3">
+                <MessageSquare className="w-5 h-5 text-gold" />
+                Discussion ({post.comments?.length || 0})
+              </h3>
+
+              {/* Existing Comments */}
+              <div className="space-y-8 mb-12">
+                {post.comments && post.comments.length > 0 ? (
+                  post.comments.map((comment) => (
+                    <div key={comment.id} className="bg-gray-900/50 p-6 rounded border border-gray-800">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gold font-bold">
+                             {comment.author.node.name.charAt(0)}
+                          </div>
+                          <span className="font-medium text-white">{comment.author.node.name}</span>
+                        </div>
+                        <span className="text-xs text-gray-500">{new Date(comment.date).toLocaleDateString()}</span>
+                      </div>
+                      <div className="text-gray-300 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: comment.content }} />
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 italic">No comments yet. Be the first to share your thoughts.</p>
+                )}
+              </div>
+
+              {/* Comment Form */}
+              <div className="bg-gray-900 p-8 rounded-lg border border-gray-800">
+                <h4 className="text-xl font-serif mb-6 text-white">Leave a Reply</h4>
+                
+                {!user ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400 mb-4">Please log in to leave a comment.</p>
+                    <Button variant="gold" onClick={openLoginModal}>
+                      Sign In
+                    </Button>
+                  </div>
+                ) : submitStatus === 'success' ? (
+                  <div className="bg-green-900/20 border border-green-800 text-green-400 p-4 rounded text-center">
+                    Thank you! Your comment has been submitted and is awaiting approval.
+                  </div>
+                ) : (
+                  <form onSubmit={handleCommentSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-wider text-gray-500">Name</label>
+                        <input 
+                          type="text" 
+                          required
+                          className="w-full bg-black border border-gray-700 rounded p-3 text-white focus:border-gold outline-none transition-colors"
+                          value={commentForm.author}
+                          onChange={(e) => setCommentForm({...commentForm, author: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-wider text-gray-500">Email</label>
+                        <input 
+                          type="email" 
+                          required
+                          className="w-full bg-black border border-gray-700 rounded p-3 text-white focus:border-gold outline-none transition-colors"
+                          value={commentForm.email}
+                          onChange={(e) => setCommentForm({...commentForm, email: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs uppercase tracking-wider text-gray-500">Comment</label>
+                      <textarea 
+                        required
+                        rows={4}
+                        className="w-full bg-black border border-gray-700 rounded p-3 text-white focus:border-gold outline-none transition-colors"
+                        value={commentForm.content}
+                        onChange={(e) => setCommentForm({...commentForm, content: e.target.value})}
+                      />
+                    </div>
+                    
+                    <button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className="bg-gold text-black font-bold uppercase tracking-wider px-8 py-3 hover:bg-white transition-colors disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {isSubmitting ? 'Sending...' : 'Post Comment'}
+                      {!isSubmitting && <Send className="w-4 h-4" />}
+                    </button>
+                    
+                    {submitStatus === 'error' && (
+                      <p className="text-red-400 text-sm mt-2">Failed to post comment. Please try again.</p>
+                    )}
+                  </form>
+                )}
+              </div>
+            </div>
+
+           
             {/* Navigation */}
-            <div className="mt-16 pt-8 border-t border-border grid grid-cols-2 gap-8">
+            <div className="mt-16 pt-8 border-t border-gray-800 grid grid-cols-2 gap-8">
               {prevPost ? (
-                <Link
-                  to={`/blog/${prevPost.slug}`}
-                  className="group"
-                >
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
+                // FIX: Changed /journal/ to /blog/
+                <Link to={`/blog/${prevPost.slug}`} className="group">
+                  <div className="flex items-center gap-2 text-gray-500 text-sm mb-2">
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                     Previous
                   </div>
-                  <p className="font-display group-hover:text-primary transition-colors line-clamp-2">
+                  <p className="font-serif text-white group-hover:text-gold transition-colors line-clamp-2">
                     {prevPost.title}
                   </p>
                 </Link>
-              ) : (
-                <div />
-              )}
+              ) : <div />}
               
               {nextPost && (
-                <Link
-                  to={`/blog/${nextPost.slug}`}
-                  className="group text-right"
-                >
-                  <div className="flex items-center justify-end gap-2 text-muted-foreground text-sm mb-2">
+                // FIX: Changed /journal/ to /blog/
+                <Link to={`/blog/${nextPost.slug}`} className="group text-right">
+                  <div className="flex items-center justify-end gap-2 text-gray-500 text-sm mb-2">
                     Next
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
-                  <p className="font-display group-hover:text-primary transition-colors line-clamp-2">
+                  <p className="font-serif text-white group-hover:text-gold transition-colors line-clamp-2">
                     {nextPost.title}
                   </p>
                 </Link>

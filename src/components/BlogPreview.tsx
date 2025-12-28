@@ -1,15 +1,31 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { BlogPost } from '@/lib/mockData';
 import BlogCard from './BlogCard';
 import { Button } from '@/components/ui/button';
+import { fetchPosts } from '@/utils/api'; // API Connection
 
-interface BlogPreviewProps {
-  posts: BlogPost[];
-}
+const BlogPreview = () => {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
 
-const BlogPreview = ({ posts }: BlogPreviewProps) => {
+  // Fetch real posts automatically
+  useEffect(() => {
+    const loadPosts = async () => {
+      try {
+        const data = await fetchPosts();
+        setPosts(data);
+      } catch (error) {
+        console.error("Failed to load blog preview", error);
+      }
+    };
+    loadPosts();
+  }, []);
+
+  // If no posts yet, render nothing (or you could render a skeleton)
+  if (posts.length === 0) return null;
+
   return (
     <section className="py-24 bg-card">
       <div className="container mx-auto px-4 lg:px-8">
@@ -36,6 +52,7 @@ const BlogPreview = ({ posts }: BlogPreviewProps) => {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Automatically slice the first 3 items from the API */}
           {posts.slice(0, 3).map((post, index) => (
             <BlogCard key={post.id} post={post} index={index} />
           ))}

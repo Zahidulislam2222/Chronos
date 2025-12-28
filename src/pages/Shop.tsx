@@ -1,27 +1,51 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
-import { mockProducts, mockCategories } from '@/lib/mockData';
+// import { mockProducts, mockCategories } from '@/lib/mockData'; // REMOVED
+import { fetchProducts } from '@/utils/api';      // ADDED
+import { Product } from '@/lib/mockData';          // ADDED Type
 import { Button } from '@/components/ui/button';
 import { SlidersHorizontal, X } from 'lucide-react';
 
 const Shop = () => {
+  // --- DATA & LOADING STATE (NEW) ---
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // --- YOUR EXISTING STATE (UNCHANGED) ---
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredProducts = useMemo(() => {
-    let products = [...mockProducts];
+  // --- FETCH REAL PRODUCTS ON LOAD (NEW) ---
+  useEffect(() => {
+    const loadProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchProducts();
+        setAllProducts(data);
+      } catch (error) {
+        console.error("Failed to load products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProducts();
+  }, []);
 
-    // Filter by category
+  // --- YOUR FILTER/SORT LOGIC (MODIFIED TO USE API DATA) ---
+  const filteredProducts = useMemo(() => {
+    let products = [...allProducts]; // USE REAL DATA INSTEAD OF MOCK
+
+    // Filter by category (Your logic is perfect, no change needed)
     if (selectedCategory !== 'all') {
       products = products.filter(
         (p) => p.category.toLowerCase() === selectedCategory.toLowerCase()
       );
     }
 
-    // Sort
+    // Sort (Your logic is perfect, no change needed)
     switch (sortBy) {
       case 'price-low':
         products.sort((a, b) => a.price - b.price);
@@ -38,11 +62,44 @@ const Shop = () => {
     }
 
     return products;
-  }, [selectedCategory, sortBy]);
+  }, [allProducts, selectedCategory, sortBy]);
+
+  // --- DYNAMICALLY CREATE CATEGORIES FROM REAL PRODUCTS (NEW) ---
+  const categories = useMemo(() => {
+    const categoryCounts = new Map<string, number>();
+    allProducts.forEach(p => {
+      if (p.category) {
+        categoryCounts.set(p.category, (categoryCounts.get(p.category) || 0) + 1);
+      }
+    });
+
+    const categoryList = Array.from(categoryCounts.entries()).map(([name, count], index) => ({
+      id: String(index + 2),
+      name,
+      slug: name.toLowerCase(),
+      count,
+    }));
+
+    return [
+      { id: '1', name: 'All Watches', slug: 'all', count: allProducts.length },
+      ...categoryList,
+    ];
+  }, [allProducts]);
+
+  // --- LOADING STATE RENDER (NEW) ---
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-background text-primary">
+          Loading Collection...
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      {/* Hero */}
+      {/* Hero (UNCHANGED) */}
       <section className="py-24 bg-card">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
@@ -63,10 +120,10 @@ const Shop = () => {
         </div>
       </section>
 
-      {/* Shop Content */}
+      {/* Shop Content (UNCHANGED DESIGN, DYNAMIC DATA) */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4 lg:px-8">
-          {/* Toolbar */}
+          {/* Toolbar (UNCHANGED) */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
             <div className="flex items-center gap-4">
               <Button
@@ -81,7 +138,6 @@ const Shop = () => {
                 {filteredProducts.length} products
               </p>
             </div>
-
             <div className="flex items-center gap-4">
               <label className="text-sm text-muted-foreground">Sort by:</label>
               <select
@@ -98,7 +154,7 @@ const Shop = () => {
           </div>
 
           <div className="flex gap-12">
-            {/* Sidebar */}
+            {/* Sidebar (UPDATED TO USE DYNAMIC CATEGORIES) */}
             <aside
               className={`${
                 showFilters ? 'fixed inset-0 z-50 bg-card p-6' : 'hidden'
@@ -115,7 +171,7 @@ const Shop = () => {
                 <div>
                   <h4 className="font-display text-lg mb-4">Categories</h4>
                   <div className="space-y-2">
-                    {mockCategories.map((category) => (
+                    {categories.map((category) => (
                       <button
                         key={category.id}
                         onClick={() => {
@@ -137,7 +193,7 @@ const Shop = () => {
               </div>
             </aside>
 
-            {/* Products Grid */}
+            {/* Products Grid (UNCHANGED) */}
             <div className="flex-1">
               {filteredProducts.length === 0 ? (
                 <div className="text-center py-16">
