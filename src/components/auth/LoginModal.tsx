@@ -8,27 +8,17 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { loginUser, registerUser } from '@/utils/api'; // <--- IMPORT REAL API
+import { loginUser, registerUser, updateUserName } from '@/utils/api'; 
 
 const LoginModal = () => {
   const { isLoginModalOpen, closeLoginModal, login } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [isRobotChecked, setIsRobotChecked] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Local loading state
+  const [isSubmitting, setIsSubmitting] = useState(false); 
 
-  // Login form state
-  const [loginForm, setLoginForm] = useState({
-    email: '',
-    password: '',
-  });
-  
-  // Register form state
-  const [registerForm, setRegisterForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-  });
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '' });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,11 +34,9 @@ const LoginModal = () => {
     setIsSubmitting(true);
 
     try {
-      // 1. Call Real WordPress API
       const response = await loginUser(loginForm.email, loginForm.password);
 
       if (response?.authToken) {
-        // 2. Update Global Context
         login(response.user, response.authToken);
         
         toast({
@@ -56,7 +44,6 @@ const LoginModal = () => {
           description: `Logged in as ${response.user.name || 'User'}`,
         });
         
-        // 3. Cleanup
         setLoginForm({ email: '', password: '' });
         setIsRobotChecked(false);
         closeLoginModal();
@@ -75,6 +62,7 @@ const LoginModal = () => {
     }
   };
 
+  // <--- This is the single, corrected version of the function
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isRobotChecked) {
@@ -89,19 +77,44 @@ const LoginModal = () => {
     setIsSubmitting(true);
 
     try {
-      // 1. Call Real WordPress API
-      // Note: We use email as username for simplicity in Headless setups
-      const response = await registerUser(registerForm.email, registerForm.password);
-      
-      if (response) {
+      // Step 1: Register the User (unauthenticated)
+      const registerResponse = await registerUser(
+        registerForm.name, 
+        registerForm.email, 
+        registerForm.password
+      );
+
+      if (!registerResponse) {
+          throw new Error('Registration failed at API level.');
+      }
+
+      // Step 2: Log the new user in to get an Auth Token
+      const loginResponse = await loginUser(registerForm.email, registerForm.password);
+
+      if (loginResponse && loginResponse.user && loginResponse.authToken) {
+        
+        // Step 3: Manually save the token to storage BEFORE making the next call
+        localStorage.setItem('auth-token', loginResponse.authToken);
+        
+        // Step 4: NOW that we are authenticated, update the user's name
+        await updateUserName(loginResponse.user.id, registerForm.name);
+
+        // Step 5: Update the global state with the final user data. This also saves user data to storage and closes the modal.
+        login({ ...loginResponse.user, name: registerForm.name }, loginResponse.authToken);
+        
         toast({
-          title: 'Account Created',
-          description: 'Please sign in with your new credentials.',
+          title: 'Account Created & Logged In',
+          description: `Welcome, ${registerForm.name}!`,
         });
+        
+        // Cleanup
         setRegisterForm({ name: '', email: '', password: '' });
         setIsRobotChecked(false);
-        setActiveTab('login'); // Switch to login tab automatically
+        
+      } else {
+        throw new Error('Auto-login after registration failed.');
       }
+      
     } catch (error) {
       console.error(error);
       toast({
@@ -133,7 +146,6 @@ const LoginModal = () => {
     <AnimatePresence>
       {isLoginModalOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -142,7 +154,6 @@ const LoginModal = () => {
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
           />
           
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -152,7 +163,6 @@ const LoginModal = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative w-full max-w-md bg-card border border-border rounded-lg shadow-lg overflow-hidden">
-              {/* Close Button */}
               <button
                 onClick={handleClose}
                 className="absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -161,7 +171,6 @@ const LoginModal = () => {
                 <span className="sr-only">Close</span>
               </button>
 
-              {/* Content */}
               <div className="p-8">
                 <div className="mb-8 text-center">
                   <h2 className="font-display text-3xl mb-2">Welcome to Chronos</h2>
@@ -186,7 +195,6 @@ const LoginModal = () => {
                     </TabsTrigger>
                   </TabsList>
 
-                  {/* Login Tab */}
                   <TabsContent value="login" className="space-y-4 mt-0">
                     <form onSubmit={handleLogin} className="space-y-4">
                       <div className="space-y-2">
@@ -241,7 +249,6 @@ const LoginModal = () => {
                     </form>
                   </TabsContent>
 
-                  {/* Register Tab */}
                   <TabsContent value="register" className="space-y-4 mt-0">
                     <form onSubmit={handleRegister} className="space-y-4">
                       <div className="space-y-2">
@@ -310,7 +317,6 @@ const LoginModal = () => {
                   </TabsContent>
                 </Tabs>
 
-                {/* Google Login Button (UI Only) */}
                 <div className="mt-6">
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">

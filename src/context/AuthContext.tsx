@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+// <--- NEW: Import the real API functions
+import { loginUser, registerUser } from '@/utils/api'; 
 
 export interface User {
   id: string;
   name: string;
   email: string;
   avatar?: string;
-  jwt?: string; // Added JWT to user type just in case
+  jwt?: string;
 }
 
 interface AuthContextType {
@@ -24,17 +26,15 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Start true to wait for checking localStorage
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 1. FIXED: Load user AND token from localStorage on mount
   useEffect(() => {
     const checkLoggedIn = () => {
       const authToken = localStorage.getItem('auth-token');
-      const storedUser = localStorage.getItem('user-data'); // We will look for this now
+      const storedUser = localStorage.getItem('user-data');
 
       if (authToken && storedUser) {
         try {
-          // Restore the user from the "Hard Drive"
           setUser(JSON.parse(storedUser));
         } catch (e) {
           console.error("Failed to parse user data");
@@ -51,48 +51,80 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => setIsLoginModalOpen(false);
 
-  // 2. FIXED: Save User Data to LocalStorage on Login
   const login = (user: User, authToken: string) => {
     localStorage.setItem('auth-token', authToken);
-    localStorage.setItem('user-data', JSON.stringify(user)); // Save user details!
+    localStorage.setItem('user-data', JSON.stringify(user));
     setUser(user);
     closeLoginModal();
   };
 
+  // <--- FIXED: Replaced Mock Data with Real API Logic
   const register = async (name: string, email: string, password: string): Promise<User> => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     
-    const mockUser: User = {
-      id: '1',
-      name: name,
-      email: email,
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
-    };
-    
-    // Auto-login after register
-    login(mockUser, 'mock-token-123');
-    
-    setIsLoading(false);
-    return mockUser;
+    try {
+      // 1. Call the Real Register API (Sends Name, Email, Password)
+      const newUser = await registerUser(name, email, password);
+      
+      if (!newUser) {
+        throw new Error('Registration failed');
+      }
+
+      // 2. Automatically Login to get the Token
+      // (WordPress registration doesn't give a token, so we log in immediately)
+      const loginData = await loginUser(email, password);
+      
+      if (loginData) {
+        // Success! Save user and close modal
+        login(loginData.user, loginData.authToken);
+        setIsLoading(false);
+        return loginData.user;
+      } else {
+        throw new Error('Auto-login failed');
+      }
+
+    } catch (error) {
+      console.error("Registration Error:", error);
+      setIsLoading(false);
+      throw error;
+    }
   };
 
-// 3. FIXED: Logout without destroying the browser session
-const logout = () => {
-    // 1. Remove only the User Identity
+  const logout = () => {
     localStorage.removeItem('auth-token');
     localStorage.removeItem('user-data');
     
-    // 2. Update the App State (Instantly changes UI)
+    // Clear Cart Data too (Problem 2 Fix)
+    localStorage.removeItem('chronos_cart');
+    localStorage.removeItem('woo-session');
+    
     setUser(null);
     
-    // 3. OPTIONAL: If you want to send them to the homepage softly:
-    // (We use window.location.pathname to check if they are on a protected page)
     if (window.location.pathname === '/account' || window.location.pathname === '/checkout') {
          window.location.href = '/'; 
     }
-    
-    // CRITICAL: We removed "window.location.reload()". 
-    // This stops the Cart from being wiped out.
   };
+
+  return (
+    <AuthContext.Provider value={{ 
+      user, 
+      isLoginModalOpen, 
+      openLoginModal, 
+      closeLoginModal, 
+      login, 
+      register, 
+      logout, 
+      isLoading 
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

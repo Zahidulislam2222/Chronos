@@ -5,7 +5,21 @@ const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1524592094714-0f065
 
 // --- QUERIES & MUTATIONS ---
 
-// 1. Auth Mutations (NEW)
+// <--- NEW: Add the mutation to update a user's core profile
+const UPDATE_USER_MUTATION = `
+  mutation UpdateUser($id: ID!, $firstName: String!) {
+    updateUser(input: {
+      id: $id,
+      firstName: $firstName
+    }) {
+      user {
+        id
+        firstName
+      }
+    }
+  }
+`;
+
 const LOGIN_MUTATION = `
   mutation Login($username: String!, $password: String!) {
     login(input: { clientMutationId: "uniqueId", username: $username, password: $password }) {
@@ -22,20 +36,25 @@ const LOGIN_MUTATION = `
 `;
 
 const REGISTER_MUTATION = `
-  mutation RegisterCustomer($email: String!, $password: String!) {
+  mutation RegisterCustomer($email: String!, $password: String!, $name: String!) {
     registerCustomer(input: {
       email: $email,
       password: $password,
-      username: $email
+      username: $email,
+      billing: {
+        firstName: $name
+      }
     }) {
       customer {
         id
         databaseId
         email
+        firstName
       }
     }
   }
 `;
+// ... (rest of the mutations and queries are the same) ...
 
 const GET_CUSTOMER_ORDERS = `
   query GetCustomerOrders {
@@ -52,7 +71,6 @@ const GET_CUSTOMER_ORDERS = `
   }
 `;
 
-// 1. THE NEW CUSTOM MUTATION
 const SUBMIT_FORM_MUTATION = `
   mutation SubmitChronosContact($name: String!, $email: String!, $subject: String!, $message: String!) {
     submitChronosContact(input: {
@@ -67,8 +85,6 @@ const SUBMIT_FORM_MUTATION = `
     }
   }
 `;
-
-// ... (Keep other queries like Login, Products, etc. exactly the same) ...
 
 const PRODUCTS_QUERY = `
 query GetProducts {
@@ -283,7 +299,7 @@ function getCountryCode(countryName: string) {
   return countryName.length === 2 ? countryName.toUpperCase() : 'BD';
 }
 
-// --- CORE FETCH FUNCTION (Updated for Auth) ---
+// --- CORE FETCH FUNCTION ---
 let sessionToken = localStorage.getItem('woo-session') || null;
 
 async function fetchGraphQL(query: string, variables = {}) {
@@ -291,12 +307,10 @@ async function fetchGraphQL(query: string, variables = {}) {
   
   const headers: any = { 'Content-Type': 'application/json' };
   
-  // 1. Add WooCommerce Session (For Cart)
   if (sessionToken) {
     headers['woocommerce-session'] = `Session ${sessionToken}`;
   }
 
-  // 2. Add JWT Auth Token (For User Account)
   const authToken = localStorage.getItem('auth-token');
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
@@ -323,6 +337,12 @@ async function fetchGraphQL(query: string, variables = {}) {
 }
 
 // --- EXPORTED FUNCTIONS ---
+
+// <--- NEW: Add the function to update a user's name after they register
+export async function updateUserName(userId: string, name: string) {
+    const data = await fetchGraphQL(UPDATE_USER_MUTATION, { id: userId, firstName: name });
+    return data?.updateUser?.user;
+}
 
 export async function fetchProducts(): Promise<Product[]> {
   const data = await fetchGraphQL(PRODUCTS_QUERY);
@@ -378,16 +398,11 @@ export async function processCheckout(data: any, cartItems: any[]) {
   return response?.checkout;
 }
 
-// --- REAL AUTH FUNCTIONS ---
-
-// --- UPDATED AUTH FUNCTIONS (Put these in src/utils/api.ts) ---
-
 export async function loginUser(username: string, password: string) {
   const data = await fetchGraphQL(LOGIN_MUTATION, { username, password });
   const loginData = data?.login;
   
   if (loginData?.user) {
-    // FIX: Flatten the avatar object to a simple string and ensure id is a string
     const avatarUrl = loginData.user.avatar?.url || '';
     
     return {
@@ -403,15 +418,15 @@ export async function loginUser(username: string, password: string) {
   return null;
 }
   
-export async function registerUser(email: string, password: string) {
-  const data = await fetchGraphQL(REGISTER_MUTATION, { email, password });
+export async function registerUser(name: string, email: string, password: string) {
+  const data = await fetchGraphQL(REGISTER_MUTATION, { email, password, name });
   const customer = data?.registerCustomer?.customer;
   
   if (customer) {
     return {
-      id: String(customer.databaseId || customer.id || ''),
+      id: customer.id, // We need the GraphQL ID (e.g. "user:5") for the update mutation
       email: customer.email || email,
-      name: customer.name || email.split('@')[0], // Use email prefix as name if not provided
+      name: customer.firstName || name,
       avatar: customer.avatar?.url || '',
     };
   }
@@ -435,9 +450,7 @@ export async function fetchCustomerOrders() {
   }
 }
 
-// 2. THE UPDATED FUNCTION (Scroll to bottom of file)
 export async function submitContactForm(data: { name: string; email: string; message: string; subject?: string }) {
-  
     const response = await fetchGraphQL(SUBMIT_FORM_MUTATION, {
       name: data.name,
       email: data.email,
@@ -445,10 +458,9 @@ export async function submitContactForm(data: { name: string; email: string; mes
       message: data.message
     });
   
-    // Check if our custom bridge said "success"
     if (!response?.submitChronosContact?.success) {
       throw new Error('Server failed to send email');
     }
   
     return true;
-  }
+}

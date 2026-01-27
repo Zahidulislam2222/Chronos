@@ -1,31 +1,34 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogOut, Package, ShoppingBag, User as UserIcon } from 'lucide-react';
+// <--- NEW: Added Loader2 icon for the spinner
+import { LogOut, Package, ShoppingBag, User as UserIcon, Loader2 } from 'lucide-react'; 
 import Layout from '@/components/Layout';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { fetchCustomerOrders } from '@/utils/api'; // <--- IMPORT REAL API
+import { fetchCustomerOrders } from '@/utils/api';
 
 const Account = () => {
-  const { user, logout } = useAuth();
+  // <--- CHANGED: Grab isLoading from Auth
+  const { user, logout, isLoading } = useAuth(); 
   const { state: cartState, totalPrice } = useCart();
   const navigate = useNavigate();
 
-  // New State for Real Orders
   const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true); // Renamed to avoid conflict, logic is same
 
   useEffect(() => {
+    // <--- NEW: If Auth is still loading, STOP here. Don't run the redirect code below.
+    if (isLoading) return; 
+
     if (!user) {
       navigate('/');
       return;
     }
 
-    // --- REAL DATA FETCHING ---
     const loadOrders = async () => {
       try {
         const realOrders = await fetchCustomerOrders();
@@ -33,14 +36,25 @@ const Account = () => {
       } catch (error) {
         console.error("Failed to load orders", error);
       } finally {
-        setLoading(false);
+        setDataLoading(false);
       }
     };
     
     loadOrders();
-  }, [user, navigate]);
+  }, [user, navigate, isLoading]); // <--- NEW: Added isLoading to dependencies
 
-  if (!user) return null;
+  // <--- NEW: Show a spinner while checking login status.
+  // This prevents the "White Screen" or "Redirect Loop"
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Safety check: if loading is done and still no user, don't render content (useEffect will redirect)
+  if (!user) return null; 
 
   const handleLogout = () => {
     logout();
@@ -49,6 +63,7 @@ const Account = () => {
 
   return (
     <Layout>
+      {/* ... (The rest of your JSX code is 100% Identical) ... */}
       <div className="min-h-screen bg-background pt-24 pb-16">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
@@ -104,7 +119,7 @@ const Account = () => {
                   </div>
 
                   <div className="space-y-4">
-                    {loading ? (
+                    {dataLoading ? (
                        <p className="text-muted-foreground pl-1">Loading your purchase history...</p>
                     ) : orders.length > 0 ? (
                       orders.map((order: any) => (
@@ -137,8 +152,6 @@ const Account = () => {
                               </div>
                             </div>
                           </CardHeader>
-                          {/* Note: WooCommerce GraphQL doesn't always send lineItems in the basic query unless requested. 
-                              For now, we show the order summary. */}
                         </Card>
                       ))
                     ) : (
@@ -154,7 +167,7 @@ const Account = () => {
 
                 <Separator className="bg-border" />
 
-                {/* My Cart (Unchanged) */}
+                {/* My Cart */}
                 <section>
                   <div className="flex items-center gap-3 mb-6">
                     <ShoppingBag className="w-6 h-6 text-primary" />

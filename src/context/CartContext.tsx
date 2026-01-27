@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
 import { Product } from '@/lib/mockData';
+// <--- NEW: Import Auth to know who is logged in
+import { useAuth } from '@/context/AuthContext'; 
 
 // --- Types ---
 interface CartItem {
@@ -32,7 +34,7 @@ const CartContext = createContext<{
   closeCart: () => void;
   totalItems: number;
   totalPrice: number;
-  isLoading: boolean; // Tells the Checkout page if we are still working
+  isLoading: boolean; 
 } | null>(null);
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
@@ -75,12 +77,28 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, { items: [], isOpen: false });
-  const [isInitialized, setIsInitialized] = useState(false); // <--- THE SAFETY LOCK
+  const [isInitialized, setIsInitialized] = useState(false); 
+  
+  // <--- NEW: Get the current user
+  const { user } = useAuth(); 
 
-  // 1. LOAD DATA (Runs once)
+  // <--- NEW: Helper to get the correct storage key
+  const getStorageKey = () => {
+    if (user && user.email) {
+      return `chronos_cart_${user.email}`; // Unique cart for every user
+    }
+    return 'chronos_cart_guest'; // Default cart for guests
+  };
+
+  // 1. LOAD DATA (Runs whenever the USER changes)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedCart = localStorage.getItem('chronos_cart');
+      // Temporarily lock saving so we don't overwrite the new user's cart with old state
+      setIsInitialized(false); 
+
+      const storageKey = getStorageKey(); // <--- Dynamic Key
+      const storedCart = localStorage.getItem(storageKey);
+
       if (storedCart) {
         try {
           const parsed = JSON.parse(storedCart);
@@ -90,17 +108,23 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (error) {
           console.error("Cart corrupted", error);
         }
+      } else {
+        // <--- CRITICAL: If no cart found for this user (or guest), CLEAR the state
+        // This fixes the issue: Logout -> User is null -> Key is 'guest' -> Guest has no cart -> Clear old user items
+        dispatch({ type: 'CLEAR_CART' }); 
       }
-      setIsInitialized(true); // <--- UNLOCK SAVING
+      
+      setIsInitialized(true); 
     }
-  }, []);
+  }, [user]); // <--- Dependency: Runs when User logs in or out
 
-  // 2. SAVE DATA (Runs only when UNLOCKED)
+  // 2. SAVE DATA (Runs whenever ITEMS change)
   useEffect(() => {
     if (isInitialized) {
-      localStorage.setItem('chronos_cart', JSON.stringify(state.items));
+      const storageKey = getStorageKey(); // <--- Save to the correct user's box
+      localStorage.setItem(storageKey, JSON.stringify(state.items));
     }
-  }, [state.items, isInitialized]);
+  }, [state.items, isInitialized, user]); // Added user to dependencies
 
   // Actions...
   const addToCart = (product: Product) => dispatch({ type: 'ADD_ITEM', payload: product });
@@ -122,7 +146,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         state, dispatch, addToCart, removeFromCart, updateQuantity, clearCart, toggleCart, closeCart,
         totalItems, totalPrice,
-        isLoading: !isInitialized // Export this so Checkout knows to wait
+        isLoading: !isInitialized 
       }}
     >
       {children}
