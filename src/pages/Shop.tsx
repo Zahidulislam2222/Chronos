@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
+import SEOHead from '@/components/SEOHead';
 import ProductCard from '@/components/ProductCard';
 // import { mockProducts, mockCategories } from '@/lib/mockData'; // REMOVED
 import { fetchProducts } from '@/utils/api';      // ADDED
@@ -99,6 +100,10 @@ const Shop = () => {
 
   return (
     <Layout>
+      <SEOHead
+        title="Shop"
+        description="Browse our curated collection of luxury timepieces from world-renowned brands."
+      />
       {/* Hero (UNCHANGED) */}
       <section className="py-24 bg-card">
         <div className="container mx-auto px-4 lg:px-8">

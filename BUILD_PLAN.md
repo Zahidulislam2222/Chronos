@@ -365,13 +365,13 @@ These are separate projects/skills, NOT part of this build:
 
 > **Goal:** Core Web Vitals, structured data, Google Analytics, server-side caching.
 
-- [ ] **6.1** Add Transients API caching to all expensive queries in chronos-bridge
-- [ ] **6.2** Add object caching support (Redis-ready via WP_OBJECT_CACHE)
-- [ ] **6.3** Add JSON-LD structured data for products (Product schema, Organization schema)
-- [ ] **6.4** Add Google Analytics / GTM integration via plugin settings
-- [ ] **6.5** Frontend performance: lazy loading, code splitting, image optimization
-- [ ] **6.6** Add prerendering/SSR solution for React SPA (or meta tags via react-helmet)
-- [ ] **6.7** Commit Phase 6
+- [x] **6.1** Add Transients API caching to all expensive queries in chronos-bridge
+- [x] **6.2** Add object caching support (Redis-ready via WP_OBJECT_CACHE)
+- [x] **6.3** Add JSON-LD structured data for products (Product schema, Organization schema)
+- [x] **6.4** Add Google Analytics / GTM integration via plugin settings
+- [x] **6.5** Frontend performance: lazy loading, code splitting, image optimization
+- [x] **6.6** Add prerendering/SSR solution for React SPA (or meta tags via react-helmet)
+- [x] **6.7** Commit Phase 6
   - Message: "feat: add performance optimization, SEO structured data, and analytics integration"
 
 **Verification:**
@@ -453,6 +453,6 @@ These are separate projects/skills, NOT part of this build:
 | 3 | Gutenberg custom blocks | DONE (2026-04-08) |
 | 4 | WooCommerce + real payments | DONE (2026-04-08) |
 | 5 | CI/CD pipeline | DONE (2026-04-08) |
-| 6 | Performance + SEO + Analytics | NOT STARTED |
+| 6 | Performance + SEO + Analytics | DONE (2026-04-08) |
 | 7 | WordPress 7.0 AI integration | NOT STARTED |
 | 8 | Accessibility + Polish | NOT STARTED |

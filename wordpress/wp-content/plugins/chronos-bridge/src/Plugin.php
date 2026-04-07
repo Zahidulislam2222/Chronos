@@ -22,6 +22,8 @@ use ChronosBridge\Payment\CheckoutEndpoint;
 use ChronosBridge\Payment\WebhookHandler;
 use ChronosBridge\PostTypes\Taxonomy;
 use ChronosBridge\PostTypes\WatchCollection;
+use ChronosBridge\SEO\StructuredData;
+use ChronosBridge\Analytics\Tracker;
 use ChronosBridge\WooCommerce\CheckoutFields;
 
 /**
@@ -96,6 +98,12 @@ final class Plugin {
 
 		// WooCommerce custom checkout fields.
 		CheckoutFields::register();
+
+		// SEO structured data (JSON-LD).
+		StructuredData::register();
+
+		// Analytics tracking (GA4/GTM).
+		Tracker::register();
 
 		// Admin pages and settings (only in admin context).
 		if ( is_admin() ) {

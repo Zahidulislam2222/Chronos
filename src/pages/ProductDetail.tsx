@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
+import SEOHead from '@/components/SEOHead';
 import { fetchProductBySlug } from '@/utils/api'; 
 import { Product } from '@/lib/mockData'; 
 import { formatPrice } from '@/lib/parseWPContent';
@@ -77,6 +78,26 @@ const ProductDetail = () => {
 
   return (
     <Layout>
+      <SEOHead
+        title={product.name}
+        description={`${product.name} — luxury timepiece. ${product.description?.slice(0, 120) || ''}`}
+        image={product.image}
+        type="product"
+        price={product.price}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: product.name,
+          image: product.image,
+          description: product.description?.slice(0, 200),
+          offers: {
+            '@type': 'Offer',
+            price: product.price,
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
+          },
+        }}
+      />
       {/* Breadcrumb */}
       <div className="bg-card py-4">
         <div className="container mx-auto px-4 lg:px-8">

@@ -1,4 +1,5 @@
 import Layout from '@/components/Layout';
+import SEOHead from '@/components/SEOHead';
 import Hero from '@/components/Hero';
 import FeaturedProducts from '@/components/FeaturedProducts';
 import ValueProposition from '@/components/ValueProposition';
@@ -9,6 +10,9 @@ import { mockProducts, mockBlogPosts } from '@/lib/mockData';
 const Index = () => {
   return (
     <Layout>
+      <SEOHead
+        description="Luxury watches curated for the discerning collector. Explore Rolex, Omega, Patek Philippe and more."
+      />
       <Hero />
       <ValueProposition />
       <FeaturedProducts products={mockProducts} />
