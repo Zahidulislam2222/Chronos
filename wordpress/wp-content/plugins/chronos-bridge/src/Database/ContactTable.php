@@ -70,6 +70,27 @@ final class ContactTable {
 	}
 
 	/**
+	 * Find all submissions by email address (for GDPR export/erase).
+	 *
+	 * @param string $email Email address to search for.
+	 * @return array<object>
+	 */
+	public static function find_by_email( string $email ): array {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM %i WHERE email = %s ORDER BY submitted_at DESC',
+				self::table_name(),
+				sanitize_email( $email )
+			)
+		);
+
+		return ! empty( $results ) ? $results : array();
+	}
+
+	/**
 	 * Get submissions with pagination and optional status filter.
 	 *
 	 * @param int                $page     Current page number.

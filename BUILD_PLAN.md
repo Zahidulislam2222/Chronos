@@ -414,27 +414,27 @@ These are separate projects/skills, NOT part of this build:
 
 > **Goal:** WCAG 2.1 AA compliance, GDPR, Git cleanup, final polish.
 
-- [ ] **8.1** Audit and fix WCAG 2.1 AA issues
+- [x] **8.1** Audit and fix WCAG 2.1 AA issues
   - Semantic HTML, ARIA landmarks, keyboard navigation
   - Color contrast 4.5:1 minimum
   - Focus management on all interactive elements
   - Screen reader testing
 
-- [ ] **8.2** Add GDPR/Privacy compliance
+- [x] **8.2** Add GDPR/Privacy compliance
   - Register data exporter + eraser via WordPress Privacy API
   - Cookie consent banner on frontend
   - Privacy policy page content
 
-- [ ] **8.3** Git workflow cleanup
+- [x] **8.3** Git workflow cleanup
   - Branch protection rules on main
   - Conventional commit messages going forward
   - PR template
 
-- [ ] **8.4** Admin dashboard / customer portal improvements
+- [x] **8.4** Admin dashboard / customer portal improvements
   - Rich account page with order history, tracking, wishlists
   - Admin dashboard widget showing Chronos stats
 
-- [ ] **8.5** Final commit + push
+- [x] **8.5** Final commit + push
   - Message: "feat: add WCAG 2.1 AA accessibility, GDPR compliance, and admin dashboard"
 
 **Verification:**
@@ -455,4 +455,4 @@ These are separate projects/skills, NOT part of this build:
 | 5 | CI/CD pipeline | DONE (2026-04-08) |
 | 6 | Performance + SEO + Analytics | DONE (2026-04-08) |
 | 7 | WordPress 7.0 AI integration | DONE (2026-04-08) |
-| 8 | Accessibility + Polish | NOT STARTED |
+| 8 | Accessibility + Polish | DONE (2026-04-08) |

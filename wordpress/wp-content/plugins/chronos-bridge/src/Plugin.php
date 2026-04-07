@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace ChronosBridge;
 
 use ChronosBridge\Admin\AdminMenu;
+use ChronosBridge\Admin\DashboardWidget;
 use ChronosBridge\Admin\Settings;
 use ChronosBridge\Api\ContactEndpoint;
 use ChronosBridge\Api\WatchEndpoint;
@@ -21,6 +22,7 @@ use ChronosBridge\I18n\Loader as I18nLoader;
 use ChronosBridge\Payment\CheckoutEndpoint;
 use ChronosBridge\Payment\WebhookHandler;
 use ChronosBridge\PostTypes\Taxonomy;
+use ChronosBridge\Privacy\DataHandler;
 use ChronosBridge\PostTypes\WatchCollection;
 use ChronosBridge\AI\ContactResponder;
 use ChronosBridge\AI\DescriptionGenerator;
@@ -115,7 +117,11 @@ final class Plugin {
 		if ( is_admin() ) {
 			AdminMenu::register();
 			Settings::register();
+			DashboardWidget::register();
 		}
+
+		// GDPR Privacy API (data exporter + eraser).
+		DataHandler::register();
 
 		// Cache invalidation hooks.
 		TransientCache::register_invalidation_hooks();
