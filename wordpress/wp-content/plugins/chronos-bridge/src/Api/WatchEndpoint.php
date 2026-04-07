@@ -168,7 +168,7 @@ final class WatchEndpoint extends RestController {
 			'title'            => get_the_title( $post ),
 			'slug'             => $post->post_name,
 			'excerpt'          => get_the_excerpt( $post ),
-			'content'          => apply_filters( 'the_content', $post->post_content ),
+			'content'          => apply_filters( 'the_content', $post->post_content ), // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Core WP filter.
 			'image'            => $thumbnail_url,
 			'brands'           => is_array( $brands ) ? $brands : array(),
 			'movements'        => is_array( $movements ) ? $movements : array(),

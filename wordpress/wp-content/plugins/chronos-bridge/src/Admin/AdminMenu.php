@@ -77,17 +77,22 @@ final class AdminMenu {
 	public static function render_contacts_page(): void {
 		Sanitizer::require_capability();
 
-		// Handle form submissions — verify nonce first.
+		// Handle form submissions — verify nonce first via Sanitizer::verify_nonce().
 		if ( Sanitizer::verify_nonce( 'chronos_contact_action' ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified above via Sanitizer::verify_nonce().
 			if ( isset( $_POST['chronos_update_status'], $_POST['submission_id'], $_POST['new_status'] ) ) {
-				$id     = absint( $_POST['submission_id'] );
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified above.
+				$id = absint( $_POST['submission_id'] );
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified above.
 				$status = ContactStatus::tryFrom( sanitize_text_field( wp_unslash( $_POST['new_status'] ) ) );
 				if ( null !== $status ) {
 					ContactTable::update_status( $id, $status );
 				}
 			}
 
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified above via Sanitizer::verify_nonce().
 			if ( isset( $_POST['chronos_delete_submission'], $_POST['submission_id'] ) ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified above.
 				ContactTable::delete( absint( $_POST['submission_id'] ) );
 			}
 		}
@@ -108,13 +113,13 @@ final class AdminMenu {
 				<li><a href="<?php echo esc_url( admin_url( 'admin.php?page=chronos-contacts' ) ); ?>" <?php echo null === $status ? 'class="current"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static string. ?>>
 					<?php
 					/* translators: %d: total number of contact submissions */
-					printf( esc_html__( 'All (%d)', 'chronos-bridge' ), $total );
+					printf( esc_html__( 'All (%d)', 'chronos-bridge' ), absint( $total ) );
 					?>
 				</a> |</li>
 				<?php foreach ( ContactStatus::cases() as $s ) : ?>
 					<li><a href="<?php echo esc_url( add_query_arg( 'status', $s->value, admin_url( 'admin.php?page=chronos-contacts' ) ) ); ?>"
 						<?php echo $status === $s ? 'class="current"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static string. ?>>
-						<?php printf( '%s (%d)', esc_html( ucfirst( $s->value ) ), $counts[ $s->value ] ?? 0 ); ?>
+						<?php printf( '%s (%d)', esc_html( ucfirst( $s->value ) ), absint( $counts[ $s->value ] ?? 0 ) ); ?>
 					</a><?php echo ContactStatus::Replied !== $s ? ' |' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static string. ?></li>
 				<?php endforeach; ?>
 			</ul>
