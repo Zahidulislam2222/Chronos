@@ -77,14 +77,14 @@ These are separate projects/skills, NOT part of this build:
 
 ### 2A: Plugin skeleton with Composer + PSR-4
 
-- [ ] **2A.1** Create Composer setup
+- [x] **2A.1** Create Composer setup
   - Create: `wordpress/wp-content/plugins/chronos-bridge/composer.json`
   - Namespace: `ChronosBridge\`
   - PSR-4 autoload: `"ChronosBridge\\": "src/"`
   - Require PHP 8.1+
   - Require-dev: phpunit, phpcs with WordPress coding standards
 
-- [ ] **2A.2** Create plugin directory structure
+- [x] **2A.2** Create plugin directory structure
   ```
   chronos-bridge/
   ├── chronos-bridge.php          (main plugin file — bootstrap only)
@@ -131,63 +131,63 @@ These are separate projects/skills, NOT part of this build:
   └── README.md
   ```
 
-- [ ] **2A.3** Rewrite main plugin file as bootstrap only
+- [x] **2A.3** Rewrite main plugin file as bootstrap only
   - `chronos-bridge.php` should ONLY: check PHP version, require autoloader, call `Plugin::init()`
   - All logic moves to `src/` classes
   - Plugin header: Author: Zahidul Islam, Requires PHP: 8.1, Version: 2.0.0
 
-- [ ] **2A.4** Create Plugin.php singleton class
+- [x] **2A.4** Create Plugin.php singleton class
   - Registers all hooks via `add_action` / `add_filter`
   - Loads all modules (Admin, PostTypes, Api, GraphQL, Database, Cache, Cron, I18n)
   - Uses PHP 8+ features: constructor promotion, named arguments, match expressions, union types, enums
 
 ### 2B: Custom Post Types + Taxonomies
 
-- [ ] **2B.1** Create WatchCollection custom post type
+- [x] **2B.1** Create WatchCollection custom post type
   - Post type: `chronos_watch` with labels, supports (title, editor, thumbnail, custom-fields)
   - Admin columns: Brand, Movement Type, Price, Stock Status
   - Meta boxes for watch-specific data (case diameter, water resistance, etc.)
 
-- [ ] **2B.2** Create custom taxonomies
+- [x] **2B.2** Create custom taxonomies
   - `chronos_brand` (hierarchical, like categories) — Rolex, Omega, Patek Philippe, etc.
   - `chronos_movement` (non-hierarchical, like tags) — Automatic, Manual, Quartz
 
 ### 2C: REST API endpoints
 
-- [ ] **2C.1** Create REST API base controller
+- [x] **2C.1** Create REST API base controller
   - Namespace: `chronos/v1`
   - Permission callbacks with `current_user_can()` checks
   - Nonce verification via `wp_verify_nonce()`
 
-- [ ] **2C.2** Create contact form endpoint
+- [x] **2C.2** Create contact form endpoint
   - `POST /wp-json/chronos/v1/contact`
   - Input sanitization (sanitize_text_field, sanitize_email, wp_kses)
   - Rate limiting via transients
   - Store submission in custom DB table + send email
 
-- [ ] **2C.3** Create watches endpoint
+- [x] **2C.3** Create watches endpoint
   - `GET /wp-json/chronos/v1/watches` — list with pagination, filtering by brand/movement
   - `GET /wp-json/chronos/v1/watches/{id}` — single watch details
 
 ### 2D: Custom database table
 
-- [ ] **2D.1** Create Migrator class
+- [x] **2D.1** Create Migrator class
   - Uses `$wpdb->prefix` for table name
   - `dbDelta()` for safe schema creation/updates
   - Runs on plugin activation hook
 
-- [ ] **2D.2** Create contact_submissions table
+- [x] **2D.2** Create contact_submissions table
   - Columns: id, name, email, subject, message, ip_address, submitted_at, status (new/read/replied)
   - CRUD methods via $wpdb (prepare statements for SQL injection prevention)
 
 ### 2E: Admin settings page
 
-- [ ] **2E.1** Create admin menu + settings page
+- [x] **2E.1** Create admin menu + settings page
   - Top-level menu: "Chronos" with dashicon
   - Sub-pages: Settings, Contact Submissions, Watch Analytics
   - Uses WordPress Settings API (register_setting, add_settings_section, add_settings_field)
 
-- [ ] **2E.2** Settings fields
+- [x] **2E.2** Settings fields
   - Contact form recipient email (default: admin_email)
   - Enable/disable rate limiting
   - API rate limit (requests per minute)
@@ -196,13 +196,13 @@ These are separate projects/skills, NOT part of this build:
 
 ### 2F: Security hardening
 
-- [ ] **2F.1** Create Sanitizer class
+- [x] **2F.1** Create Sanitizer class
   - Static methods for common sanitization patterns
   - Nonce creation + verification helpers
   - Capability check helpers
   - Input validation (email, phone, URL patterns)
 
-- [ ] **2F.2** Apply security to all existing code
+- [x] **2F.2** Apply security to all existing code
   - Every form: nonce field + verification
   - Every user input: sanitize before use
   - Every DB query: `$wpdb->prepare()`
@@ -211,32 +211,32 @@ These are separate projects/skills, NOT part of this build:
 
 ### 2G: Internationalization (i18n)
 
-- [ ] **2G.1** Create I18n loader
+- [x] **2G.1** Create I18n loader
   - Load text domain: `chronos-bridge`
   - Wrap all user-facing strings with `__()` or `_e()`
   - Generate .pot file
 
 ### 2H: Caching + Cron
 
-- [ ] **2H.1** TransientCache wrapper
+- [x] **2H.1** TransientCache wrapper
   - Cache expensive queries (watch listings, contact count)
   - Auto-invalidate on post save/update
 
-- [ ] **2H.2** Cron cleanup job
+- [x] **2H.2** Cron cleanup job
   - Daily cron to clean old transients
   - Weekly cron to email contact submission summary to admin
 
 ### 2I: Coding standards + testing
 
-- [ ] **2I.1** Configure PHPCS with WordPress standards
+- [x] **2I.1** Configure PHPCS with WordPress standards
   - `phpcs.xml` targeting `src/` directory
   - Run: `vendor/bin/phpcs` — must pass with 0 errors
 
-- [ ] **2I.2** Write PHPUnit tests (minimum 10)
+- [x] **2I.2** Write PHPUnit tests (minimum 10)
   - Unit tests: Sanitizer, ContactTable CRUD, TransientCache
   - Integration tests: REST API endpoints return correct responses
 
-- [ ] **2I.3** Commit Phase 2
+- [x] **2I.3** Commit Phase 2
   - Message: "feat: rebuild chronos-bridge as OOP PHP 8+ plugin with REST API, CPT, security, i18n, and tests"
 
 **Verification:**
@@ -449,7 +449,7 @@ These are separate projects/skills, NOT part of this build:
 | Phase | Description | Status |
 |-------|-------------|--------|
 | 1 | Security & credibility fixes | DONE (2026-04-07) |
-| 2 | OOP PHP 8+ plugin rebuild | NOT STARTED |
+| 2 | OOP PHP 8+ plugin rebuild | DONE (2026-04-07) |
 | 3 | Gutenberg custom blocks | NOT STARTED |
 | 4 | WooCommerce + real payments | NOT STARTED |
 | 5 | CI/CD pipeline | NOT STARTED |

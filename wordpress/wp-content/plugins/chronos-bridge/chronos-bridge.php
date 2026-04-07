@@ -1,64 +1,60 @@
 <?php
 /**
- * Plugin Name: Chronos Custom Bridge
- * Description: A lightweight bridge to receive Contact Form submissions via GraphQL without crashing.
- * Version: 1.0
- * Author: Zahidul Islam
- * Author URI: https://github.com/Zahidulislam2222
+ * Plugin Name: Chronos Bridge
+ * Plugin URI:  https://github.com/Zahidulislam2222/Chronos
+ * Description: Custom bridge plugin for Chronos luxury watch e-commerce — REST API, CPT, GraphQL mutations, admin settings, caching, and cron.
+ * Version:     2.0.0
+ * Author:      Zahidul Islam
+ * Author URI:  https://github.com/Zahidulislam2222
+ * License:     GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: chronos-bridge
+ * Domain Path: /languages
+ * Requires PHP: 8.1
  */
 
+declare(strict_types=1);
+
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
-add_action( 'graphql_register_types', function() {
+// Check PHP version before loading anything.
+if ( version_compare( PHP_VERSION, '8.1', '<' ) ) {
+	add_action( 'admin_notices', static function (): void {
+		printf(
+			'<div class="notice notice-error"><p>%s</p></div>',
+			esc_html__( 'Chronos Bridge requires PHP 8.1 or higher. Please upgrade your PHP version.', 'chronos-bridge' )
+		);
+	} );
+	return;
+}
 
-    // Register the mutation 'submitChronosContact'
-    register_graphql_mutation( 'submitChronosContact', [
-        'inputFields' => [
-            'name'    => [ 'type' => 'String' ],
-            'email'   => [ 'type' => 'String' ],
-            'subject' => [ 'type' => 'String' ],
-            'message' => [ 'type' => 'String' ],
-        ],
-        'outputFields' => [
-            'success' => [ 'type' => 'Boolean' ],
-            'message' => [ 'type' => 'String' ],
-        ],
-        'mutateAndGetPayload' => function( $input ) {
-            
-            // 1. Get Data
-            $name    = sanitize_text_field( $input['name'] );
-            $email   = sanitize_email( $input['email'] );
-            $subject = sanitize_text_field( $input['subject'] );
-            $message = sanitize_textarea_field( $input['message'] );
+// Plugin constants.
+define( 'CHRONOS_BRIDGE_VERSION', '2.0.0' );
+define( 'CHRONOS_BRIDGE_FILE', __FILE__ );
+define( 'CHRONOS_BRIDGE_DIR', plugin_dir_path( __FILE__ ) );
+define( 'CHRONOS_BRIDGE_URL', plugin_dir_url( __FILE__ ) );
+define( 'CHRONOS_BRIDGE_BASENAME', plugin_basename( __FILE__ ) );
 
-            // 2. Prepare Email
-            // This sends to the "Administration Email Address" set in Settings > General
-            $to      = get_option( 'admin_email' ); 
-            $headers = [ 'Content-Type: text/html; charset=UTF-8', 'Reply-To: ' . $name . ' <' . $email . '>' ];
-            
-            $email_subject = 'New Message from Chronos: ' . $subject;
-            $email_body    = "<h3>New Contact Submission</h3>";
-            $email_body   .= "<p><strong>Name:</strong> $name</p>";
-            $email_body   .= "<p><strong>Email:</strong> $email</p>";
-            $email_body   .= "<p><strong>Subject:</strong> $subject</p>";
-            $email_body   .= "<p><strong>Message:</strong><br/>$message</p>";
+// Composer autoloader.
+$autoloader = CHRONOS_BRIDGE_DIR . 'vendor/autoload.php';
 
-            // 3. Send Email
-            $sent = wp_mail( $to, $email_subject, $email_body, $headers );
+if ( ! file_exists( $autoloader ) ) {
+	add_action( 'admin_notices', static function (): void {
+		printf(
+			'<div class="notice notice-error"><p>%s</p></div>',
+			esc_html__( 'Chronos Bridge: Composer dependencies not installed. Run "composer install" in the plugin directory.', 'chronos-bridge' )
+		);
+	} );
+	return;
+}
 
-            if ( $sent ) {
-                return [ 
-                    'success' => true,
-                    'message' => 'Email sent successfully.'
-                ];
-            } else {
-                return [ 
-                    'success' => false,
-                    'message' => 'Failed to send email. Check SMTP settings.'
-                ];
-            }
-        }
-    ] );
-} );
+require_once $autoloader;
+
+// Boot the plugin.
+ChronosBridge\Plugin::init();
+
+// Activation / deactivation hooks (must be in main file).
+register_activation_hook( __FILE__, [ ChronosBridge\Plugin::class, 'activate' ] );
+register_deactivation_hook( __FILE__, [ ChronosBridge\Plugin::class, 'deactivate' ] );

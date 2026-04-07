@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<ruleset name="Chronos Bridge">
+	<description>WordPress coding standards for Chronos Bridge plugin.</description>
+
+	<!-- Scan only src/ directory -->
+	<file>./src</file>
+
+	<!-- Exclude vendor and tests from scanning -->
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/tests/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+
+	<!-- Use WordPress Coding Standards -->
+	<rule ref="WordPress">
+		<!-- Allow PSR-4 file naming (WordPress standard requires class-*.php) -->
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+
+		<!-- Allow short array syntax [] instead of array() -->
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
+
+		<!-- We use return type declarations and enums (PHP 8.1+) -->
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames"/>
+	</rule>
+
+	<!-- WordPress Extra standards -->
+	<rule ref="WordPress-Extra"/>
+
+	<!-- WordPress Docs standards -->
+	<rule ref="WordPress-Docs"/>
+
+	<!-- PHP compatibility -->
+	<config name="minimum_supported_wp_version" value="6.4"/>
+	<config name="testVersion" value="8.1-"/>
+
+	<!-- Text domain -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="chronos-bridge"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Prefixes for hooks, options, etc. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="chronos"/>
+				<element value="ChronosBridge"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Allow non-prefixed hook in Plugin.php (WordPress core hooks like rest_api_init) -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound">
+		<exclude-pattern>*/Plugin.php</exclude-pattern>
+	</rule>
+
+	<!-- meta_key and tax_query are required for CPT queries — not avoidable -->
+	<rule ref="WordPress.DB.SlowDBQuery">
+		<exclude-pattern>*/Api/WatchEndpoint.php</exclude-pattern>
+	</rule>
+</ruleset>
