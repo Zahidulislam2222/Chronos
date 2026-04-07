@@ -1,5 +1,34 @@
-# Logs
-logs
+# ─── Dependencies ─────────────────────────────────────────────────
+node_modules/
+vendor/
+.phpunit.cache/
+
+# ─── Build Output ─────────────────────────────────────────────────
+dist/
+dist-ssr/
+
+# ─── Environment & Secrets ────────────────────────────────────────
+.env
+.env.*
+*.local
+wp-config*.php
+*.sql
+
+# ─── Claude Code / AI Assistant ───────────────────────────────────
+.claude/
+CLAUDE.md
+
+# ─── Internal Planning (not for public repo) ─────────────────────
+BUILD_PLAN.md
+
+# ─── Documents ────────────────────────────────────────────────────
+*.docx
+*.doc
+*.pdf
+*.xlsx
+
+# ─── Logs ─────────────────────────────────────────────────────────
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,18 +36,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-.env
-vendor/
-.phpunit.cache/
-dist-ssr
-*.local
-
-# Editor directories and files
+# ─── Editor / IDE ─────────────────────────────────────────────────
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 Thumbs.db
 *.suo
@@ -27,23 +48,10 @@ Thumbs.db
 *.sln
 *.sw?
 
-# Claude Code (AI assistant internal files)
-.claude/
-CLAUDE.md
-
-# Documents (not code)
-*.docx
-*.doc
-*.pdf
-
-# Sensitive files
-wp-config*.php
-*.sql
-
-# WordPress - uploads/media (too large for Git)
+# ─── WordPress — uploads/media (too large for Git) ───────────────
 wordpress/wp-content/uploads/
 
-# WordPress - third-party plugins (install via WP-CLI or wp-admin)
+# ─── WordPress — third-party plugins (install via WP-CLI) ────────
 wordpress/wp-content/plugins/woocommerce/
 wordpress/wp-content/plugins/advanced-custom-fields/
 wordpress/wp-content/plugins/wp-graphql/
@@ -52,9 +60,15 @@ wordpress/wp-content/plugins/wpforms-lite/
 wordpress/wp-content/plugins/akismet/
 wordpress/wp-content/plugins/hello.php
 wordpress/wp-content/plugins/index.php
+wordpress/wp-content/plugins/google-listings-and-ads/
+wordpress/wp-content/plugins/pinterest-for-woocommerce/
+wordpress/wp-content/plugins/woocommerce-paypal-payments/
 
-# WordPress - default themes (come with WordPress/Docker)
+# ─── WordPress — default themes ──────────────────────────────────
 wordpress/wp-content/themes/twentytwentythree/
 wordpress/wp-content/themes/twentytwentyfour/
 wordpress/wp-content/themes/twentytwentyfive/
 wordpress/wp-content/themes/index.php
+
+# ─── WordPress — debug log ───────────────────────────────────────
+wordpress/wp-content/debug.log
