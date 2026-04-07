@@ -1,0 +1,108 @@
+# ─── Chronos WordPress .htaccess Sample ───────────────────────────
+# Copy this file to .htaccess in your WordPress root directory.
+# Adjust as needed for your hosting environment.
+
+# ─── WordPress Rewrite Rules ─────────────────────────────────────
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress
+
+# ─── Security Headers ────────────────────────────────────────────
+<IfModule mod_headers.c>
+    # Prevent MIME type sniffing.
+    Header set X-Content-Type-Options "nosniff"
+
+    # Prevent clickjacking.
+    Header set X-Frame-Options "SAMEORIGIN"
+
+    # Enable XSS protection.
+    Header set X-XSS-Protection "1; mode=block"
+
+    # Referrer policy.
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Permissions policy.
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+    # Remove server info.
+    Header unset X-Powered-By
+    Header unset Server
+</IfModule>
+
+# ─── CORS for Headless Frontend ──────────────────────────────────
+<IfModule mod_headers.c>
+    SetEnvIf Origin "^https?://(chronos\.healthcodeanalysis\.com|localhost:8080)$" CORS_ORIGIN=$0
+    Header set Access-Control-Allow-Origin "%{CORS_ORIGIN}e" env=CORS_ORIGIN
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-WP-Nonce"
+    Header set Access-Control-Allow-Credentials "true"
+</IfModule>
+
+# ─── Browser Caching ─────────────────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Images — 1 year.
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+
+    # CSS/JS — 1 month.
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+
+    # Fonts — 1 year.
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+
+    # HTML — no cache (always fresh).
+    ExpiresByType text/html "access plus 0 seconds"
+
+    # JSON/XML API responses — 10 minutes.
+    ExpiresByType application/json "access plus 600 seconds"
+    ExpiresByType application/xml "access plus 600 seconds"
+</IfModule>
+
+# ─── Gzip Compression ────────────────────────────────────────────
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE application/xml text/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE font/woff2 application/font-woff2
+</IfModule>
+
+# ─── Block Sensitive Files ───────────────────────────────────────
+<FilesMatch "^(wp-config\.php|\.env|composer\.(json|lock)|package\.json|phpunit\.xml|phpcs\.xml)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</FilesMatch>
+
+# Block access to hidden files (.git, .env, etc.).
+<IfModule mod_rewrite.c>
+    RewriteRule ^\.(?!well-known) - [F]
+</IfModule>
+
+# Disable directory browsing.
+Options -Indexes
+
+# ─── File Upload Limit ───────────────────────────────────────────
+<IfModule mod_php.c>
+    php_value upload_max_filesize 64M
+    php_value post_max_size 64M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>

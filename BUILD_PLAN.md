@@ -329,29 +329,29 @@ These are separate projects/skills, NOT part of this build:
 
 > **Goal:** GitHub Actions auto-deploy, complete Docker setup, documentation.
 
-- [ ] **5.1** Create GitHub Actions workflow
+- [x] **5.1** Create GitHub Actions workflow
   - File: `.github/workflows/ci.yml`
   - On push to main: run PHPCS, PHPUnit, Jest, npm build
   - On push to main (after tests pass): deploy to cPanel via cPanel API or SSH
 
-- [ ] **5.2** Auto-deploy script
+- [x] **5.2** Auto-deploy script
   - Deploy only `wordpress/wp-content/plugins/chronos-bridge/` and `wordpress/wp-content/plugins/chronos-blocks/` to server
   - Use cPanel Git or API file upload (FTP blocked on AridHost)
 
-- [ ] **5.3** Complete Docker setup
+- [x] **5.3** Complete Docker setup
   - Ensure `docker-compose up -d` gives working environment from scratch
   - Add WP-CLI auto-install script for plugins
   - Add sample data import script
 
-- [ ] **5.4** Add `.htaccess` sample config
+- [x] **5.4** Add `.htaccess` sample config
   - Security headers, caching rules, rewrite rules
   - File: `wordpress/.htaccess.sample`
 
-- [ ] **5.5** Write comprehensive README.md for WordPress backend
+- [x] **5.5** Write comprehensive README.md for WordPress backend
   - File: `wordpress/README.md`
   - Setup instructions, architecture diagram, API docs
 
-- [ ] **5.6** Commit Phase 5
+- [x] **5.6** Commit Phase 5
   - Message: "feat: add CI/CD pipeline with GitHub Actions, auto-deploy, and documentation"
 
 **Verification:**
@@ -452,7 +452,7 @@ These are separate projects/skills, NOT part of this build:
 | 2 | OOP PHP 8+ plugin rebuild | DONE (2026-04-07) |
 | 3 | Gutenberg custom blocks | DONE (2026-04-08) |
 | 4 | WooCommerce + real payments | DONE (2026-04-08) |
-| 5 | CI/CD pipeline | NOT STARTED |
+| 5 | CI/CD pipeline | DONE (2026-04-08) |
 | 6 | Performance + SEO + Analytics | NOT STARTED |
 | 7 | WordPress 7.0 AI integration | NOT STARTED |
 | 8 | Accessibility + Polish | NOT STARTED |
