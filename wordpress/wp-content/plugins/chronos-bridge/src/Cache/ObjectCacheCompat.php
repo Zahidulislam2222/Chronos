@@ -24,7 +24,7 @@ final class ObjectCacheCompat {
 	 * Whether a persistent object cache is available.
 	 */
 	public static function has_persistent_cache(): bool {
-		return wp_using_ext_object_cache();
+		return (bool) wp_using_ext_object_cache();
 	}
 
 	/**

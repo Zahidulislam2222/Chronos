@@ -18,30 +18,18 @@ final class CheckoutFields {
 	 * Register all WooCommerce hooks.
 	 */
 	public static function register(): void {
-		if ( ! class_exists( 'WooCommerce' ) ) {
-			return;
-		}
-
-		// Add custom fields to checkout form.
-		add_action( 'woocommerce_after_order_notes', array( self::class, 'render_custom_fields' ) );
-
-		// Validate custom fields.
-		add_action( 'woocommerce_checkout_process', array( self::class, 'validate_custom_fields' ) );
-
-		// Save custom fields to order meta.
-		add_action( 'woocommerce_checkout_update_order_meta', array( self::class, 'save_custom_fields' ) );
-
-		// Display custom fields in admin order detail.
-		add_action( 'woocommerce_admin_order_data_after_billing_address', array( self::class, 'display_in_admin' ) );
-
-		// Display custom fields in order emails.
-		add_action( 'woocommerce_email_after_order_table', array( self::class, 'display_in_email' ), 10, 1 );
-
-		// Register REST API endpoint for headless checkout.
+		// REST API endpoint always registers (headless frontend needs it).
 		add_action( 'rest_api_init', array( self::class, 'register_rest_routes' ) );
 
-		// Add fields to GraphQL order data.
+		// GraphQL fields always register.
 		add_action( 'graphql_register_types', array( self::class, 'register_graphql_fields' ) );
+
+		// WooCommerce-specific hooks only when WC is available.
+		add_action( 'woocommerce_after_order_notes', array( self::class, 'render_custom_fields' ) );
+		add_action( 'woocommerce_checkout_process', array( self::class, 'validate_custom_fields' ) );
+		add_action( 'woocommerce_checkout_update_order_meta', array( self::class, 'save_custom_fields' ) );
+		add_action( 'woocommerce_admin_order_data_after_billing_address', array( self::class, 'display_in_admin' ) );
+		add_action( 'woocommerce_email_after_order_table', array( self::class, 'display_in_email' ), 10, 1 );
 	}
 
 	/**
