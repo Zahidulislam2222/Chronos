@@ -3,7 +3,8 @@
  * Plugin Name: Chronos Custom Bridge
  * Description: A lightweight bridge to receive Contact Form submissions via GraphQL without crashing.
  * Version: 1.0
- * Author: Vibe Coder
+ * Author: Zahidul Islam
+ * Author URI: https://github.com/Zahidulislam2222
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

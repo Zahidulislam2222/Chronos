@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { CreditCard, CheckCircle, Circle } from 'lucide-react'; // Added Circle for unselected state
+import { CheckCircle, Circle, Lock } from 'lucide-react';
 import { processCheckout } from '@/utils/api';
 import CartItemRow from '@/components/CartDrawer'; // Assuming you might have a summary component, or using raw HTML below
 
@@ -18,6 +18,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'stripe'>('cod');
+  const stripeComingSoon = true; // Will be replaced with real Stripe in Phase 4
 
   // Form State
   const [formData, setFormData] = useState({
@@ -228,64 +229,22 @@ const Checkout = () => {
                       </div>
                     </div>
 
-                    {/* Option 2: Credit Card (Simulated) */}
-                    <div 
-                      onClick={() => setPaymentMethod('stripe')}
-                      className={`p-4 rounded-md transition-all border cursor-pointer ${
-                        paymentMethod === 'stripe' 
-                          ? 'bg-card border-primary ring-1 ring-primary' 
-                          : 'bg-card border-border hover:border-primary/50'
-                      }`}
+                    {/* Option 2: Credit Card (Stripe — coming in Phase 4) */}
+                    <div
+                      className="p-4 rounded-md transition-all border border-border bg-card opacity-60 cursor-not-allowed"
                     >
-                      <div className="flex items-start gap-4 mb-4">
+                      <div className="flex items-start gap-4">
                         <div className="mt-1">
-                          {paymentMethod === 'stripe' ? (
-                            <CheckCircle className="w-5 h-5 text-primary" />
-                          ) : (
-                            <Circle className="w-5 h-5 text-muted-foreground" />
-                          )}
+                          <Circle className="w-5 h-5 text-muted-foreground" />
                         </div>
                         <div>
                           <p className="font-medium text-foreground">Credit Card</p>
-                          <p className="text-xs text-muted-foreground mt-1">Secure encrypted payment via Stripe.</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Lock className="w-3 h-3 text-muted-foreground" />
+                            <p className="text-xs text-muted-foreground">Secure Stripe integration coming soon</p>
+                          </div>
                         </div>
-                        <CreditCard className="w-6 h-6 ml-auto text-muted-foreground" />
                       </div>
-
-                      {/* Expanding Card Inputs */}
-                      {paymentMethod === 'stripe' && (
-                        <motion.div 
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          className="grid grid-cols-2 gap-4 border-t border-border pt-4 mt-2"
-                        >
-                          <div className="col-span-2">
-                            <Label className="text-xs">Card Number</Label>
-                            <Input 
-                              placeholder="0000 0000 0000 0000" 
-                              className="bg-background border-border mt-1" 
-                              required={paymentMethod === 'stripe'}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs">Expiry</Label>
-                            <Input 
-                              placeholder="MM/YY" 
-                              className="bg-background border-border mt-1" 
-                              required={paymentMethod === 'stripe'}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs">CVC</Label>
-                            <Input 
-                              placeholder="123" 
-                              type="password"
-                              className="bg-background border-border mt-1" 
-                              required={paymentMethod === 'stripe'}
-                            />
-                          </div>
-                        </motion.div>
-                      )}
                     </div>
 
                   </div>
