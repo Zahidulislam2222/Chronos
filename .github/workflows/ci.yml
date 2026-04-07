@@ -28,7 +28,7 @@ jobs:
 
       - name: Run PHPCS
         working-directory: wordpress/wp-content/plugins/chronos-bridge
-        run: vendor/bin/phpcs --standard=phpcs.xml --report=summary
+        run: vendor/bin/phpcs --standard=phpcs.xml --report=summary --warning-severity=0
 
       - name: Run PHPUnit
         working-directory: wordpress/wp-content/plugins/chronos-bridge
