@@ -206,6 +206,37 @@ npm run build
 
 ---
 
+## Deployment
+
+**Frontend** deploys to Vercel automatically on push (connected via Vercel dashboard).
+
+**Backend** deploys via cPanel Git Version Control (passwordless — no credentials in CI):
+
+1. In cPanel, go to **Git Version Control** > Create > clone this repo
+2. Create `~/deploy-chronos.sh` on the server (one-time setup):
+
+```bash
+#!/bin/bash
+# deploy-chronos.sh — cPanel deployment script
+# Place in your home directory: ~/deploy-chronos.sh
+
+PLUGIN_PATH="$HOME/YOUR_DOMAIN/wp-content/plugins"
+REPO_PATH="$HOME/repositories/chronos"
+
+# Deploy custom plugins
+cp -R "$REPO_PATH/wordpress/wp-content/plugins/chronos-bridge" "$PLUGIN_PATH/"
+cp -R "$REPO_PATH/wordpress/wp-content/plugins/chronos-blocks" "$PLUGIN_PATH/"
+cp -R "$REPO_PATH/wordpress/wp-content/plugins/wp-graphql-cors-master" "$PLUGIN_PATH/"
+
+echo "Deployed at $(date)"
+```
+
+3. To deploy: cPanel > Git Version Control > **Update from Remote** > **Deploy HEAD Commit**
+
+No passwords stored anywhere. The `.cpanel.yml` in the repo calls this server-side script.
+
+---
+
 ## Tech Stack
 
 | Category | Technologies |

@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -80,20 +80,3 @@ jobs:
 
       - name: Build frontend
         run: npm run build
-
-  # ── Deploy ─────────────────────────────────────────────────────
-  # Deployment is handled via cPanel Git Version Control (passwordless).
-  #
-  # How it works:
-  #   1. cPanel pulls from this GitHub repo automatically on push
-  #   2. No FTP passwords or SSH keys stored in GitHub Secrets
-  #   3. Configure once in cPanel: Repositories > Create > paste repo URL
-  #
-  # Setup guide:
-  #   - Log in to cPanel > Git Version Control
-  #   - Create repository: https://github.com/Zahidulislam2222/Chronos.git
-  #   - Deploy path: /home/mehzsolu/chronosbackend.healthcodeanalysis.com/
-  #   - cPanel auto-deploys on push to main
-  #
-  # This is the recommended approach for shared hosting — no credentials
-  # stored anywhere outside the hosting provider.
