@@ -294,28 +294,28 @@ These are separate projects/skills, NOT part of this build:
 
 > **Goal:** Real Stripe integration (test mode), webhook handlers, custom checkout fields.
 
-- [ ] **4.1** Set up Stripe test mode
+- [x] **4.1** Set up Stripe test mode
   - Install Stripe PHP SDK via Composer in chronos-bridge
   - Create Stripe test account, get test API keys
   - Add keys to WordPress settings (encrypted in options table, NOT hardcoded)
 
-- [ ] **4.2** Create payment processing
+- [x] **4.2** Create payment processing
   - Stripe Checkout Session creation endpoint
   - Webhook handler for `payment_intent.succeeded`, `checkout.session.completed`
   - Webhook signature verification
 
-- [ ] **4.3** Custom WooCommerce checkout fields
+- [x] **4.3** Custom WooCommerce checkout fields
   - Add "Gift wrapping" checkbox
   - Add "Delivery instructions" textarea
   - Save to order meta, display in admin
 
-- [ ] **4.4** Replace frontend fake checkout with real Stripe
+- [x] **4.4** Replace frontend fake checkout with real Stripe
   - `src/pages/Checkout.tsx` — use Stripe.js / @stripe/react-stripe-js
   - Real payment flow: cart → Stripe Checkout → success/failure page
 
-- [ ] **4.5** PayPal integration (WooCommerce PayPal Payments plugin config)
+- [x] **4.5** PayPal integration (WooCommerce PayPal Payments plugin config)
 
-- [ ] **4.6** Commit Phase 4
+- [x] **4.6** Commit Phase 4
   - Message: "feat: add real Stripe payment integration with webhooks and custom checkout fields"
 
 **Verification:**
@@ -451,7 +451,7 @@ These are separate projects/skills, NOT part of this build:
 | 1 | Security & credibility fixes | DONE (2026-04-07) |
 | 2 | OOP PHP 8+ plugin rebuild | DONE (2026-04-07) |
 | 3 | Gutenberg custom blocks | DONE (2026-04-08) |
-| 4 | WooCommerce + real payments | NOT STARTED |
+| 4 | WooCommerce + real payments | DONE (2026-04-08) |
 | 5 | CI/CD pipeline | NOT STARTED |
 | 6 | Performance + SEO + Analytics | NOT STARTED |
 | 7 | WordPress 7.0 AI integration | NOT STARTED |

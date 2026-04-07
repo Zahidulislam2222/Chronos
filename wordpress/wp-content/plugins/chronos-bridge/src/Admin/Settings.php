@@ -75,6 +75,43 @@ final class Settings {
 			__( 'Send email when a new contact submission arrives.', 'chronos-bridge' )
 		);
 
+		// Stripe payment section.
+		add_settings_section(
+			'chronos_stripe_section',
+			__( 'Stripe Payment Settings', 'chronos-bridge' ),
+			static function (): void {
+				echo '<p>' . esc_html__( 'Configure Stripe API keys for payment processing. Use test keys (sk_test_ / pk_test_) during development.', 'chronos-bridge' ) . '</p>';
+			},
+			self::PAGE_SLUG
+		);
+
+		self::add_field(
+			'chronos_stripe_publishable_key',
+			__( 'Publishable Key', 'chronos-bridge' ),
+			'text',
+			'chronos_stripe_section',
+			'',
+			__( 'Starts with pk_test_ (test) or pk_live_ (production).', 'chronos-bridge' )
+		);
+
+		self::add_field(
+			'chronos_stripe_secret_key',
+			__( 'Secret Key', 'chronos-bridge' ),
+			'password',
+			'chronos_stripe_section',
+			'',
+			__( 'Starts with sk_test_ (test) or sk_live_ (production). Never share this key.', 'chronos-bridge' )
+		);
+
+		self::add_field(
+			'chronos_stripe_webhook_secret',
+			__( 'Webhook Secret', 'chronos-bridge' ),
+			'password',
+			'chronos_stripe_section',
+			'',
+			__( 'Starts with whsec_. Found in Stripe Dashboard > Developers > Webhooks.', 'chronos-bridge' )
+		);
+
 		// Analytics section.
 		add_settings_section(
 			'chronos_analytics_section',
@@ -120,12 +157,14 @@ final class Settings {
 				'type'              => match ( $type ) {
 					'number'   => 'integer',
 					'checkbox' => 'string',
+					'password' => 'string',
 					default    => 'string',
 				},
 				'sanitize_callback' => match ( $type ) {
 					'email'    => 'sanitize_email',
 					'number'   => 'absint',
 					'checkbox' => static fn( mixed $val ): string => $val ? '1' : '0',
+					'password' => 'sanitize_text_field',
 					default    => 'sanitize_text_field',
 				},
 				'default'           => $default,

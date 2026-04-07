@@ -18,8 +18,11 @@ use ChronosBridge\Cron\CleanupJob;
 use ChronosBridge\Database\Migrator;
 use ChronosBridge\GraphQL\ContactMutation;
 use ChronosBridge\I18n\Loader as I18nLoader;
+use ChronosBridge\Payment\CheckoutEndpoint;
+use ChronosBridge\Payment\WebhookHandler;
 use ChronosBridge\PostTypes\Taxonomy;
 use ChronosBridge\PostTypes\WatchCollection;
+use ChronosBridge\WooCommerce\CheckoutFields;
 
 /**
  * Main plugin singleton class.
@@ -86,8 +89,13 @@ final class Plugin {
 			function (): void {
 				( new ContactEndpoint() )->register_routes();
 				( new WatchEndpoint() )->register_routes();
+				( new CheckoutEndpoint() )->register_routes();
+				( new WebhookHandler() )->register_routes();
 			}
 		);
+
+		// WooCommerce custom checkout fields.
+		CheckoutFields::register();
 
 		// Admin pages and settings (only in admin context).
 		if ( is_admin() ) {
