@@ -1,6 +1,7 @@
 ---
 deployment:
   tasks:
-    - /bin/cp -R wordpress/wp-content/plugins/chronos-bridge /home/mehzsolu/chronosbackend.healthcodeanalysis.com/wp-content/plugins/
-    - /bin/cp -R wordpress/wp-content/plugins/chronos-blocks /home/mehzsolu/chronosbackend.healthcodeanalysis.com/wp-content/plugins/
-    - /bin/cp -R wordpress/wp-content/plugins/wp-graphql-cors-master /home/mehzsolu/chronosbackend.healthcodeanalysis.com/wp-content/plugins/
+    - export DEPLOYPATH=/home/mehzsolu/chronosbackend.healthcodeanalysis.com/wp-content/plugins
+    - /bin/cp -R wordpress/wp-content/plugins/chronos-bridge $DEPLOYPATH/
+    - /bin/cp -R wordpress/wp-content/plugins/chronos-blocks $DEPLOYPATH/
+    - /bin/cp -R wordpress/wp-content/plugins/wp-graphql-cors-master $DEPLOYPATH/
