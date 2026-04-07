@@ -31,7 +31,7 @@ abstract class RestController {
 	 * @param WP_REST_Request $request The REST request object.
 	 * @return bool
 	 */
-	protected function permission_public( WP_REST_Request $request ): bool { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Required by WordPress REST API.
+	public function permission_public( WP_REST_Request $request ): bool { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Required by WordPress REST API.
 		return true;
 	}
 
@@ -41,7 +41,7 @@ abstract class RestController {
 	 * @param WP_REST_Request $request The REST request object.
 	 * @return bool
 	 */
-	protected function permission_admin( WP_REST_Request $request ): bool { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Required by WordPress REST API.
+	public function permission_admin( WP_REST_Request $request ): bool { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Required by WordPress REST API.
 		return current_user_can( 'manage_options' );
 	}
 
