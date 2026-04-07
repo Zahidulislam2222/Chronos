@@ -1,0 +1,51 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "chronos/contact-form",
+	"version": "1.0.0",
+	"title": "Contact Form",
+	"category": "chronos",
+	"icon": "email",
+	"description": "A contact form that submits to the Chronos REST API with AJAX and client-side validation.",
+	"keywords": [ "contact", "form", "email", "message" ],
+	"supports": {
+		"html": false,
+		"align": [ "wide" ],
+		"color": {
+			"background": true,
+			"text": true
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"attributes": {
+		"heading": {
+			"type": "string",
+			"default": "Get in Touch"
+		},
+		"description": {
+			"type": "string",
+			"default": "Have a question about our timepieces? Send us a message."
+		},
+		"submitText": {
+			"type": "string",
+			"default": "Send Message"
+		},
+		"successMessage": {
+			"type": "string",
+			"default": "Thank you for your message. We'll get back to you soon."
+		},
+		"showSubject": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"textdomain": "chronos-blocks",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php",
+	"viewScript": "file:./frontend.js"
+}

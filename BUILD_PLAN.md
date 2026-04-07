@@ -253,33 +253,33 @@ These are separate projects/skills, NOT part of this build:
 
 > **Goal:** Build 2-3 custom Gutenberg blocks using @wordpress/scripts + React/JSX.
 
-- [ ] **3.1** Set up block development environment
+- [x] **3.1** Set up block development environment
   - Create: `wordpress/wp-content/plugins/chronos-blocks/` (separate plugin)
   - Use `@wordpress/create-block` or manual `@wordpress/scripts` setup
   - `package.json` with build/start scripts
 
-- [ ] **3.2** Build "Watch Showcase" block
+- [x] **3.2** Build "Watch Showcase" block
   - Displays a featured watch with image, name, price, and CTA button
   - Uses `InspectorControls` for sidebar settings
   - Fetches watch data from REST API (`chronos/v1/watches`)
   - Styled for Gutenberg editor + frontend
 
-- [ ] **3.3** Build "Watch Collection Grid" block
+- [x] **3.3** Build "Watch Collection Grid" block
   - Displays grid of watches filtered by brand or movement type
   - Uses `@wordpress/data` for API fetching
   - Configurable columns, sorting, and limit
 
-- [ ] **3.4** Build "Contact Form" block
+- [x] **3.4** Build "Contact Form" block
   - Renders contact form in Gutenberg
   - Submits to `chronos/v1/contact` REST endpoint
   - Client-side validation + AJAX submission
   - Success/error states
 
-- [ ] **3.5** Add `@wordpress/i18n` to all blocks
+- [x] **3.5** Add `@wordpress/i18n` to all blocks
 
-- [ ] **3.6** Add Jest tests for block components
+- [x] **3.6** Add Jest tests for block components
 
-- [ ] **3.7** Commit Phase 3
+- [x] **3.7** Commit Phase 3
   - Message: "feat: add custom Gutenberg blocks — watch showcase, collection grid, and contact form"
 
 **Verification:**
@@ -450,7 +450,7 @@ These are separate projects/skills, NOT part of this build:
 |-------|-------------|--------|
 | 1 | Security & credibility fixes | DONE (2026-04-07) |
 | 2 | OOP PHP 8+ plugin rebuild | DONE (2026-04-07) |
-| 3 | Gutenberg custom blocks | NOT STARTED |
+| 3 | Gutenberg custom blocks | DONE (2026-04-08) |
 | 4 | WooCommerce + real payments | NOT STARTED |
 | 5 | CI/CD pipeline | NOT STARTED |
 | 6 | Performance + SEO + Analytics | NOT STARTED |

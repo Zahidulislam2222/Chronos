@@ -1,0 +1,55 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "chronos/watch-showcase",
+	"version": "1.0.0",
+	"title": "Watch Showcase",
+	"category": "chronos",
+	"icon": "clock",
+	"description": "Display a featured watch with image, name, price, and call-to-action button.",
+	"keywords": [ "watch", "product", "showcase", "featured" ],
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ],
+		"color": {
+			"background": true,
+			"text": true
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"attributes": {
+		"watchId": {
+			"type": "number",
+			"default": 0
+		},
+		"showPrice": {
+			"type": "boolean",
+			"default": true
+		},
+		"showExcerpt": {
+			"type": "boolean",
+			"default": true
+		},
+		"ctaText": {
+			"type": "string",
+			"default": "View Details"
+		},
+		"ctaUrl": {
+			"type": "string",
+			"default": ""
+		},
+		"layout": {
+			"type": "string",
+			"default": "horizontal",
+			"enum": [ "horizontal", "vertical" ]
+		}
+	},
+	"textdomain": "chronos-blocks",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

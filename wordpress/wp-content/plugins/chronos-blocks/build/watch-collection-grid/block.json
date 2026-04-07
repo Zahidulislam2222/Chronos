@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "chronos/watch-collection-grid",
+  "version": "1.0.0",
+  "title": "Watch Collection Grid",
+  "category": "chronos",
+  "icon": "grid-view",
+  "description": "Display a filterable grid of watches from the Chronos collection.",
+  "keywords": [
+    "watch",
+    "grid",
+    "collection",
+    "gallery"
+  ],
+  "supports": {
+    "html": false,
+    "align": [
+      "wide",
+      "full"
+    ],
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "attributes": {
+    "columns": {
+      "type": "number",
+      "default": 3
+    },
+    "perPage": {
+      "type": "number",
+      "default": 6
+    },
+    "brand": {
+      "type": "string",
+      "default": ""
+    },
+    "movement": {
+      "type": "string",
+      "default": ""
+    },
+    "orderby": {
+      "type": "string",
+      "default": "date",
+      "enum": [
+        "date",
+        "title",
+        "price"
+      ]
+    },
+    "order": {
+      "type": "string",
+      "default": "DESC",
+      "enum": [
+        "ASC",
+        "DESC"
+      ]
+    },
+    "showPrice": {
+      "type": "boolean",
+      "default": true
+    },
+    "showBrand": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "textdomain": "chronos-blocks",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "render": "file:./render.php"
+}
