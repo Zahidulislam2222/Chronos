@@ -1,15 +1,6 @@
 ---
-# cPanel Git Deployment Configuration
-#
-# How to deploy:
-#   1. cPanel > Git Version Control > Manage repo
-#   2. Click "Update from Remote" (pulls latest from GitHub)
-#   3. Click "Deploy HEAD Commit" (runs these tasks)
-#
-# Setup (one-time, on the server):
-#   Create ~/deploy-chronos.sh with your server paths.
-#   See wordpress/README.md for the deploy script template.
-#
 deployment:
   tasks:
-    - /bin/bash ~/deploy-chronos.sh
+    - /bin/cp -R wordpress/wp-content/plugins/chronos-bridge /home/mehzsolu/chronosbackend.healthcodeanalysis.com/wp-content/plugins/
+    - /bin/cp -R wordpress/wp-content/plugins/chronos-blocks /home/mehzsolu/chronosbackend.healthcodeanalysis.com/wp-content/plugins/
+    - /bin/cp -R wordpress/wp-content/plugins/wp-graphql-cors-master /home/mehzsolu/chronosbackend.healthcodeanalysis.com/wp-content/plugins/
