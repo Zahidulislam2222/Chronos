@@ -386,21 +386,21 @@ These are separate projects/skills, NOT part of this build:
 > **Goal:** Build a feature using WP 7.0 AI Client API (released April 9, 2026).
 > **Reference:** https://make.wordpress.org/core/2026/03/24/introducing-the-ai-client-in-wordpress-7-0/
 
-- [ ] **7.1** Research WP 7.0 AI Client API (released April 9, 2026)
+- [x] **7.1** Research WP 7.0 AI Client API (released April 9, 2026)
   - Read official docs, understand Connectors API and AI-powered abilities
   - Determine which AI provider to use (OpenAI or Anthropic)
 
-- [ ] **7.2** Build AI-powered feature in chronos-bridge
+- [x] **7.2** Build AI-powered feature in chronos-bridge
   - Example: AI product description generator for watch listings
   - Register as AI-powered ability
   - Admin UI: "Generate Description" button on watch edit screen
   - Uses WP 7.0 AI Client → sends watch specs → returns marketing copy
 
-- [ ] **7.3** Add AI-powered contact form auto-responder
+- [x] **7.3** Add AI-powered contact form auto-responder
   - Analyze incoming contact message sentiment/intent
   - Suggest admin reply based on context
 
-- [ ] **7.4** Commit Phase 7
+- [x] **7.4** Commit Phase 7
   - Message: "feat: add WordPress 7.0 AI integration — auto-generate watch descriptions and smart contact replies"
 
 **Verification:**
@@ -454,5 +454,5 @@ These are separate projects/skills, NOT part of this build:
 | 4 | WooCommerce + real payments | DONE (2026-04-08) |
 | 5 | CI/CD pipeline | DONE (2026-04-08) |
 | 6 | Performance + SEO + Analytics | DONE (2026-04-08) |
-| 7 | WordPress 7.0 AI integration | NOT STARTED |
+| 7 | WordPress 7.0 AI integration | DONE (2026-04-08) |
 | 8 | Accessibility + Polish | NOT STARTED |

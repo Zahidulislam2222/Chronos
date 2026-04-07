@@ -22,8 +22,10 @@ use ChronosBridge\Payment\CheckoutEndpoint;
 use ChronosBridge\Payment\WebhookHandler;
 use ChronosBridge\PostTypes\Taxonomy;
 use ChronosBridge\PostTypes\WatchCollection;
-use ChronosBridge\SEO\StructuredData;
+use ChronosBridge\AI\ContactResponder;
+use ChronosBridge\AI\DescriptionGenerator;
 use ChronosBridge\Analytics\Tracker;
+use ChronosBridge\SEO\StructuredData;
 use ChronosBridge\WooCommerce\CheckoutFields;
 
 /**
@@ -98,6 +100,10 @@ final class Plugin {
 
 		// WooCommerce custom checkout fields.
 		CheckoutFields::register();
+
+		// AI features (WP 7.0+).
+		DescriptionGenerator::register();
+		ContactResponder::register();
 
 		// SEO structured data (JSON-LD).
 		StructuredData::register();
