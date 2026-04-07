@@ -81,53 +81,19 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-  # ── Deploy to cPanel (only on push to main, after tests) ──────
-  deploy:
-    name: Deploy to cPanel
-    runs-on: ubuntu-latest
-    needs: [php-tests, blocks-tests, frontend-build]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Composer dependencies (production)
-        working-directory: wordpress/wp-content/plugins/chronos-bridge
-        run: |
-          composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
-
-      - name: Install and build blocks (production)
-        working-directory: wordpress/wp-content/plugins/chronos-blocks
-        run: |
-          npm ci
-          npm run build
-
-      - name: Deploy chronos-bridge to cPanel
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.CPANEL_HOST }}
-          username: ${{ secrets.CPANEL_FTP_USER }}
-          password: ${{ secrets.CPANEL_FTP_PASS }}
-          local-dir: wordpress/wp-content/plugins/chronos-bridge/
-          server-dir: ${{ secrets.CPANEL_PLUGIN_PATH }}/chronos-bridge/
-          exclude: |
-            **/.git*
-            **/node_modules/**
-            **/tests/**
-            **/.phpunit.cache/**
-            **/phpunit.xml
-            **/phpcs.xml
-
-      - name: Deploy chronos-blocks to cPanel
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.CPANEL_HOST }}
-          username: ${{ secrets.CPANEL_FTP_USER }}
-          password: ${{ secrets.CPANEL_FTP_PASS }}
-          local-dir: wordpress/wp-content/plugins/chronos-blocks/
-          server-dir: ${{ secrets.CPANEL_PLUGIN_PATH }}/chronos-blocks/
-          exclude: |
-            **/.git*
-            **/node_modules/**
-            **/tests/**
-            **/src/**
+  # ── Deploy ─────────────────────────────────────────────────────
+  # Deployment is handled via cPanel Git Version Control (passwordless).
+  #
+  # How it works:
+  #   1. cPanel pulls from this GitHub repo automatically on push
+  #   2. No FTP passwords or SSH keys stored in GitHub Secrets
+  #   3. Configure once in cPanel: Repositories > Create > paste repo URL
+  #
+  # Setup guide:
+  #   - Log in to cPanel > Git Version Control
+  #   - Create repository: https://github.com/Zahidulislam2222/Chronos.git
+  #   - Deploy path: /home/mehzsolu/chronosbackend.healthcodeanalysis.com/
+  #   - cPanel auto-deploys on push to main
+  #
+  # This is the recommended approach for shared hosting — no credentials
+  # stored anywhere outside the hosting provider.
