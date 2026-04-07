@@ -23,3 +23,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code (AI assistant internal files)
+.claude/
+CLAUDE.md
+
+# Documents (not code)
+*.docx
+*.doc
+*.pdf
+
+# Sensitive files
+wp-config*.php
+*.sql
