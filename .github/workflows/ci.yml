@@ -106,6 +106,8 @@ jobs:
           pip install requests
 
       - name: Build frontend
+        env:
+          VITE_API_URL: https://chronosbackend.healthcodeanalysis.com/graphql
         run: npm run build
 
       - name: Deploy backend plugins + frontend via cPanel API
