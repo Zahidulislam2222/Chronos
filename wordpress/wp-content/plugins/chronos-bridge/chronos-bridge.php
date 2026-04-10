@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Chronos Bridge
  * Plugin URI:  https://github.com/Zahidulislam2222/Chronos
- * Description: Custom bridge plugin for Chronos luxury watch e-commerce — REST API, CPT, GraphQL mutations, admin settings, caching, and cron.
- * Version:     2.0.0
+ * Description: Custom bridge plugin for Chronos luxury watch e-commerce — REST API, CPT, GraphQL mutations, admin settings, caching, and cron. CI/CD verified.
+ * Version:     2.1.0
  * Author:      Zahidul Islam
  * Author URI:  https://github.com/Zahidulislam2222
  * License:     GPL-2.0-or-later
