@@ -16,7 +16,6 @@ import {
 const navLinks = [
   { name: 'Home', path: '/' },
   { name: 'Shop', path: '/shop' },
-  { name: 'Collections', path: '/shop?featured=true' },
   { name: 'Journal', path: '/blog' },
   { name: 'About', path: '/about' },
   { name: 'Contact', path: '/contact' },
