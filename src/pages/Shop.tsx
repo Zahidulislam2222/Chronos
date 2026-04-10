@@ -1,20 +1,21 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import SEOHead from '@/components/SEOHead';
 import ProductCard from '@/components/ProductCard';
-// import { mockProducts, mockCategories } from '@/lib/mockData'; // REMOVED
-import { fetchProducts } from '@/utils/api';      // ADDED
-import { Product } from '@/lib/mockData';          // ADDED Type
+import { fetchProducts } from '@/utils/api';
+import { Product } from '@/lib/mockData';
 import { Button } from '@/components/ui/button';
 import { SlidersHorizontal, X } from 'lucide-react';
 
 const Shop = () => {
-  // --- DATA & LOADING STATE (NEW) ---
+  const [searchParams] = useSearchParams();
+  const isCollections = searchParams.get('featured') === 'true';
+
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // --- YOUR EXISTING STATE (UNCHANGED) ---
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
@@ -37,9 +38,14 @@ const Shop = () => {
 
   // --- YOUR FILTER/SORT LOGIC (MODIFIED TO USE API DATA) ---
   const filteredProducts = useMemo(() => {
-    let products = [...allProducts]; // USE REAL DATA INSTEAD OF MOCK
+    let products = [...allProducts];
 
-    // Filter by category (Your logic is perfect, no change needed)
+    // Filter by featured if on Collections page
+    if (isCollections) {
+      products = products.filter((p) => p.featured);
+    }
+
+    // Filter by category
     if (selectedCategory !== 'all') {
       products = products.filter(
         (p) => p.category.toLowerCase() === selectedCategory.toLowerCase()
@@ -63,7 +69,7 @@ const Shop = () => {
     }
 
     return products;
-  }, [allProducts, selectedCategory, sortBy]);
+  }, [allProducts, selectedCategory, sortBy, isCollections]);
 
   // --- DYNAMICALLY CREATE CATEGORIES FROM REAL PRODUCTS (NEW) ---
   const categories = useMemo(() => {
@@ -101,10 +107,12 @@ const Shop = () => {
   return (
     <Layout>
       <SEOHead
-        title="Shop"
-        description="Browse our curated collection of luxury timepieces from world-renowned brands."
+        title={isCollections ? "Collections" : "Shop"}
+        description={isCollections
+          ? "Our featured luxury timepieces — handpicked signature pieces from the Chronos collection."
+          : "Browse our curated collection of luxury timepieces from world-renowned brands."
+        }
       />
-      {/* Hero (UNCHANGED) */}
       <section className="py-24 bg-card">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
@@ -113,13 +121,16 @@ const Shop = () => {
             className="text-center"
           >
             <span className="text-primary tracking-[0.3em] uppercase text-sm mb-4 block">
-              Our Collection
+              {isCollections ? 'Featured Selection' : 'Our Collection'}
             </span>
             <h1 className="font-display text-5xl md:text-6xl mb-6">
-              Timepieces
+              {isCollections ? 'Signature Pieces' : 'Timepieces'}
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Explore our curated selection of exceptional watches, each crafted with precision and passion.
+              {isCollections
+                ? 'Handpicked masterpieces that define the art of watchmaking — our most coveted timepieces.'
+                : 'Explore our curated selection of exceptional watches, each crafted with precision and passion.'
+              }
             </p>
           </motion.div>
         </div>
@@ -150,6 +161,7 @@ const Shop = () => {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="bg-secondary border border-border rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
+                <option value="all">All</option>
                 <option value="featured">Featured</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
