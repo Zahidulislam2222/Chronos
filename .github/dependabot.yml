@@ -1,0 +1,38 @@
+version: 2
+updates:
+  # React + Vite frontend (root package.json)
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    reviewers:
+      - Zahidulislam2222
+    labels:
+      - dependencies
+    open-pull-requests-limit: 5
+
+  # Gutenberg blocks plugin
+  - package-ecosystem: npm
+    directory: "/wordpress/wp-content/plugins/chronos-blocks"
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+    open-pull-requests-limit: 3
+
+  # PHP plugin (Stripe, PHPUnit, PHPCS)
+  - package-ecosystem: composer
+    directory: "/wordpress/wp-content/plugins/chronos-bridge"
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+    open-pull-requests-limit: 3
+
+  # GitHub Actions versions
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    labels:
+      - ci

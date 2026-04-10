@@ -10,6 +10,8 @@ dist-ssr/
 # ─── Environment & Secrets ────────────────────────────────────────
 .env
 .env.*
+!.env.example
+!.env.docker.example
 *.local
 wp-config*.php
 *.sql

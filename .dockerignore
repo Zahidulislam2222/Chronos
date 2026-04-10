@@ -1,0 +1,17 @@
+.git
+.github
+.claude
+node_modules
+dist
+vendor
+.phpunit.cache
+*.docx
+*.doc
+*.pdf
+*.xlsx
+*.sql
+.env
+.env.*
+BUILD_PLAN.md
+CLAUDE.md
+wordpress/wp-content/uploads

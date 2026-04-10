@@ -1,0 +1,73 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1' # Weekly Monday 6am UTC
+
+permissions:
+  contents: read
+  security-events: write # Required for CodeQL
+
+jobs:
+  # ── npm vulnerability audit ────────────────────────────────────
+  npm-audit:
+    name: npm audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Audit root dependencies
+        run: npm audit --audit-level=high || true
+
+      - name: Audit blocks dependencies
+        working-directory: wordpress/wp-content/plugins/chronos-blocks
+        run: npm audit --audit-level=high || true
+
+  # ── Composer vulnerability audit ───────────────────────────────
+  composer-audit:
+    name: composer audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP 8.1
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+
+      - name: Install dependencies
+        working-directory: wordpress/wp-content/plugins/chronos-bridge
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Audit dependencies
+        working-directory: wordpress/wp-content/plugins/chronos-bridge
+        run: composer audit
+
+  # ── CodeQL SAST (JavaScript/TypeScript) ────────────────────────
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
