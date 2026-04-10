@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write # Required for CodeQL
 
 jobs:
   # ── npm vulnerability audit ────────────────────────────────────
@@ -52,23 +51,6 @@ jobs:
         working-directory: wordpress/wp-content/plugins/chronos-bridge
         run: composer audit
 
-  # ── CodeQL SAST (JavaScript/TypeScript) ────────────────────────
-  codeql:
-    name: CodeQL Analysis
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript-typescript
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+  # CodeQL SAST requires GitHub Advanced Security (paid) for private repos.
+  # Enable it if you upgrade: uncomment the codeql job below.
+  # For now, npm audit + composer audit + Dependabot cover dependency scanning.
