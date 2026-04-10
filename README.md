@@ -51,7 +51,7 @@ A decoupled architecture where a React SPA frontend communicates with a WordPres
 | **Backend** | WordPress 7.0, WooCommerce, PHP 8.1+ | Headless CMS, product management, order processing |
 | **API** | WPGraphQL, REST API (custom) | Product queries, checkout, payments, AI features |
 | **Database** | MySQL 8.0 | WooCommerce data + custom contact submissions table |
-| **DevOps** | Docker, GitHub Actions, Vercel, cPanel API | CI/CD with auto-deploy, dependency scanning |
+| **DevOps** | Docker, GitHub Actions, cPanel API | CI/CD with auto-deploy (backend + frontend), dependency scanning |
 
 ---
 
@@ -237,7 +237,7 @@ Deploy to Production
 - cPanel API token stored as GitHub Secret
 - No hardcoded credentials in any tracked file
 - Dependabot scans dependencies weekly
-- Security headers on Vercel (CSP, HSTS, X-Frame-Options)
+- Security headers (CSP, HSTS, X-Frame-Options)
 
 **Manual deploy** (optional): Run the "Deploy to Production" workflow manually from GitHub Actions with a dry-run option.
 
@@ -251,7 +251,7 @@ Deploy to Production
 | **Backend** | PHP 8.1+, WordPress 7.0, WooCommerce, WPGraphQL, Stripe PHP SDK |
 | **Database** | MySQL 8.0, custom tables via dbDelta |
 | **Testing** | PHPUnit, Jest, PHPCS (WordPress standards) |
-| **DevOps** | Docker, GitHub Actions, Vercel, cPanel |
+| **DevOps** | Docker, GitHub Actions, cPanel API |
 | **Security** | JWT auth, nonces, prepared statements, webhook signatures, CORS, CSP headers |
 
 ---
