@@ -5,7 +5,10 @@
   <img src="https://img.shields.io/badge/PHP-8.1+-777BB4?style=flat-square&logo=php" alt="PHP 8.1+" />
   <img src="https://img.shields.io/badge/WooCommerce-10.6-96588A?style=flat-square&logo=woocommerce" alt="WooCommerce" />
   <img src="https://img.shields.io/badge/Stripe-Integrated-635BFF?style=flat-square&logo=stripe" alt="Stripe" />
-  <img src="https://img.shields.io/badge/License-GPL--2.0-green?style=flat-square" alt="License" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
+  <img src="https://img.shields.io/badge/CI-Passing-brightgreen?style=flat-square&logo=github-actions" alt="CI" />
+  <img src="https://img.shields.io/badge/Deploy-cPanel_API-blue?style=flat-square" alt="Deploy" />
+  <img src="https://img.shields.io/badge/Security-Dependabot-brightgreen?style=flat-square&logo=dependabot" alt="Dependabot" />
 </p>
 
 # Chronos
@@ -48,7 +51,7 @@ A decoupled architecture where a React SPA frontend communicates with a WordPres
 | **Backend** | WordPress 7.0, WooCommerce, PHP 8.1+ | Headless CMS, product management, order processing |
 | **API** | WPGraphQL, REST API (custom) | Product queries, checkout, payments, AI features |
 | **Database** | MySQL 8.0 | WooCommerce data + custom contact submissions table |
-| **DevOps** | Docker, GitHub Actions, Vercel, cPanel | Local dev, CI/CD, deployment |
+| **DevOps** | Docker, GitHub Actions, Vercel, cPanel API | CI/CD with auto-deploy, dependency scanning |
 
 ---
 
@@ -56,7 +59,7 @@ A decoupled architecture where a React SPA frontend communicates with a WordPres
 
 ### Custom Plugins
 
-**chronos-bridge** (v2.0.0) — 22+ OOP PHP 8+ classes with Composer PSR-4 autoloading
+**chronos-bridge** (v2.1.0) — 22+ OOP PHP 8+ classes with Composer PSR-4 autoloading
 
 | Module | What it does |
 |--------|-------------|
@@ -83,12 +86,13 @@ A decoupled architecture where a React SPA frontend communicates with a WordPres
 
 ### Frontend Highlights
 
-- **Code splitting** — 9 lazy-loaded routes via `React.lazy`
+- **Code splitting** — 11 routes (9 lazy-loaded) via `React.lazy`
 - **SEO** — react-helmet-async (OG, Twitter Card, JSON-LD)
 - **Payments** — Real Stripe Checkout redirect flow
 - **Auth** — JWT stateless authentication
 - **A11y** — WCAG 2.1 AA (skip-to-content, ARIA landmarks, focus management)
-- **GDPR** — Cookie consent banner
+- **GDPR** — Cookie consent with `getCookieConsent()` guard
+- **Legal** — Privacy Policy, Terms of Service pages
 
 ### WordPress 7.0 AI Integration
 
@@ -210,30 +214,32 @@ npm run build
 
 **Frontend** deploys to Vercel automatically on push (connected via Vercel dashboard).
 
-**Backend** deploys via cPanel Git Version Control (passwordless — no credentials in CI):
+**Backend** deploys via CI/CD pipeline (GitHub Actions → cPanel API):
 
-1. In cPanel, go to **Git Version Control** > Create > clone this repo
-2. Create `~/deploy-chronos.sh` on the server (one-time setup):
-
-```bash
-#!/bin/bash
-# deploy-chronos.sh — cPanel deployment script
-# Place in your home directory: ~/deploy-chronos.sh
-
-PLUGIN_PATH="$HOME/YOUR_DOMAIN/wp-content/plugins"
-REPO_PATH="$HOME/repositories/chronos"
-
-# Deploy custom plugins
-cp -R "$REPO_PATH/wordpress/wp-content/plugins/chronos-bridge" "$PLUGIN_PATH/"
-cp -R "$REPO_PATH/wordpress/wp-content/plugins/chronos-blocks" "$PLUGIN_PATH/"
-cp -R "$REPO_PATH/wordpress/wp-content/plugins/wp-graphql-cors-master" "$PLUGIN_PATH/"
-
-echo "Deployed at $(date)"
+```
+Push to main
+    │
+    ▼
+GitHub Actions CI Pipeline
+    ├── PHP Tests (PHPCS + PHPUnit)
+    ├── Blocks Build & Tests (Jest)
+    ├── Frontend Build (Vite)
+    │
+    ▼ (all pass)
+Deploy to Production
+    ├── ci-deploy.py triggers cPanel Git pull via API
+    ├── cPanel runs .cpanel.yml → scripts/deploy.sh
+    └── Plugins copied to live WordPress
 ```
 
-3. To deploy: cPanel > Git Version Control > **Update from Remote** > **Deploy HEAD Commit**
+**Security:**
+- Private repo with SSH deploy key (no passwords)
+- cPanel API token stored as GitHub Secret
+- No hardcoded credentials in any tracked file
+- Dependabot scans dependencies weekly
+- Security headers on Vercel (CSP, HSTS, X-Frame-Options)
 
-No passwords stored anywhere. The `.cpanel.yml` in the repo calls this server-side script.
+**Manual deploy** (optional): Run the "Deploy to Production" workflow manually from GitHub Actions with a dry-run option.
 
 ---
 
@@ -246,7 +252,7 @@ No passwords stored anywhere. The `.cpanel.yml` in the repo calls this server-si
 | **Database** | MySQL 8.0, custom tables via dbDelta |
 | **Testing** | PHPUnit, Jest, PHPCS (WordPress standards) |
 | **DevOps** | Docker, GitHub Actions, Vercel, cPanel |
-| **Security** | JWT auth, nonces, prepared statements, webhook signatures, CORS |
+| **Security** | JWT auth, nonces, prepared statements, webhook signatures, CORS, CSP headers |
 
 ---
 
@@ -290,8 +296,15 @@ chronos/
 │           ├── build/            # Compiled blocks
 │           ├── tests/            # Jest tests
 │           └── package.json
+├── scripts/
+│   ├── deploy.sh                 # cPanel deployment (called by .cpanel.yml)
+│   └── ci-deploy.py              # CI triggers cPanel Git pull + deploy via API
 └── .github/
-    ├── workflows/ci.yml          # CI/CD pipeline
+    ├── workflows/
+    │   ├── ci.yml                # CI pipeline (test + deploy)
+    │   ├── security.yml          # npm audit + composer audit
+    │   └── deploy.yml            # Manual deploy with dry-run
+    ├── dependabot.yml            # Weekly dependency scanning
     └── PULL_REQUEST_TEMPLATE.md
 ```
 
@@ -299,7 +312,7 @@ chronos/
 
 ## License
 
-GPL-2.0-or-later
+MIT — see [LICENSE](LICENSE)
 
 ---
 

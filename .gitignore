@@ -25,6 +25,7 @@ BUILD_PLAN.md
 
 # ─── Documents ────────────────────────────────────────────────────
 *.docx
+!Chronos.docx
 *.doc
 *.pdf
 *.xlsx
