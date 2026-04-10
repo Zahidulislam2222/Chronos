@@ -1,5 +1,8 @@
-// Mock data structure mimicking WordPress GraphQL responses
+// Mock data structure mimicking WordPress GraphQL responses.
 // Replace with actual API calls using import.meta.env.VITE_API_URL
+//
+// Images sourced from Unsplash (https://unsplash.com/license) — free for commercial use.
+// Attribution provided in the Privacy Policy page.
 
 export interface Product {
   id: string;

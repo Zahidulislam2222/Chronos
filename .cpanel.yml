@@ -1,7 +1,4 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/mehzsolu/chronosbackend.healthcodeanalysis.com/wp-content/plugins
-    - /bin/cp -R wordpress/wp-content/plugins/chronos-bridge $DEPLOYPATH/
-    - /bin/cp -R wordpress/wp-content/plugins/chronos-blocks $DEPLOYPATH/
-    - /bin/cp -R wordpress/wp-content/plugins/wp-graphql-cors-master $DEPLOYPATH/
+    - /bin/bash scripts/deploy.sh

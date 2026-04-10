@@ -1,6 +1,7 @@
 import { Product, BlogPost } from '@/lib/mockData';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
+// Unsplash license: https://unsplash.com/license — free for commercial use
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=800';
 
 // --- QUERIES & MUTATIONS ---

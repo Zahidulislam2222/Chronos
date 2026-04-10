@@ -95,9 +95,9 @@ const Footer = () => {
             © {new Date().getFullYear()} Chronos Timepieces. All rights reserved.
           </p>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link to="/about" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-            <Link to="/about" className="hover:text-foreground transition-colors">Terms of Service</Link>
-            <Link to="/about" className="hover:text-foreground transition-colors">Cookie Policy</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Cookie Policy</Link>
           </div>
         </div>
       </div>
