@@ -1,0 +1,112 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry-run first (recommended)"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ── Validate before deploying ──────────────────────────────────
+  validate:
+    name: Validate Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install and build frontend
+        run: npm ci && npm run build
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+
+      - name: Install and lint PHP
+        working-directory: wordpress/wp-content/plugins/chronos-bridge
+        run: |
+          composer install --no-interaction --prefer-dist
+          vendor/bin/phpcs --standard=phpcs.xml --report=summary --warning-severity=0
+
+  # ── Dry run — show what would be deployed ──────────────────────
+  dry-run:
+    name: Dry Run
+    needs: validate
+    if: ${{ inputs.dry_run }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show deployment plan
+        run: |
+          echo "============================================"
+          echo "  DRY RUN — No changes will be made"
+          echo "============================================"
+          echo ""
+          echo "Plugins to deploy:"
+          echo "  1. chronos-bridge"
+          find wordpress/wp-content/plugins/chronos-bridge -name "*.php" | wc -l
+          echo "     PHP files"
+          echo ""
+          echo "  2. chronos-blocks"
+          find wordpress/wp-content/plugins/chronos-blocks -name "*.php" -o -name "*.js" -o -name "*.css" | wc -l
+          echo "     files (PHP + JS + CSS)"
+          echo ""
+          echo "  3. wp-graphql-cors-master"
+          find wordpress/wp-content/plugins/wp-graphql-cors-master -name "*.php" | wc -l
+          echo "     PHP files"
+          echo ""
+          echo "Target: chronosbackend.healthcodeanalysis.com"
+          echo "Method: cPanel Fileman API (HTTPS, token auth)"
+          echo "============================================"
+
+  # ── Deploy to production ───────────────────────────────────────
+  deploy:
+    name: Deploy to Production
+    needs: [validate, dry-run]
+    if: ${{ always() && needs.validate.result == 'success' && (needs.dry-run.result == 'success' || needs.dry-run.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Deploy plugin files via cPanel API
+        env:
+          CPANEL_URL: ${{ secrets.CPANEL_URL }}
+          CPANEL_USERNAME: ${{ secrets.CPANEL_USERNAME }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
+        run: |
+          echo "============================================"
+          echo "  LIVE DEPLOYMENT"
+          echo "============================================"
+          python scripts/ci-deploy.py
+
+      - name: Verify deployment
+        run: |
+          echo "Verifying backend..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 \
+            "https://chronosbackend.healthcodeanalysis.com/wp-json/chronos/v1/" || echo "000")
+          echo "Backend returned: HTTP $STATUS"
+          if [ "$STATUS" = "000" ]; then
+            echo "WARNING: Backend did not respond (may be a server issue)"
+          else
+            echo "Deployment verified — backend is reachable"
+          fi

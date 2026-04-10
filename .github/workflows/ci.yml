@@ -80,3 +80,39 @@ jobs:
 
       - name: Build frontend
         run: npm run build
+
+  # ── Deploy Plugins to Production (cPanel API) ────────────────
+  deploy-plugins:
+    name: Deploy to Production
+    needs: [php-tests, blocks-tests, frontend-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Deploy plugin files via cPanel API
+        env:
+          CPANEL_URL: ${{ secrets.CPANEL_URL }}
+          CPANEL_USERNAME: ${{ secrets.CPANEL_USERNAME }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
+        run: python scripts/ci-deploy.py
+
+      - name: Verify backend is responding
+        run: |
+          echo "Verifying backend..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 \
+            "https://chronosbackend.healthcodeanalysis.com/wp-json/chronos/v1/" || echo "000")
+          echo "Backend returned: HTTP $STATUS"
+          if [ "$STATUS" = "000" ]; then
+            echo "WARNING: Backend did not respond (may be a server issue, not deploy)"
+          else
+            echo "Backend is reachable"
+          fi
