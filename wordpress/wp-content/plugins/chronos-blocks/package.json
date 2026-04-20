@@ -12,7 +12,7 @@
 		"format": "wp-scripts format src/"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^30.0.0"
+		"@wordpress/scripts": "^31.8.0"
 	},
 	"dependencies": {
 		"@wordpress/api-fetch": "^7.0.0",
