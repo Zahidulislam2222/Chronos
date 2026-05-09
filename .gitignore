@@ -27,7 +27,6 @@ CREDENTIALS.md
 
 # ─── Documents ────────────────────────────────────────────────────
 *.docx
-!Chronos.docx
 *.doc
 *.pdf
 *.xlsx
@@ -56,6 +55,10 @@ Thumbs.db
 # ─── WordPress — uploads/media (too large for Git) ───────────────
 wordpress/wp-content/uploads/
 
+# ─── Misc root files (not needed in repo) ────────────────────────
+bun.lockb
+vercel.json
+
 # ─── WordPress — third-party plugins (install via WP-CLI) ────────
 wordpress/wp-content/plugins/woocommerce/
 wordpress/wp-content/plugins/advanced-custom-fields/
@@ -68,6 +71,11 @@ wordpress/wp-content/plugins/index.php
 wordpress/wp-content/plugins/google-listings-and-ads/
 wordpress/wp-content/plugins/pinterest-for-woocommerce/
 wordpress/wp-content/plugins/woocommerce-paypal-payments/
+wordpress/wp-content/plugins/wpgraphql-acf/
+wordpress/wp-content/plugins/wp-graphql-jwt-authentication-0.7.0/
+wordpress/wp-content/plugins/wp-graphql-woocommerce-v0.19.0/
+wordpress/wp-content/plugins/headless-mode/
+wordpress/wp-content/plugins/chronos-hello/
 
 # ─── WordPress — default themes ──────────────────────────────────
 wordpress/wp-content/themes/twentytwentythree/
