@@ -149,23 +149,32 @@ jobs:
           chmod 600 ~/.ssh/chronos_gcp
           ssh-keyscan -H ${{ secrets.GCP_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Prepare plugin directories
+        env:
+          GCP_HOST: ${{ secrets.GCP_HOST }}
+        run: |
+          ssh -i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no ubuntu@${GCP_HOST} \
+            "sudo chown -R ubuntu:ubuntu \
+              /var/www/chronos/wp-content/plugins/chronos-bridge \
+              /var/www/chronos/wp-content/plugins/chronos-blocks \
+              /var/www/chronos/wp-content/plugins/wp-graphql-cors-master"
+
       - name: Sync custom plugins to GCP
         env:
           GCP_HOST: ${{ secrets.GCP_HOST }}
         run: |
           WP_PLUGINS="ubuntu@${GCP_HOST}:/var/www/chronos/wp-content/plugins"
           SSH_OPT="-i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no"
-          RSYNC="rsync -az --no-perms --no-group --no-owner --delete --exclude=vendor/ -e \"ssh ${SSH_OPT}\""
 
-          eval "$RSYNC" \
+          rsync -rltz --delete --exclude=vendor/ -e "ssh ${SSH_OPT}" \
             wordpress/wp-content/plugins/chronos-bridge/ \
             ${WP_PLUGINS}/chronos-bridge/
 
-          eval "$RSYNC" \
+          rsync -rltz --delete --exclude=vendor/ -e "ssh ${SSH_OPT}" \
             wordpress/wp-content/plugins/chronos-blocks/ \
             ${WP_PLUGINS}/chronos-blocks/
 
-          eval "$RSYNC" \
+          rsync -rltz --delete --exclude=vendor/ -e "ssh ${SSH_OPT}" \
             wordpress/wp-content/plugins/wp-graphql-cors-master/ \
             ${WP_PLUGINS}/wp-graphql-cors-master/
 
