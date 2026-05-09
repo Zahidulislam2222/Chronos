@@ -22,6 +22,8 @@ CLAUDE.md
 
 # ─── Internal Planning (not for public repo) ─────────────────────
 BUILD_PLAN.md
+GCP_MIGRATION.md
+CREDENTIALS.md
 
 # ─── Documents ────────────────────────────────────────────────────
 *.docx

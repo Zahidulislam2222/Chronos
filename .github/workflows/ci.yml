@@ -81,11 +81,14 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-  # ── Deploy to Production (cPanel API) ───────────────────────
-  deploy:
-    name: Deploy to Production
+  # ── Deploy to Production — cPanel API (LEGACY / PROOF OF WORK) ──
+  # This job was the original AridHost cPanel deployment pipeline.
+  # Kept intact as a portfolio artifact showing cPanel API integration.
+  # Muted with if: false — AridHost hosting expired 2026-05.
+  deploy-cpanel-legacy:
+    name: Deploy via cPanel (Legacy — Muted)
     needs: [php-tests, blocks-tests, frontend-build]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: false
     runs-on: ubuntu-latest
 
     steps:
@@ -128,3 +131,105 @@ jobs:
           FSTATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 \
             "https://chronos.healthcodeanalysis.com/" || echo "000")
           echo "Frontend: HTTP $FSTATUS"
+
+  # ── Deploy Backend Plugins to GCP (SSH + rsync) ──────────────────
+  deploy-gcp:
+    name: Deploy Backend to GCP
+    needs: [php-tests, blocks-tests, frontend-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/chronos_gcp
+          chmod 600 ~/.ssh/chronos_gcp
+          ssh-keyscan -H ${{ secrets.GCP_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Sync custom plugins to GCP
+        env:
+          GCP_HOST: ${{ secrets.GCP_HOST }}
+        run: |
+          WP_PLUGINS="ubuntu@${GCP_HOST}:/var/www/chronos/wp-content/plugins"
+          SSH_OPT="-i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no"
+
+          rsync -az -e "ssh ${SSH_OPT}" --delete \
+            wordpress/wp-content/plugins/chronos-bridge/ \
+            ${WP_PLUGINS}/chronos-bridge/
+
+          rsync -az -e "ssh ${SSH_OPT}" --delete \
+            wordpress/wp-content/plugins/chronos-blocks/ \
+            ${WP_PLUGINS}/chronos-blocks/
+
+          rsync -az -e "ssh ${SSH_OPT}" --delete \
+            wordpress/wp-content/plugins/wp-graphql-cors-master/ \
+            ${WP_PLUGINS}/wp-graphql-cors-master/
+
+      - name: Fix permissions and flush cache
+        env:
+          GCP_HOST: ${{ secrets.GCP_HOST }}
+        run: |
+          ssh -i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no ubuntu@${GCP_HOST} \
+            "sudo chown -R www-data:www-data /var/www/chronos/wp-content/plugins \
+             && cd /var/www/chronos \
+             && wp cache flush --allow-root 2>/dev/null || true \
+             && wp rewrite flush --allow-root 2>/dev/null || true \
+             && echo 'GCP deploy complete.'"
+
+  # ── Deploy Frontend to Cloudflare Pages ──────────────────────────
+  deploy-frontend:
+    name: Deploy Frontend to Cloudflare Pages
+    needs: [php-tests, blocks-tests, frontend-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        env:
+          VITE_API_URL: https://chronosbackend.healthcodeanalysis.com/graphql
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler pages deploy dist --project-name chronos --branch main
+
+  # ── Verify Full Stack After Deploy ───────────────────────────────
+  verify:
+    name: Verify Deployment
+    needs: [deploy-gcp, deploy-frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check backend GraphQL
+        run: |
+          echo "Checking backend GraphQL..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 \
+            -X POST https://chronosbackend.healthcodeanalysis.com/graphql \
+            -H "Content-Type: application/json" \
+            -d '{"query":"{products{nodes{name}}}"}' || echo "000")
+          echo "GraphQL: HTTP $STATUS"
+          [ "$STATUS" = "200" ] || (echo "Backend check failed!" && exit 1)
+
+      - name: Check frontend
+        run: |
+          echo "Checking frontend..."
+          FSTATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 \
+            "https://chronos.healthcodeanalysis.com/" || echo "000")
+          echo "Frontend: HTTP $FSTATUS"
+          [ "$FSTATUS" = "200" ] || (echo "Frontend check failed!" && exit 1)
