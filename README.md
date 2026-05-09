@@ -3,11 +3,11 @@
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" alt="TypeScript" />
   <img src="https://img.shields.io/badge/WordPress-7.0-21759B?style=flat-square&logo=wordpress" alt="WordPress" />
   <img src="https://img.shields.io/badge/PHP-8.1+-777BB4?style=flat-square&logo=php" alt="PHP 8.1+" />
-  <img src="https://img.shields.io/badge/WooCommerce-10.6-96588A?style=flat-square&logo=woocommerce" alt="WooCommerce" />
+  <img src="https://img.shields.io/badge/WooCommerce-10.7-96588A?style=flat-square&logo=woocommerce" alt="WooCommerce" />
   <img src="https://img.shields.io/badge/Stripe-Integrated-635BFF?style=flat-square&logo=stripe" alt="Stripe" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
   <img src="https://img.shields.io/badge/CI-Passing-brightgreen?style=flat-square&logo=github-actions" alt="CI" />
-  <img src="https://img.shields.io/badge/Deploy-cPanel_API-blue?style=flat-square" alt="Deploy" />
+  <img src="https://img.shields.io/badge/Deploy-GCP_%2B_Cloudflare-blue?style=flat-square&logo=googlecloud" alt="Deploy" />
   <img src="https://img.shields.io/badge/Security-Dependabot-brightgreen?style=flat-square&logo=dependabot" alt="Dependabot" />
 </p>
 
@@ -37,11 +37,11 @@ A decoupled architecture where a React SPA frontend communicates with a WordPres
   │  Vite + TS       │                           │  WooCommerce         │
   │  Tailwind CSS    │                           │  WPGraphQL           │
   │                  │                           │                      │
-  │  Vercel          │                           │  cPanel / Docker     │
+  │  Cloudflare Pages│                           │  GCP e2-micro / Docker│
   └──────────────────┘                           └──────────┬───────────┘
                                                             │
                                                   ┌─────────┴─────────┐
-                                                  │    MySQL 8.0      │
+                                                  │    MySQL / MariaDB │
                                                   └───────────────────┘
 ```
 
@@ -50,8 +50,8 @@ A decoupled architecture where a React SPA frontend communicates with a WordPres
 | **Frontend** | React 18, TypeScript, Vite, Tailwind | SPA with code splitting, SEO meta tags, Stripe.js |
 | **Backend** | WordPress 7.0, WooCommerce, PHP 8.1+ | Headless CMS, product management, order processing |
 | **API** | WPGraphQL, REST API (custom) | Product queries, checkout, payments, AI features |
-| **Database** | MySQL 8.0 | WooCommerce data + custom contact submissions table |
-| **DevOps** | Docker, GitHub Actions, cPanel API | CI/CD with auto-deploy (backend + frontend), dependency scanning |
+| **Database** | MariaDB | WooCommerce data + custom contact submissions table |
+| **DevOps** | Docker, GitHub Actions, GCP + Cloudflare Pages | CI/CD with auto-deploy (backend + frontend), dependency scanning |
 
 ---
 
@@ -120,6 +120,7 @@ cd Chronos
 
 # Start WordPress backend
 cd wordpress
+cp .env.docker.example .env.docker   # edit if needed
 docker-compose up -d
 bash setup.sh          # Auto-installs WP + plugins
 bash sample-data.sh    # Imports 8 sample watches
@@ -133,11 +134,12 @@ npm install && npm run build
 cd ../../../..
 
 # Start React frontend
+cp .env.example .env.local   # set VITE_API_URL=http://localhost:8888/graphql
 npm install
 npm run dev
 ```
 
-### URLs
+### Local URLs
 
 | Service | URL |
 |---------|-----|
@@ -147,7 +149,7 @@ npm run dev
 | GraphQL | http://localhost:8888/graphql |
 | phpMyAdmin | http://localhost:8081 |
 
-Admin login: `admin` / `admin`
+Local admin credentials are set by `setup.sh` (see `wordpress/setup.sh`).
 
 ---
 
@@ -212,9 +214,9 @@ npm run build
 
 ## Deployment
 
-**Frontend** deploys to Vercel automatically on push (connected via Vercel dashboard).
+**Frontend** deploys to [Cloudflare Pages](https://pages.cloudflare.com) automatically on push to `main`.
 
-**Backend** deploys via CI/CD pipeline (GitHub Actions → cPanel API):
+**Backend** deploys via CI/CD pipeline (GitHub Actions → GCP via SSH + rsync):
 
 ```
 Push to main
@@ -226,20 +228,39 @@ GitHub Actions CI Pipeline
     ├── Frontend Build (Vite)
     │
     ▼ (all pass)
-Deploy to Production
-    ├── ci-deploy.py triggers cPanel Git pull via API
-    ├── cPanel runs .cpanel.yml → scripts/deploy.sh
-    └── Plugins copied to live WordPress
+deploy-gcp          → SSH + rsync custom plugins to GCP e2-micro
+deploy-frontend     → wrangler pages deploy dist/ to Cloudflare Pages
+verify              → Health-check GraphQL + frontend URLs
 ```
 
 **Security:**
-- Private repo with SSH deploy key (no passwords)
-- cPanel API token stored as GitHub Secret
+- Private repo with SSH deploy key (no passwords in CI)
+- All secrets stored as GitHub Actions Secrets
 - No hardcoded credentials in any tracked file
 - Dependabot scans dependencies weekly
+- Let's Encrypt SSL (auto-renews)
 - Security headers (CSP, HSTS, X-Frame-Options)
 
+**Required GitHub Secrets:**
+
+| Secret | Purpose |
+|--------|---------|
+| `GCP_SSH_PRIVATE_KEY` | SSH key for GCP server |
+| `GCP_HOST` | GCP server IP |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare Pages deploy token |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account identifier |
+
 **Manual deploy** (optional): Run the "Deploy to Production" workflow manually from GitHub Actions with a dry-run option.
+
+### Previous Infrastructure — cPanel (Preserved as Portfolio Reference)
+
+The original deployment used AridHost cPanel with a full cPanel API integration pipeline. That code is **intentionally preserved** in `scripts/ci-deploy.py`, `scripts/deploy.sh`, and the `deploy-cpanel-legacy` job in `ci.yml` (muted with `if: false`). It demonstrates:
+
+- cPanel UAPI integration (Git pull trigger, Fileman API for file upload)
+- SSH deploy key workflow without passwords
+- Custom Python CI orchestration script
+
+The cPanel infrastructure is no longer active (hosting expired), but the implementation is kept intact as a reference and proof of prior work.
 
 ---
 
@@ -249,9 +270,9 @@ Deploy to Production
 |----------|-------------|
 | **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Framer Motion, react-helmet-async |
 | **Backend** | PHP 8.1+, WordPress 7.0, WooCommerce, WPGraphQL, Stripe PHP SDK |
-| **Database** | MySQL 8.0, custom tables via dbDelta |
+| **Database** | MariaDB, custom tables via dbDelta |
 | **Testing** | PHPUnit, Jest, PHPCS (WordPress standards) |
-| **DevOps** | Docker, GitHub Actions, cPanel API |
+| **DevOps** | Docker, GitHub Actions, GCP e2-micro, Cloudflare Pages |
 | **Security** | JWT auth, nonces, prepared statements, webhook signatures, CORS, CSP headers |
 
 ---
@@ -297,11 +318,15 @@ chronos/
 │           ├── tests/            # Jest tests
 │           └── package.json
 ├── scripts/
-│   ├── deploy.sh                 # cPanel deployment (called by .cpanel.yml)
-│   └── ci-deploy.py              # CI triggers cPanel Git pull + deploy via API
+│   ├── gcp-deploy.sh             # CI: rsync plugins to GCP via SSH
+│   ├── gcp-setup.sh              # Reference: full GCP server setup
+│   ├── nginx-chronos.conf        # Nginx virtual host config reference
+│   ├── prepare-db.py             # DB migration: URL replacement script
+│   ├── deploy.sh                 # Legacy: cPanel deployment (proof of work)
+│   └── ci-deploy.py              # Legacy: cPanel API deploy (proof of work)
 └── .github/
     ├── workflows/
-    │   ├── ci.yml                # CI pipeline (test + deploy)
+    │   ├── ci.yml                # CI pipeline (test → deploy to GCP + Cloudflare Pages)
     │   ├── security.yml          # npm audit + composer audit
     │   └── deploy.yml            # Manual deploy with dry-run
     ├── dependabot.yml            # Weekly dependency scanning
