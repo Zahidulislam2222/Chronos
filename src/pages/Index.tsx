@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import SEOHead from '@/components/SEOHead';
 import Hero from '@/components/Hero';
@@ -5,9 +6,18 @@ import FeaturedProducts from '@/components/FeaturedProducts';
 import ValueProposition from '@/components/ValueProposition';
 import BlogPreview from '@/components/BlogPreview';
 import Newsletter from '@/components/Newsletter';
-import { mockProducts, mockBlogPosts } from '@/lib/mockData';
+import { fetchProducts, fetchPosts } from '@/utils/api';
+import { Product, BlogPost } from '@/lib/mockData';
 
 const Index = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+
+  useEffect(() => {
+    fetchProducts().then(setProducts).catch(console.error);
+    fetchPosts().then(setPosts).catch(console.error);
+  }, []);
+
   return (
     <Layout>
       <SEOHead
@@ -15,8 +25,8 @@ const Index = () => {
       />
       <Hero />
       <ValueProposition />
-      <FeaturedProducts products={mockProducts} />
-      <BlogPreview posts={mockBlogPosts} />
+      <FeaturedProducts products={products} />
+      <BlogPreview posts={posts} />
       <Newsletter />
     </Layout>
   );
