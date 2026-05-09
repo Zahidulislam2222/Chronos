@@ -2,7 +2,7 @@ name: Weekly Backup
 
 on:
   schedule:
-    - cron: '0 2 * * 0' # Weekly Sunday 2am UTC
+    - cron: '0 6 * * 1' # Weekly Monday 6am UTC (same as security)
   workflow_dispatch:
 
 permissions:
