@@ -155,16 +155,17 @@ jobs:
         run: |
           WP_PLUGINS="ubuntu@${GCP_HOST}:/var/www/chronos/wp-content/plugins"
           SSH_OPT="-i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no"
+          RSYNC="rsync -az --no-perms --no-group --no-owner --delete --exclude=vendor/ -e \"ssh ${SSH_OPT}\""
 
-          rsync -az -e "ssh ${SSH_OPT}" --delete \
+          eval "$RSYNC" \
             wordpress/wp-content/plugins/chronos-bridge/ \
             ${WP_PLUGINS}/chronos-bridge/
 
-          rsync -az -e "ssh ${SSH_OPT}" --delete \
+          eval "$RSYNC" \
             wordpress/wp-content/plugins/chronos-blocks/ \
             ${WP_PLUGINS}/chronos-blocks/
 
-          rsync -az -e "ssh ${SSH_OPT}" --delete \
+          eval "$RSYNC" \
             wordpress/wp-content/plugins/wp-graphql-cors-master/ \
             ${WP_PLUGINS}/wp-graphql-cors-master/
 
@@ -202,31 +203,29 @@ jobs:
           VITE_API_URL: https://chronosbackend.healthcodeanalysis.com/graphql
         run: npm run build
 
-      - name: Refresh Cloudflare token
+      - name: Restore Wrangler credentials
         env:
-          CF_REFRESH_TOKEN: ${{ secrets.CF_REFRESH_TOKEN }}
+          CF_WRANGLER_CONFIG: ${{ secrets.CF_WRANGLER_CONFIG }}
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          RESPONSE=$(curl -s -X POST "https://dash.cloudflare.com/oauth2/token" \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "grant_type=refresh_token&refresh_token=${CF_REFRESH_TOKEN}&client_id=54d11594-84e4-41aa-b438-e81b8fa78ee7")
-
-          ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token')
-          NEW_REFRESH=$(echo "$RESPONSE" | jq -r '.refresh_token')
-
-          if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "null" ]; then
-            echo "Token refresh failed: $RESPONSE" && exit 1
-          fi
-
-          echo "$NEW_REFRESH" | gh secret set CF_REFRESH_TOKEN --repo Zahidulislam2222/Chronos
-          echo "CF_ACCESS_TOKEN=$ACCESS_TOKEN" >> "$GITHUB_ENV"
+          mkdir -p ~/.config/.wrangler/config
+          printf '%s' "$CF_WRANGLER_CONFIG" > ~/.config/.wrangler/config/default.toml
 
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          CLOUDFLARE_API_TOKEN="$CF_ACCESS_TOKEN" \
-            npx wrangler pages deploy dist --project-name chronos --branch main
+          npx wrangler pages deploy dist --project-name chronos --branch main
+
+      - name: Rotate Wrangler credentials
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          CONFIG=~/.config/.wrangler/config/default.toml
+          if [ -f "$CONFIG" ] && grep -q "refresh_token" "$CONFIG"; then
+            cat "$CONFIG" | gh secret set CF_WRANGLER_CONFIG --repo Zahidulislam2222/Chronos
+          fi
 
   # ── Verify Full Stack After Deploy ───────────────────────────────
   verify:
