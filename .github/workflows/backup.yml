@@ -1,0 +1,76 @@
+name: Weekly Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * 0' # Weekly Sunday 2am UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Full WordPress Backup (DB + Uploads)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/chronos_gcp
+          chmod 600 ~/.ssh/chronos_gcp
+          ssh-keyscan -H ${{ secrets.GCP_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create backup on GCP server
+        env:
+          GCP_HOST: ${{ secrets.GCP_HOST }}
+        run: |
+          ssh -i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no ubuntu@${GCP_HOST} << 'ENDSSH'
+            set -e
+            BACKUP_DIR="/home/ubuntu/backups"
+            DATE=$(date +%Y-%m-%d)
+            mkdir -p "$BACKUP_DIR"
+
+            echo "--- Backing up database ---"
+            sudo wp db export "$BACKUP_DIR/db_${DATE}.sql" \
+              --path=/var/www/chronos --allow-root
+            gzip -f "$BACKUP_DIR/db_${DATE}.sql"
+
+            echo "--- Backing up uploads ---"
+            sudo tar -czf "$BACKUP_DIR/uploads_${DATE}.tar.gz" \
+              -C /var/www/chronos/wp-content uploads/
+
+            echo "--- Rotating: keeping 2 most recent backups ---"
+            ls -t "$BACKUP_DIR"/db_*.sql.gz 2>/dev/null | tail -n +3 | xargs -r rm -f
+            ls -t "$BACKUP_DIR"/uploads_*.tar.gz 2>/dev/null | tail -n +3 | xargs -r rm -f
+
+            echo "--- Current backups on server ---"
+            ls -lh "$BACKUP_DIR"/
+          ENDSSH
+
+      - name: Download backups to runner
+        env:
+          GCP_HOST: ${{ secrets.GCP_HOST }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          scp -i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no \
+            ubuntu@${GCP_HOST}:/home/ubuntu/backups/db_${DATE}.sql.gz \
+            ./chronos-db-${DATE}.sql.gz
+          scp -i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no \
+            ubuntu@${GCP_HOST}:/home/ubuntu/backups/uploads_${DATE}.tar.gz \
+            ./chronos-uploads-${DATE}.tar.gz
+
+      - name: Upload to GitHub Artifacts (off-server copy)
+        uses: actions/upload-artifact@v4
+        with:
+          name: chronos-backup-${{ github.run_number }}
+          path: |
+            chronos-db-*.sql.gz
+            chronos-uploads-*.tar.gz
+          retention-days: 14
+
+      - name: Verify backup sizes
+        run: |
+          echo "=== Backup uploaded to GitHub Artifacts ==="
+          ls -lh chronos-db-*.sql.gz chronos-uploads-*.tar.gz
+          echo "Retention: 14 days (2 weekly backups always available)"
