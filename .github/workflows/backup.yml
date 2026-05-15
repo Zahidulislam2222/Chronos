@@ -61,7 +61,7 @@ jobs:
             ./chronos-uploads-${DATE}.tar.gz
 
       - name: Upload to GitHub Artifacts (off-server copy)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chronos-backup-${{ github.run_number }}
           path: |
