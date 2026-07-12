@@ -143,7 +143,7 @@ Required GitHub Secrets for deploy:
 
 ## Production
 
-- **URL:** chronosbackend.healthcodeanalysis.com
-- **Hosting:** AridHost cPanel
+- **URL:** https://chronosbackend.35-222-94-93.sslip.io
+- **Hosting:** Google Cloud e2-micro VM (always-free tier) — nginx + PHP-FPM
 - **PHP:** 8.1+
-- **Database:** MySQL 8.0
+- **Database:** MariaDB

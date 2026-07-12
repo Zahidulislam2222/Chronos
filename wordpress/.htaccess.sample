@@ -39,7 +39,7 @@ RewriteRule . /index.php [L]
 
 # ─── CORS for Headless Frontend ──────────────────────────────────
 <IfModule mod_headers.c>
-    SetEnvIf Origin "^https?://(chronos\.healthcodeanalysis\.com|localhost:8080)$" CORS_ORIGIN=$0
+    SetEnvIf Origin "^https?://(chronos-vwg\.pages\.dev|localhost:8080)$" CORS_ORIGIN=$0
     Header set Access-Control-Allow-Origin "%{CORS_ORIGIN}e" env=CORS_ORIGIN
     Header set Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE"
     Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-WP-Nonce"

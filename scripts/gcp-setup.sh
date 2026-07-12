@@ -3,7 +3,7 @@
 # Runs on the GCP e2-micro instance to configure WordPress backend
 set -e
 
-DOMAIN="chronosbackend.healthcodeanalysis.com"
+DOMAIN="chronosbackend.35-222-94-93.sslip.io"
 DB_NAME="chronos_wp"
 DB_USER="chronos_user"
 DB_PASS="$(openssl rand -base64 24)"

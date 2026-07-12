@@ -12,7 +12,7 @@ OLD_URLS = [
     "http://localhost:8888",
     "http://localhost:8090",
 ]
-NEW_URL = "https://chronosbackend.healthcodeanalysis.com"
+NEW_URL = "https://chronosbackend.35-222-94-93.sslip.io"
 
 INPUT  = "wordpress/database-backup.sql"
 OUTPUT = "wordpress/database-backup-gcp.sql"

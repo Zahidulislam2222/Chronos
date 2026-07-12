@@ -1,9 +1,7 @@
 name: Security
 
 on:
-  schedule:
-    - cron: '0 6 * * 1' # Weekly Monday 6am UTC
-  workflow_dispatch: # Allow manual trigger if needed
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -13,6 +11,7 @@ jobs:
   npm-audit:
     name: npm audit
     runs-on: ubuntu-latest
+    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +30,7 @@ jobs:
   composer-audit:
     name: composer audit
     runs-on: ubuntu-latest
+    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@v4
 

@@ -24,6 +24,18 @@ CLAUDE.md
 BUILD_PLAN.md
 GCP_MIGRATION.md
 CREDENTIALS.md
+PROJECT-DOSSIER.md
+
+# ─── Private Evidence & Local Verification Artifacts ───────────────
+my-project-view/
+_live_before/
+_live_server/
+.local-deployment-manifests/
+playwright-report/
+test-results/
+coverage/
+wordpress/coverage/
+wordpress/wp-content/plugins/*/coverage/
 
 # ─── Documents ────────────────────────────────────────────────────
 *.docx

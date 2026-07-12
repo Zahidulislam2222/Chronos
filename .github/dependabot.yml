@@ -9,7 +9,8 @@ updates:
       - Zahidulislam2222
     labels:
       - dependencies
-    open-pull-requests-limit: 5
+    # Audit pause: retain configuration without opening version-update PRs.
+    open-pull-requests-limit: 0
 
   # Gutenberg blocks plugin
   - package-ecosystem: npm
@@ -18,7 +19,7 @@ updates:
       interval: weekly
     labels:
       - dependencies
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
 
   # PHP plugin (Stripe, PHPUnit, PHPCS)
   - package-ecosystem: composer
@@ -27,7 +28,7 @@ updates:
       interval: weekly
     labels:
       - dependencies
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
 
   # GitHub Actions versions
   - package-ecosystem: github-actions
@@ -36,3 +37,4 @@ updates:
       interval: weekly
     labels:
       - ci
+    open-pull-requests-limit: 0

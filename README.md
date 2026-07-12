@@ -18,7 +18,7 @@
 A decoupled architecture where a React SPA frontend communicates with a WordPress + WooCommerce backend via GraphQL and REST APIs. Built to demonstrate senior-level full-stack WordPress development.
 
 <p align="center">
-  <a href="https://chronos.healthcodeanalysis.com">Live Demo</a> &bull;
+  <a href="https://chronos-vwg.pages.dev">Live Demo</a> &bull;
   <a href="#architecture">Architecture</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#getting-started">Getting Started</a> &bull;
@@ -214,12 +214,12 @@ npm run build
 
 ## Deployment
 
-**Frontend** deploys to [Cloudflare Pages](https://pages.cloudflare.com) automatically on push to `main`.
+**Frontend** deploys to [Cloudflare Pages](https://pages.cloudflare.com) (`chronos-vwg.pages.dev`). Workflows are **manual and guarded** — they run only via `workflow_dispatch` and require the `CHRONOS_ACTIONS_ENABLED` repository variable to be `true`, so an ordinary push never deploys or changes infrastructure.
 
 **Backend** deploys via CI/CD pipeline (GitHub Actions → GCP via SSH + rsync):
 
 ```
-Push to main
+Manual dispatch (guarded by CHRONOS_ACTIONS_ENABLED)
     │
     ▼
 GitHub Actions CI Pipeline
@@ -247,8 +247,9 @@ verify              → Health-check GraphQL + frontend URLs
 |--------|---------|
 | `GCP_SSH_PRIVATE_KEY` | SSH key for GCP server |
 | `GCP_HOST` | GCP server IP |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare Pages deploy token |
+| `CF_WRANGLER_CONFIG` | Cloudflare Wrangler OAuth config (auto-rotated by CI) |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account identifier |
+| `GH_PAT` | GitHub PAT used by CI to rotate the Wrangler config |
 
 **Manual deploy** (optional): Run the "Deploy to Production" workflow manually from GitHub Actions with a dry-run option.
 

@@ -13,7 +13,7 @@ interface SEOHeadProps {
 
 const SITE_NAME = 'Chronos';
 const DEFAULT_DESCRIPTION = 'Luxury watches curated for the discerning collector. Explore our collection of fine timepieces from the world\'s most prestigious brands.';
-const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://chronos.healthcodeanalysis.com';
+const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://chronos-vwg.pages.dev';
 
 export default function SEOHead({
   title,

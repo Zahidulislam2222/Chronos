@@ -1,8 +1,6 @@
 name: Weekly Backup
 
 on:
-  schedule:
-    - cron: '0 6 * * 1' # Weekly Monday 6am UTC (same as security)
   workflow_dispatch:
 
 permissions:
@@ -12,6 +10,7 @@ jobs:
   backup:
     name: Full WordPress Backup (DB + Uploads)
     runs-on: ubuntu-latest
+    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' }}
 
     steps:
       - name: Configure SSH
