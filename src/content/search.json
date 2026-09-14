@@ -1,0 +1,89 @@
+{
+  "image": "/images/hero.webp",
+  "imageAlt": "AI-created Chronos watch concept",
+  "siteDescription": "Chronos is a luxury watch website design demo by Zahidul Islam. Explore original fictional timepieces, cinematic motion and an interactive concept catalogue. Nothing is for sale.",
+  "creator": {
+    "name": "Zahidul Islam",
+    "url": "https://github.com/Zahidulislam2222"
+  },
+  "routes": [
+    {
+      "path": "/",
+      "title": "Luxury Watch Website Design Demo",
+      "description": "Explore Chronos, a cinematic luxury watch website design demo. Original fictional timepieces, interactive galleries and motion design by Zahidul Islam.",
+      "index": true
+    },
+    {
+      "path": "/shop",
+      "title": "The Concept Watch Collection",
+      "description": "Compare Nocturne, Meridian and Pelagic: three fictional watch designs in the Chronos portfolio demo. Prices and specifications are illustrative.",
+      "index": true
+    },
+    {
+      "path": "/about",
+      "title": "About the Chronos Design Project",
+      "description": "Discover the design direction behind Chronos, an independent watch storefront portfolio project with fictional products and AI-created imagery.",
+      "index": true
+    },
+    {
+      "path": "/blog",
+      "title": "The Journal \u2014 Notes on Watch Design",
+      "description": "Read the Chronos concept journal: perspectives on watch proportions, materials and design, illustrated with fictional timepieces.",
+      "index": true
+    },
+    {
+      "path": "/contact",
+      "title": "Contact and Project Feedback",
+      "description": "Find the Chronos developer's public contact profile or draft a note on your device. This demo does not submit messages or collect contact details.",
+      "index": true
+    },
+    {
+      "path": "/privacy",
+      "title": "Privacy and Browser Storage",
+      "description": "How the Chronos demo uses local selection storage, hosting and security providers. Clear your saved selection and find privacy contact information.",
+      "index": true
+    },
+    {
+      "path": "/terms",
+      "title": "Demo Terms and Image Disclosures",
+      "description": "Chronos is a portfolio demonstration, not a watch retailer. Read about fictional products, illustrative prices and AI-created visual content.",
+      "index": true
+    },
+    {
+      "path": "/accessibility",
+      "title": "Accessibility and Motion Controls",
+      "description": "Explore Chronos using keyboard navigation, reduced motion and static image fallbacks. Find accessibility feedback and known limitations.",
+      "index": true
+    },
+    {
+      "path": "/cart",
+      "title": "Your Demo Selection",
+      "description": "Review fictional timepieces saved on this device. No order is created.",
+      "index": false
+    },
+    {
+      "path": "/checkout",
+      "title": "Review Your Demo Selection",
+      "description": "Chronos demonstration only. Checkout and payments are disabled.",
+      "index": false
+    },
+    {
+      "path": "/checkout/success",
+      "title": "Demo Checkout Information",
+      "description": "No purchase or payment is processed by this demonstration.",
+      "index": false
+    },
+    {
+      "path": "/account",
+      "title": "Demo Account Information",
+      "description": "No accounts are created by this demonstration.",
+      "index": false
+    }
+  ],
+  "productSuffix": "Fictional Watch Design",
+  "productDisclosure": "A fictional Chronos timepiece with AI-created imagery. Prices and specifications are illustrative; nothing is for sale.",
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "This page does not exist. Explore the Chronos design demo from the home page."
+  }
+}

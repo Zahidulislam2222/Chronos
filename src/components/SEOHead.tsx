@@ -1,67 +1,29 @@
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from "react-helmet-async";
+import { useLocation } from "react-router-dom";
+import { content } from "@/content";
+import { pageSearch, searchContent } from "@/lib/search";
 
-interface SEOHeadProps {
-  title?: string;
-  description?: string;
-  image?: string;
-  url?: string;
-  type?: 'website' | 'product' | 'article';
-  price?: number;
-  currency?: string;
-  jsonLd?: Record<string, unknown>;
-}
-
-const SITE_NAME = 'Chronos';
-const DEFAULT_DESCRIPTION = 'Luxury watches curated for the discerning collector. Explore our collection of fine timepieces from the world\'s most prestigious brands.';
-const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://chronos-vwg.pages.dev';
-
-export default function SEOHead({
-  title,
-  description = DEFAULT_DESCRIPTION,
-  image,
-  url,
-  type = 'website',
-  price,
-  currency = 'USD',
-  jsonLd,
-}: SEOHeadProps) {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Luxury Watches`;
-  const canonicalUrl = url || SITE_URL;
-
-  return (
-    <Helmet>
-      <title>{fullTitle}</title>
-      <meta name="description" content={description} />
-      <link rel="canonical" href={canonicalUrl} />
-
-      {/* Open Graph */}
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
-      <meta property="og:type" content={type} />
-      <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:site_name" content={SITE_NAME} />
-      {image && <meta property="og:image" content={image} />}
-
-      {/* Product-specific OG tags */}
-      {type === 'product' && price && (
-        <>
-          <meta property="product:price:amount" content={String(price)} />
-          <meta property="product:price:currency" content={currency} />
-        </>
-      )}
-
-      {/* Twitter Card */}
-      <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
-      {image && <meta name="twitter:image" content={image} />}
-
-      {/* JSON-LD Structured Data */}
-      {jsonLd && (
-        <script type="application/ld+json">
-          {JSON.stringify(jsonLd)}
-        </script>
-      )}
-    </Helmet>
-  );
+export default function SEOHead() {
+  const { pathname } = useLocation();
+  const page = pageSearch(pathname);
+  return <Helmet>
+    <title>{page.title}</title>
+    <meta name="description" content={page.description} />
+    <meta name="robots" content={page.index ? "index, follow, max-image-preview:large" : "noindex, follow"} />
+    {page.canonical && <link rel="canonical" href={page.canonical} />}
+    <meta property="og:title" content={page.title} />
+    <meta property="og:description" content={page.description} />
+    <meta property="og:type" content={page.type} />
+    <meta property="og:url" content={page.canonical} />
+    <meta property="og:site_name" content={content.brand.name} />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content={page.image} />
+    <meta property="og:image:alt" content={searchContent.imageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={page.title} />
+    <meta name="twitter:description" content={page.description} />
+    <meta name="twitter:image" content={page.image} />
+    <meta name="twitter:image:alt" content={searchContent.imageAlt} />
+    {page.index && <script type="application/ld+json">{JSON.stringify(page.jsonLd).replace(/</g, "\\u003c")}</script>}
+  </Helmet>;
 }

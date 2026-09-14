@@ -52,9 +52,7 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody
-					title={ __( 'Watch Settings', 'chronos-blocks' ) }
-				>
+				<PanelBody title={ __( 'Watch Settings', 'chronos-blocks' ) }>
 					<SelectControl
 						label={ __( 'Select Watch', 'chronos-blocks' ) }
 						value={ watchId }
@@ -78,9 +76,7 @@ export default function Edit( { attributes, setAttributes } ) {
 						}
 					/>
 				</PanelBody>
-				<PanelBody
-					title={ __( 'Layout & CTA', 'chronos-blocks' ) }
-				>
+				<PanelBody title={ __( 'Layout & CTA', 'chronos-blocks' ) }>
 					<ButtonGroup>
 						<Button
 							variant={
@@ -96,9 +92,7 @@ export default function Edit( { attributes, setAttributes } ) {
 						</Button>
 						<Button
 							variant={
-								layout === 'vertical'
-									? 'primary'
-									: 'secondary'
+								layout === 'vertical' ? 'primary' : 'secondary'
 							}
 							onClick={ () =>
 								setAttributes( { layout: 'vertical' } )
@@ -117,9 +111,7 @@ export default function Edit( { attributes, setAttributes } ) {
 					<TextControl
 						label={ __( 'Button URL', 'chronos-blocks' ) }
 						value={ ctaUrl }
-						onChange={ ( val ) =>
-							setAttributes( { ctaUrl: val } )
-						}
+						onChange={ ( val ) => setAttributes( { ctaUrl: val } ) }
 						help={ __(
 							'Leave empty to link to the watch page.',
 							'chronos-blocks'
@@ -134,10 +126,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				{ ! loading && ! watchId && (
 					<Placeholder
 						icon="clock"
-						label={ __(
-							'Watch Showcase',
-							'chronos-blocks'
-						) }
+						label={ __( 'Watch Showcase', 'chronos-blocks' ) }
 						instructions={ __(
 							'Select a watch from the sidebar settings to display.',
 							'chronos-blocks'
@@ -148,10 +137,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				{ ! loading && watchId > 0 && ! selectedWatch && (
 					<Placeholder
 						icon="warning"
-						label={ __(
-							'Watch Not Found',
-							'chronos-blocks'
-						) }
+						label={ __( 'Watch Not Found', 'chronos-blocks' ) }
 						instructions={ __(
 							'The selected watch could not be found. It may have been deleted.',
 							'chronos-blocks'

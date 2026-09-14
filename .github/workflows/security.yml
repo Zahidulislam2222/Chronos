@@ -20,11 +20,11 @@ jobs:
           node-version: '22'
 
       - name: Audit root dependencies
-        run: npm audit --audit-level=high || true
+        run: npm audit --audit-level=moderate
 
       - name: Audit blocks dependencies
         working-directory: wordpress/wp-content/plugins/chronos-blocks
-        run: npm audit --audit-level=high || true
+        run: npm audit --audit-level=moderate
 
   # ── Composer vulnerability audit ───────────────────────────────
   composer-audit:

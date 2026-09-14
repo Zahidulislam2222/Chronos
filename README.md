@@ -6,8 +6,8 @@
   <img src="https://img.shields.io/badge/WooCommerce-10.7-96588A?style=flat-square&logo=woocommerce" alt="WooCommerce" />
   <img src="https://img.shields.io/badge/Stripe-Integrated-635BFF?style=flat-square&logo=stripe" alt="Stripe" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
-  <img src="https://img.shields.io/badge/CI-Passing-brightgreen?style=flat-square&logo=github-actions" alt="CI" />
-  <img src="https://img.shields.io/badge/Deploy-GCP_%2B_Cloudflare-blue?style=flat-square&logo=googlecloud" alt="Deploy" />
+  <img src="https://img.shields.io/badge/CI-Manual-blue?style=flat-square&logo=github-actions" alt="CI" />
+  <img src="https://img.shields.io/badge/Deploy-VPS_%2B_Cloudflare-blue?style=flat-square&logo=googlecloud" alt="Deploy" />
   <img src="https://img.shields.io/badge/Security-Dependabot-brightgreen?style=flat-square&logo=dependabot" alt="Dependabot" />
 </p>
 
@@ -18,7 +18,7 @@
 A decoupled architecture where a React SPA frontend communicates with a WordPress + WooCommerce backend via GraphQL and REST APIs. Built to demonstrate senior-level full-stack WordPress development.
 
 <p align="center">
-  <a href="https://chronos-vwg.pages.dev">Live Demo</a> &bull;
+  <a href="https://chronos.zahidul-islam.com">Live Demo</a> &bull;
   <a href="#architecture">Architecture</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#getting-started">Getting Started</a> &bull;
@@ -27,7 +27,21 @@ A decoupled architecture where a React SPA frontend communicates with a WordPres
 
 ---
 
+The [hosted design demo](https://chronos.zahidul-islam.com) presents the cinematic watch collection, scroll-controlled films and interactive shopping bag. It uses an isolated catalogue and does not submit orders, payments or account registrations. The repository also retains the connected WordPress commerce implementation.
+
+## Engineering evidence
+
+The current demo uses pre-rendered HTML, route-specific metadata, an XML sitemap, truthful website/article/creative-work structured data, and an isolated static runtime. The browser policy restricts scripts, frames, forms and device capabilities. Dependency, browser, accessibility, release-integrity and recovery checks are documented separately from untested production claims.
+
+- [Scalability and availability architecture](docs/SCALABILITY.md): stateless delivery, cache assumptions, a staged path toward **10k–1M concurrent readers**, and a **99% availability objective**. These are design targets, not verified current capacity or an SLA.
+- [Search, security and US/EU legal review](docs/SEARCH-SECURITY-LEGAL-REVIEW.md): cited applicability matrix, implemented demo controls, and obligations before real commerce.
+- [Security operations](docs/SECURITY-OPERATIONS.md): boundaries, verification commands and operating limitations.
+- [Verified release evidence](docs/VERIFICATION.md): dated gate results, reproduction commands and explicit limits.
+- [Public technical overview](https://docs.google.com/document/d/1vxOa2xT6dvLN1q8Mq0SWtN-BQWNdMcTfV9PLyzMkM5Y): current client/developer reference, updated in place.
+
 ## Architecture
+
+Connected architecture retained in the repository; the hosted design demo runs without the backend connection.
 
 ```
                          GraphQL / REST API
@@ -37,7 +51,7 @@ A decoupled architecture where a React SPA frontend communicates with a WordPres
   │  Vite + TS       │                           │  WooCommerce         │
   │  Tailwind CSS    │                           │  WPGraphQL           │
   │                  │                           │                      │
-  │  Cloudflare Pages│                           │  GCP e2-micro / Docker│
+  │  VPS / Cloudflare│                           │  GCP e2-micro / Docker│
   └──────────────────┘                           └──────────┬───────────┘
                                                             │
                                                   ┌─────────┴─────────┐
@@ -47,11 +61,11 @@ A decoupled architecture where a React SPA frontend communicates with a WordPres
 
 | Layer | Tech | Purpose |
 |-------|------|---------|
-| **Frontend** | React 18, TypeScript, Vite, Tailwind | SPA with code splitting, SEO meta tags, Stripe.js |
+| **Frontend** | React 18, TypeScript, Vite, Tailwind | Pre-rendered demo with code splitting and search metadata; connected commerce retained separately |
 | **Backend** | WordPress 7.0, WooCommerce, PHP 8.1+ | Headless CMS, product management, order processing |
 | **API** | WPGraphQL, REST API (custom) | Product queries, checkout, payments, AI features |
 | **Database** | MariaDB | WooCommerce data + custom contact submissions table |
-| **DevOps** | Docker, GitHub Actions, GCP + Cloudflare Pages | CI/CD with auto-deploy (backend + frontend), dependency scanning |
+| **DevOps** | Docker, Caddy, Cloudflare, GitHub Actions | Versioned static demo releases; retained manually guarded commerce workflows |
 
 ---
 
@@ -108,10 +122,31 @@ A decoupled architecture where a React SPA frontend communicates with a WordPres
 ### Prerequisites
 
 - Docker Desktop
-- Node.js 22+
+- Node.js 22.13+ (Node 24 used for the verified release)
 - Git
 
-### Quick Start
+### Static demo quick start
+
+No backend or paid service is required for the portfolio demo.
+
+```bash
+npm ci
+npx playwright install chromium
+cp .env.example .env.production.local
+# In that ignored file: set both API URLs empty, keep preview mode,
+# set the canonical site origin, and enable indexing only for an approved public release.
+npm run typecheck
+npm run build
+npm run verify:release
+npm run preview
+```
+
+`npm run capacity:model` prints explicit workload assumptions. `npm run monitor:once` records one HTTPS observation; schedule it externally for actual availability measurement. Neither command is a load-capacity or uptime guarantee. The local-only load tool is retained under ignored `tests/` for this workspace; it is not a published distributed-load service.
+
+### Retained connected-backend setup
+
+This path requires separate security, legal and payment verification before use with real customers. It is not the public demo topology.
+
 
 ```bash
 # Clone
@@ -214,9 +249,13 @@ npm run build
 
 ## Deployment
 
-**Frontend** deploys to [Cloudflare Pages](https://pages.cloudflare.com) (`chronos-vwg.pages.dev`). Workflows are **manual and guarded** — they run only via `workflow_dispatch` and require the `CHRONOS_ACTIONS_ENABLED` repository variable to be `true`, so an ordinary push never deploys or changes infrastructure.
+**Current frontend:** [chronos.zahidul-islam.com](https://chronos.zahidul-islam.com), served by Nginx on an existing VPS behind Caddy HTTPS and Cloudflare. The accepted cinematic demo was deployed on 2026-09-14. Public browser checks cover the catalogue, gallery, shopping bag, responsive films, keyboard flows and media recovery. No live commerce is enabled.
 
-**Backend** deploys via CI/CD pipeline (GitHub Actions → GCP via SSH + rsync):
+Deployment configuration lives in `deploy/shared-vps/`. Releases are built locally, staged in a new versioned directory, validated, and compared against the live files by SHA-256. HTML uses `no-transform` to preserve the original page through the CDN. Private access, release ownership and rollback records are maintained outside tracked source.
+
+**Retained deployment workflows:** the existing GCP/Cloudflare Pages workflows are historical paths, not the current static-demo deployment. They are manual and guarded by `workflow_dispatch` and `CHRONOS_ACTIONS_ENABLED`; no workflow was enabled or run for this deployment.
+
+**Retained backend pipeline** (not migrated or executed for the static demo) (GitHub Actions → GCP via SSH + rsync):
 
 ```
 Manual dispatch (guarded by CHRONOS_ACTIONS_ENABLED)
@@ -234,12 +273,12 @@ verify              → Health-check GraphQL + frontend URLs
 ```
 
 **Security:**
-- Private repo with SSH deploy key (no passwords in CI)
-- All secrets stored as GitHub Actions Secrets
-- No hardcoded credentials in any tracked file
+- SSH deployment credentials are supplied through private configuration
+- Retained workflows expect the GitHub Actions secrets listed below
+- Current static release contains no application credentials
 - Dependabot scans dependencies weekly
 - Let's Encrypt SSL (auto-renews)
-- Security headers (CSP, HSTS, X-Frame-Options)
+- Current demo sends X-Content-Type-Options, X-Frame-Options and Referrer-Policy headers
 
 **Required GitHub Secrets:**
 
@@ -251,7 +290,7 @@ verify              → Health-check GraphQL + frontend URLs
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account identifier |
 | `GH_PAT` | GitHub PAT used by CI to rotate the Wrangler config |
 
-**Manual deploy** (optional): Run the "Deploy to Production" workflow manually from GitHub Actions with a dry-run option.
+**Historical manual workflow:** "Deploy to Production" targets the retained infrastructure. Do not use it to update the current VPS demo; use the versioned local-first release process above.
 
 ### Previous Infrastructure — cPanel (Preserved as Portfolio Reference)
 
@@ -306,7 +345,7 @@ chronos/
 │       │   │   ├── I18n/         # Internationalization
 │       │   │   ├── Payment/      # Stripe integration
 │       │   │   ├── PostTypes/    # CPT + taxonomies
-│       │   │   ├── Privacy/      # GDPR compliance
+│       │   │   ├── Privacy/      # WordPress privacy hooks (not a compliance certification)
 │       │   │   ├── SEO/          # JSON-LD structured data
 │       │   │   ├── Security/     # Sanitization, nonces
 │       │   │   └── WooCommerce/  # Custom checkout fields

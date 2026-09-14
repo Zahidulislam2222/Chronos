@@ -1,0 +1,21 @@
+{
+  "hero": {
+    "poster": "/images/hero-poster.webp",
+    "mobilePoster": "/images/portrait-poster.webp",
+    "video": "/films/nocturne.mp4",
+    "mobileVideo": "/films/nocturne-mobile.mp4",
+    "fallbackPoster": "/images/hero.webp",
+    "mobileFallbackPoster": "/images/portrait.webp"
+  },
+  "study": {
+    "poster": "/images/study-poster.webp",
+    "mobilePoster": "/images/study-poster.webp",
+    "video": "/films/study.mp4",
+    "mobileVideo": "/films/study.mp4",
+    "fallbackPoster": "/images/exploded.webp",
+    "mobileFallbackPoster": "/images/exploded.webp"
+  },
+  "seekThreshold": 0.035,
+  "endPadding": 0.06,
+  "mobileBreakpoint": 640
+}

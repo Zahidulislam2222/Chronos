@@ -5,7 +5,9 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  // Exclude generated snapshots and third-party distribution/test fixtures.
+  { ignores: ["dist", "memory/**", "tests/**", ".research-preview/**", ".local-deployment-manifests/**", "**/vendor/**", "wordpress/wp-content/plugins/woocommerce/**"] },
+  { files: ["wordpress/wp-content/plugins/chronos-blocks/src/**/*.js"], languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

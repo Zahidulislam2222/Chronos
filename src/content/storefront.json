@@ -1,0 +1,233 @@
+{
+  "brand": {
+    "name": "Chronos",
+    "tagline": "An independent perspective on time.",
+    "description": "An independent watch website design demo. Original fictional timepieces, cinematic motion and an interactive catalogue; nothing is for sale.",
+    "currency": "USD",
+    "locale": "en-US"
+  },
+  "nav": [
+    {
+      "label": "Collection",
+      "href": "/shop"
+    },
+    {
+      "label": "Our perspective",
+      "href": "/about"
+    },
+    {
+      "label": "The journal",
+      "href": "/blog"
+    }
+  ],
+  "hero": {
+    "eyebrow": "CHRONOS / THE NOCTURNE EDIT",
+    "title": "TIME IS",
+    "italic": "PERSONAL.",
+    "description": "Not just the hour. Your way of moving through it.",
+    "cta": "Find your timepiece",
+    "secondary": "A closer look",
+    "product": "The Nocturne",
+    "detail": "Anthracite · Integrated steel",
+    "image": "/images/hero.webp",
+    "href": "/product/nocturne",
+    "index": "01 / 03",
+    "caption": "SCROLL TO CHANGE YOUR PERSPECTIVE"
+  },
+  "collection": {
+    "eyebrow": "THE COLLECTION",
+    "title": "Three ways to make it yours.",
+    "description": "Steel. Warmth. Depth. A collection defined by character.",
+    "cta": "View the collection"
+  },
+  "craft": {
+    "eyebrow": "BEYOND THE SURFACE",
+    "title": "A world",
+    "italic": "within.",
+    "description": "Follow the light across brushed steel. Look beneath the familiar. A study in the small things that hold your attention.",
+    "image": "/images/exploded.webp",
+    "cta": "Meet the Nocturne",
+    "href": "/product/nocturne",
+    "details": [
+      {
+        "label": "01 / SURFACE",
+        "title": "Light gives it depth.",
+        "text": "An anthracite sunray dial. A different character with every change of light."
+      },
+      {
+        "label": "02 / FORM",
+        "title": "Every edge, considered.",
+        "text": "Brushed planes, polished bevels and an integrated bracelet."
+      },
+      {
+        "label": "03 / WITHIN",
+        "title": "Every layer, considered.",
+        "text": "An imaginative look inside the automatic watch concept."
+      }
+    ],
+    "disclaimer": "An illustrative movement study. Not a technical assembly.",
+    "scroll": "SCROLL TO EXPLORE"
+  },
+  "journal": {
+    "eyebrow": "NOTES ON TIME",
+    "title": "For the curious.",
+    "cta": "Read the journal"
+  },
+  "closing": {
+    "eyebrow": "YOUR NEXT CHAPTER",
+    "title": "Make time",
+    "italic": "for living.",
+    "description": "The best things become part of your everyday.",
+    "cta": "Discover your timepiece",
+    "href": "/shop",
+    "image": "/images/lifestyle.webp"
+  },
+  "about": {
+    "eyebrow": "OUR PERSPECTIVE",
+    "title": "Good taste takes time.",
+    "intro": "Chronos is a study in considered collecting. A space to slow down, look closely, and discover the details that make an object worth keeping.",
+    "heading": "Objects with a point of view.",
+    "body": [
+      "A watch is both useful and deeply personal. Its proportions, materials and small rituals become part of the way we move through a day.",
+      "Our collection explores three different characters: the understated Nocturne, the warm Meridian, and the blue-dial Pelagic. Each is an original fictional concept created for this storefront preview.",
+      "This is an independent portfolio demonstration, not an established watch manufacturer. The products, specifications and prices illustrate the shopping experience; no items are offered for sale in this preview."
+    ],
+    "image": "/images/meridian.webp"
+  },
+  "contact": {
+    "eyebrow": "LET’S TALK TIME",
+    "title": "A conversation,",
+    "italic": "well worth having.",
+    "description": "Questions about the collection? Start here.",
+    "notice": "This portfolio demo does not send messages. You can compose a note and copy it to keep.",
+    "action": "Copy your note",
+    "success": "Your note has been copied. No message was sent.",
+    "failure": "Copy is unavailable in this browser. Select and copy your note manually."
+  },
+  "preview": {
+    "label": "Design preview",
+    "notice": "An original concept collection. Illustrative prices and specifications; no orders or payments are submitted.",
+    "checkout": "Your selection, at a glance.",
+    "checkoutDescription": "This is a portfolio demo. Review your collection below; purchasing is not enabled.",
+    "accountTitle": "Your collection, personal.",
+    "accountDescription": "Account access is available when connected to the store. This demo keeps your selection on this device without creating an account."
+  },
+  "footer": {
+    "intro": "Timepieces for a life well considered.",
+    "note": "An independent watch collection concept.",
+    "copyright": "Chronos — A study in time.",
+    "links": [
+      {
+        "label": "Contact",
+        "href": "/contact"
+      },
+      {
+        "label": "Privacy",
+        "href": "/privacy"
+      },
+      {
+        "label": "Terms",
+        "href": "/terms"
+      },
+      {
+        "label": "Accessibility",
+        "href": "/accessibility"
+      }
+    ]
+  },
+  "ui": {
+    "search": "Search the collection",
+    "searchPlaceholder": "Try Nocturne, steel, or automatic",
+    "noResults": "No timepieces found. Try another search or clear your filters.",
+    "loading": "Preparing the collection…",
+    "failure": "The collection could not be loaded. Please try again.",
+    "add": "Add to bag",
+    "details": "Discover the timepiece",
+    "shopTitle": "Find your point of view.",
+    "shopIntro": "Three expressions of time. One considered collection.",
+    "all": "All timepieces",
+    "sort": "Sort by",
+    "featured": "Curated order",
+    "low": "Price: low to high",
+    "high": "Price: high to low",
+    "name": "Name",
+    "clear": "Clear filters",
+    "bag": "Your selection",
+    "emptyBag": "Every collection starts somewhere.",
+    "emptyText": "Find the timepiece that belongs in yours.",
+    "continue": "Continue exploring",
+    "subtotal": "Subtotal",
+    "checkout": "Review your selection",
+    "specs": "The finer details",
+    "back": "Back to the collection",
+    "available": "Available in this concept collection",
+    "productNote": "AI-created concept imagery. Specifications and prices are illustrative.",
+    "gallery": "Product gallery",
+    "read": "Read the story",
+    "retry": "Try again",
+    "notFound": "This moment has passed.",
+    "notFoundText": "The page you’re looking for isn’t here. There is still plenty to discover.",
+    "home": "Return to Chronos",
+    "imageUnavailable": "Image unavailable",
+    "markTagline": "THE ART OF TIME",
+    "openNavigation": "Open navigation",
+    "yourAccount": "Your account",
+    "clearSearch": "Clear search",
+    "yourNote": "Your note",
+    "notePlaceholder": "What’s on your mind?",
+    "unavailable": "Unavailable",
+    "productNotFound": "Timepiece not found.",
+    "storyNotFound": "Story not found."
+  },
+  "legal": {
+    "privacy": {
+      "title": "Your privacy, considered.",
+      "body": [
+        "Chronos is a portfolio demo developed by Zahidul Islam, not a retailer. This notice describes this public demo; no account, order, payment, newsletter subscription or contact-message database is created.",
+        "Your selection is saved in browser local storage only after you add an item. It contains concept product details and quantities, not payment or account information. It stays on this browser until you remove the items or clear it below. If storage is blocked, you can still explore and make a temporary selection.",
+        "Contact notes remain in the open page. The copy button writes your note to your device clipboard only when you request it. The site does not send the note to us. Avoid entering sensitive information on shared devices.",
+        "The site is delivered through Cloudflare and hosted by Contabo. Delivering and protecting a website involves processing network data such as IP addresses, request details and browser information. We use this infrastructure to serve the site, diagnose failures and prevent abuse. Routine application access logging is disabled in this release; diagnostic and provider security records may still be processed.",
+        "We do not add advertising, behavioural analytics, tracking pixels or social-media embeds. Cloudflare may use security cookies when protecting requests. Its processing can involve countries outside your own, including the United States. Provider privacy notices explain their practices; we do not claim that infrastructure processing is anonymous or that all provider records have the same retention period.",
+        "No personal information is sold or shared for cross-context behavioural advertising by this demo. It does not build advertising profiles and does not change this behaviour when a Global Privacy Control or Do Not Track signal is present.",
+        "Privacy questions can be directed through the developer contact profile linked below. Do not post private data in a public issue or discussion. Depending on the law that applies to you, you may have rights to access, correct, delete, restrict or object to processing, obtain portable data, and complain to a supervisory authority. Rights and applicable exceptions depend on the processing and jurisdiction.",
+        "This demo is not directed to children and does not solicit their personal information. Before real sales, account collection or marketing is introduced, the operator must publish the applicable business identity, lawful bases, retention schedule, transfer safeguards and request process. This demo notice is not a substitute for that launch review."
+      ],
+      "updated": "Updated 14 September 2026",
+      "clear": "Clear my saved selection",
+      "cleared": "Your selection is cleared from this page. Stored selection data has been removed where browser access is available.",
+      "contactLabel": "Developer contact profile",
+      "contactUrl": "https://github.com/Zahidulislam2222",
+      "providerLinks": [
+        {
+          "label": "Cloudflare privacy policy",
+          "href": "https://www.cloudflare.com/privacypolicy/"
+        },
+        {
+          "label": "Contabo privacy policy",
+          "href": "https://contabo.com/en/legal/privacy/"
+        }
+      ]
+    },
+    "terms": {
+      "title": "A note on this collection.",
+      "body": [
+        "Chronos is an independent portfolio demonstration by Zahidul Islam. Nocturne, Meridian and Pelagic are fictional design concepts. Displayed prices, stock states, materials and specifications illustrate the interface; they are not verified product performance claims or offers for sale.",
+        "No contract to purchase goods is formed here. Checkout, payments and account registration are disabled. Adding an item to the bag only changes your local demonstration selection. No shipping, delivery date, return promise or commercial warranty is offered by this demo.",
+        "Watch, lifestyle and movement imagery includes AI-generated images and video, with creative direction and editing for this project. These are illustrations, not photographs of goods available for delivery. The exploded movement is an imaginative visual study, not a technically accurate assembly or repair guide.",
+        "Product and project names do not imply affiliation with, authorization by or endorsement from an established watch manufacturer. Do not infer exclusive copyright ownership in purely AI-generated elements. Third-party components and fonts remain subject to their respective licences.",
+        "The journal contains general design commentary rather than professional repair, investment or purchasing advice. Nothing in these demo terms excludes non-waivable rights under applicable law.",
+        "For project feedback, privacy or accessibility questions, use the developer profile linked on the contact and privacy pages. Do not submit passwords, payment details or other sensitive information in public feedback."
+      ]
+    },
+    "accessibility": {
+      "title": "A considered experience for everyone.",
+      "body": [
+        "Chronos supports keyboard navigation, a skip-to-content link, labelled controls and browser zoom. Product information is presented as text alongside imagery.",
+        "The cinematic sequences respond to the reduced-motion preference in your device or browser and use static image fallbacks when motion is reduced or video cannot load. The silent visual sequences contain no spoken instructions or essential information available only in audio.",
+        "The collection and journal remain readable without JavaScript. Interactive filters, gallery controls and the demo bag need JavaScript; ordinary page links remain available.",
+        "Automated and manual checks support ongoing improvements, but do not establish that every assistive technology or every WCAG requirement has been verified. We do not claim certified legal conformity.",
+        "If you encounter a barrier, use the developer contact profile on the contact page. Describe the page, browser and assistive technology if you wish; avoid sharing private information."
+      ]
+    }
+  }
+}

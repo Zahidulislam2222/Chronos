@@ -1,15 +1,17 @@
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import Layout from '@/components/Layout';
-import { useCart } from '@/context/CartContext';
-import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { isPreview } from "@/config/settings";
+import Checkout from "./Checkout";
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import Layout from "@/components/Layout";
+import { useCart } from "@/context/CartContext";
+import { Button } from "@/components/ui/button";
+import { CheckCircle } from "lucide-react";
 
-const CheckoutSuccess = () => {
+const ConnectedCheckoutSuccess = () => {
   const { clearCart } = useCart();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('session_id');
+  const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
     // Clear cart after successful Stripe payment.
@@ -25,7 +27,8 @@ const CheckoutSuccess = () => {
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-6" />
           <h1 className="font-display text-4xl mb-4">Order Confirmed</h1>
           <p className="text-muted-foreground mb-8">
-            Thank you for your purchase. You will receive an order confirmation email shortly.
+            Thank you for your purchase. You will receive an order confirmation
+            email shortly.
           </p>
           {sessionId && (
             <p className="text-xs text-muted-foreground mb-6">
@@ -33,10 +36,10 @@ const CheckoutSuccess = () => {
             </p>
           )}
           <div className="flex gap-4 justify-center">
-            <Button variant="luxuryOutline" onClick={() => navigate('/shop')}>
+            <Button variant="luxuryOutline" onClick={() => navigate("/shop")}>
               Continue Shopping
             </Button>
-            <Button variant="gold" onClick={() => navigate('/account')}>
+            <Button variant="gold" onClick={() => navigate("/account")}>
               View Orders
             </Button>
           </div>
@@ -46,4 +49,6 @@ const CheckoutSuccess = () => {
   );
 };
 
-export default CheckoutSuccess;
+export default function CheckoutSuccess() {
+  return isPreview ? <Checkout /> : <ConnectedCheckoutSuccess />;
+}

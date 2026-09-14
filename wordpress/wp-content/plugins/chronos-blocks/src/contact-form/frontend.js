@@ -12,11 +12,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			const statusEl = form.querySelector(
 				'.chronos-contact-form__status'
 			);
-			const submitBtn = form.querySelector(
-				'.chronos-contact-form__submit'
-			);
-			const successMessage =
-				form.dataset.successMessage || 'Thank you for your message.';
 
 			// Clear previous status.
 			statusEl.hidden = true;
@@ -26,7 +21,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			// Gather fields.
 			const name = form.querySelector( '[name="name"]' );
 			const email = form.querySelector( '[name="email"]' );
-			const subject = form.querySelector( '[name="subject"]' );
 			const message = form.querySelector( '[name="message"]' );
 
 			// Client-side validation.
@@ -57,6 +51,15 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				showStatus( statusEl, errors.join( ' ' ), 'error' );
 				return;
 			}
+
+			const successMessage =
+				form.dataset.successMessage || 'Thank you for your message.';
+
+			const subject = form.querySelector( '[name="subject"]' );
+
+			const submitBtn = form.querySelector(
+				'.chronos-contact-form__submit'
+			);
 
 			// Disable button during submission.
 			submitBtn.disabled = true;

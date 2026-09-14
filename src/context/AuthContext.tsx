@@ -1,3 +1,4 @@
+import {isPreview} from "@/config/settings";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 // <--- NEW: Import the real API functions
 import { loginUser, registerUser } from '@/utils/api'; 
@@ -30,6 +31,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     const checkLoggedIn = () => {
+      if (isPreview) { setIsLoading(false); return; }
       const authToken = localStorage.getItem('auth-token');
       const storedUser = localStorage.getItem('user-data');
 

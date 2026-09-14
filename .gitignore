@@ -97,3 +97,9 @@ wordpress/wp-content/themes/index.php
 
 # ─── WordPress — debug log ───────────────────────────────────────
 wordpress/wp-content/debug.log
+
+# Private project research and session memory
+/memory/
+
+# Local verification tooling
+/tests/

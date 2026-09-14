@@ -1,0 +1,133 @@
+{
+  "products": [
+    {
+      "id": "nocturne",
+      "slug": "nocturne",
+      "name": "The Nocturne",
+      "price": 1450,
+      "description": "Anthracite, cut with light. A sunray dial and polished bevels bring depth to a brushed steel case and integrated bracelet.",
+      "shortDescription": "Anthracite · Integrated steel",
+      "image": "/images/nocturne.webp",
+      "gallery": [
+        "/images/nocturne.webp",
+        "/images/hero.webp",
+        "/images/macro.webp"
+      ],
+      "category": "Dress",
+      "brand": "Chronos",
+      "inStock": true,
+      "featured": true,
+      "specifications": {
+        "movement": "Automatic concept",
+        "caseMaterial": "Stainless steel",
+        "dialColor": "Anthracite",
+        "waterResistance": "Concept — not rated",
+        "caseDiameter": "40 mm"
+      }
+    },
+    {
+      "id": "meridian",
+      "slug": "meridian",
+      "name": "The Meridian",
+      "price": 1850,
+      "description": "Warmth in the smallest details. An ivory dial meets a rose-toned case in a study of light, proportion and everyday elegance.",
+      "shortDescription": "Ivory · Leather · Rose tone",
+      "image": "/images/meridian.webp",
+      "gallery": ["/images/meridian.webp"],
+      "category": "Dress",
+      "brand": "Chronos",
+      "inStock": true,
+      "featured": true,
+      "specifications": {
+        "movement": "Automatic concept",
+        "caseMaterial": "Rose-tone steel",
+        "dialColor": "Warm ivory",
+        "waterResistance": "Concept — not rated",
+        "caseDiameter": "40 mm"
+      }
+    },
+    {
+      "id": "pelagic",
+      "slug": "pelagic",
+      "name": "The Pelagic",
+      "price": 1650,
+      "description": "Midnight blue meets a sculpted titanium-tone case and textured rubber strap. A sporting expression with an assured silhouette.",
+      "shortDescription": "Midnight blue · Rubber",
+      "image": "/images/pelagic.webp",
+      "gallery": ["/images/pelagic.webp"],
+      "category": "Sport",
+      "brand": "Chronos",
+      "inStock": true,
+      "featured": true,
+      "specifications": {
+        "movement": "Automatic concept",
+        "caseMaterial": "Titanium-tone concept",
+        "dialColor": "Midnight blue",
+        "waterResistance": "Concept — not rated",
+        "caseDiameter": "40 mm"
+      }
+    }
+  ],
+  "posts": [
+    {
+      "id": "the-art-of-choosing",
+      "slug": "the-art-of-choosing",
+      "title": "The art of choosing well.",
+      "excerpt": "Finding a watch begins with knowing what catches your eye.",
+      "category": "COLLECTING",
+      "featuredImage": "/images/lifestyle.webp",
+      "author": {
+        "name": "The Chronos journal",
+        "avatar": ""
+      },
+      "date": "2026-09-14",
+      "readTime": "3 min read",
+      "content": "<p>The most interesting collection starts with a point of view. Before specifications and complications, there is a simpler question: what do you enjoy looking at?</p><p>Consider the shape of the case, the way the dial responds to light, and the relationship between the watch and your everyday clothes. A quiet design can be just as expressive as an elaborate one.</p><p>Give yourself time. Compare proportions, return to the details, and notice which piece stays in your mind. Choosing well is a process of attention.</p>",
+      "paragraphs": [
+        "The most interesting collection starts with a point of view. Before specifications and complications, there is a simpler question: what do you enjoy looking at?",
+        "Consider the shape of the case, the way the dial responds to light, and the relationship between the watch and your everyday clothes. A quiet design can be just as expressive as an elaborate one.",
+        "Give yourself time. Compare proportions, return to the details, and notice which piece stays in your mind. Choosing well is a process of attention."
+      ]
+    },
+    {
+      "id": "a-study-in-light",
+      "slug": "a-study-in-light",
+      "title": "A study in light and shade.",
+      "excerpt": "Why the smallest change in finish can change everything.",
+      "category": "DESIGN",
+      "featuredImage": "/images/macro.webp",
+      "author": {
+        "name": "The Chronos journal",
+        "avatar": ""
+      },
+      "date": "2026-09-14",
+      "readTime": "3 min read",
+      "content": "<p>A watch is a small object with a surprising number of surfaces. Brushing, polish and the color of a dial each change how those surfaces respond to their surroundings.</p><p>In the Meridian concept, warm metal and an ivory dial share a restrained palette. The contrast comes from texture: a broad brushed plane beside a narrow polished edge.</p><p>Looking at an object in different light is part of understanding it. A render can illustrate a design intention; inspecting a physical watch is how that intention becomes tangible.</p>",
+      "paragraphs": [
+        "A watch is a small object with a surprising number of surfaces. Brushing, polish and the color of a dial each change how those surfaces respond to their surroundings.",
+        "In the Meridian concept, warm metal and an ivory dial share a restrained palette. The contrast comes from texture: a broad brushed plane beside a narrow polished edge.",
+        "Looking at an object in different light is part of understanding it. A render can illustrate a design intention; inspecting a physical watch is how that intention becomes tangible."
+      ]
+    },
+    {
+      "id": "the-everyday-ritual",
+      "slug": "the-everyday-ritual",
+      "title": "The everyday ritual.",
+      "excerpt": "A moment of intention before the day begins.",
+      "category": "PERSPECTIVE",
+      "featuredImage": "/images/hero.webp",
+      "author": {
+        "name": "The Chronos journal",
+        "avatar": ""
+      },
+      "date": "2026-09-14",
+      "readTime": "3 min read",
+      "content": "<p>Fastening a watch is a small ritual. A brief pause between getting ready and setting out. The weight on the wrist makes the abstract idea of time a little more physical.</p><p>Good design leaves space for these ordinary moments. A legible dial, a balanced case and a comfortable bracelet are qualities that matter every day.</p><p>The Pelagic concept explores that idea in midnight blue and steel. It is an exercise in useful restraint: a familiar object with a particular character.</p>",
+      "paragraphs": [
+        "Fastening a watch is a small ritual. A brief pause between getting ready and setting out. The weight on the wrist makes the abstract idea of time a little more physical.",
+        "Good design leaves space for these ordinary moments. A legible dial, a balanced case and a comfortable bracelet are qualities that matter every day.",
+        "The Pelagic concept explores that idea in midnight blue and rubber. It is an exercise in useful restraint: a familiar object with a particular character."
+      ]
+    }
+  ]
+}

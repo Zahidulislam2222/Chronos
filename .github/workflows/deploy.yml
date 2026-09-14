@@ -27,7 +27,7 @@ jobs:
           cache: 'npm'
 
       - name: Install and build frontend
-        run: npm ci && npm run build
+        run: npm ci && npm run build:client
 
       - uses: shivammathur/setup-php@v2
         with:

@@ -1,8 +1,58 @@
-import { Product, BlogPost } from '@/lib/mockData';
+import { settings, isPreview } from "@/config/settings";
+import { previewCatalogue, content } from "@/content";
+import { Product, BlogPost } from "@/lib/mockData";
 
-const API_URL = import.meta.env.VITE_API_URL || '';
-// Unsplash license: https://unsplash.com/license — free for commercial use
-const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=800';
+interface WPProduct {
+  databaseId: number;
+  slug: string;
+  name: string;
+  price?: string;
+  regularPrice?: string;
+  description?: string;
+  shortDescription?: string;
+  image?: { sourceUrl?: string };
+  galleryImages?: { nodes?: { sourceUrl?: string }[] };
+  featured?: boolean;
+  productCategories?: { nodes?: { name: string }[] };
+  watchSpecifications?: {
+    movement?: string;
+    casematerial?: string;
+    dialcolor?: string;
+    waterresistance?: string;
+    casediameter?: string;
+  };
+}
+interface WPPost {
+  databaseId: number;
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string;
+  content?: string;
+  date: string;
+  featuredImage?: { node?: { sourceUrl?: string } };
+  author?: { node?: { name?: string; avatar?: { url?: string } } };
+  categories?: { nodes?: { name: string }[] };
+  comments?: { nodes?: unknown[] };
+}
+export interface CustomerOrder {
+  orderNumber: string;
+  date: string;
+  status: string;
+  total: string;
+}
+interface CheckoutInput {
+  country: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  zip: string;
+  email: string;
+}
+
+const API_URL = settings.apiUrl;
+const PLACEHOLDER_IMAGE = content.hero.image;
 
 // --- QUERIES & MUTATIONS ---
 
@@ -227,30 +277,33 @@ mutation Checkout($input: CheckoutInput!) {
 // --- HELPERS ---
 
 function stripHtml(html: string | null | undefined): string {
-  if (!html) return '';
-  return html.replace(/<[^>]*>?/gm, '');
+  if (!html) return "";
+  return html.replace(/<[^>]*>?/gm, "");
 }
 
 const DEFAULT_SPECIFICATIONS = {
-  movement: 'N/A',
-  caseMaterial: 'N/A',
-  dialColor: 'N/A',
-  waterResistance: 'N/A',
-  caseDiameter: 'N/A',
+  movement: "N/A",
+  caseMaterial: "N/A",
+  dialColor: "N/A",
+  waterResistance: "N/A",
+  caseDiameter: "N/A",
 };
 
-function transformProduct(node: any): Product & { databaseId: number } {
+function transformProduct(node: WPProduct): Product & { databaseId: number } {
   const imageUrl = node.image?.sourceUrl || PLACEHOLDER_IMAGE;
-  const galleryImages = node.galleryImages?.nodes?.map((img: any) => img?.sourceUrl).filter(Boolean) || [];
+  const galleryImages =
+    node.galleryImages?.nodes?.map((img) => img?.sourceUrl).filter(Boolean) ||
+    [];
   const priceStr = node.price || node.regularPrice;
-  const price = priceStr ? parseFloat(priceStr.replace(/[^0-9.]/g, '')) : 0;
+  const price = priceStr ? parseFloat(priceStr.replace(/[^0-9.]/g, "")) : 0;
   const shortDescription = stripHtml(node.shortDescription);
   const specs = node.watchSpecifications || {};
   const specifications = {
     movement: specs.movement || DEFAULT_SPECIFICATIONS.movement,
     caseMaterial: specs.casematerial || DEFAULT_SPECIFICATIONS.caseMaterial,
     dialColor: specs.dialcolor || DEFAULT_SPECIFICATIONS.dialColor,
-    waterResistance: specs.waterresistance || DEFAULT_SPECIFICATIONS.waterResistance,
+    waterResistance:
+      specs.waterresistance || DEFAULT_SPECIFICATIONS.waterResistance,
     caseDiameter: specs.casediameter || DEFAULT_SPECIFICATIONS.caseDiameter,
   };
 
@@ -260,78 +313,87 @@ function transformProduct(node: any): Product & { databaseId: number } {
     slug: node.slug,
     name: node.name,
     price,
-    description: node.description || '',
+    description: node.description || "",
     shortDescription,
     image: imageUrl,
     gallery: galleryImages.length > 0 ? galleryImages : [imageUrl],
-    category: node.productCategories?.nodes?.[0]?.name || 'Watch',
-    brand: 'Maison Horlogère',
+    category: node.productCategories?.nodes?.[0]?.name || "Watch",
+    brand: content.brand.name,
     inStock: true,
     featured: node.featured || false,
     specifications,
   };
 }
 
-function transformPost(node: any): BlogPost & { databaseId: number; comments: any[] } {
-    return {
+function transformPost(
+  node: WPPost,
+): BlogPost & { databaseId: number; comments: unknown[] } {
+  return {
     databaseId: node.databaseId,
     id: node.id,
     slug: node.slug,
     title: node.title,
     excerpt: stripHtml(node.excerpt),
-    content: node.content || '',
+    content: node.content || "",
     featuredImage: node.featuredImage?.node?.sourceUrl || PLACEHOLDER_IMAGE,
     author: {
-      name: node.author?.node?.name || 'Editor',
-      avatar: node.author?.node?.avatar?.url || '',
+      name: node.author?.node?.name || "Editor",
+      avatar: node.author?.node?.avatar?.url || "",
     },
     date: new Date(node.date).toLocaleDateString(),
-    category: node.categories?.nodes?.[0]?.name || 'Journal',
-    readTime: '5 min read',
+    category: node.categories?.nodes?.[0]?.name || "Journal",
+    readTime: "5 min read",
     comments: node.comments?.nodes || [],
   };
 }
 
 function getCountryCode(countryName: string) {
   const lower = countryName.toLowerCase().trim();
-  if (lower === 'bangladesh') return 'BD';
-  if (lower === 'united states' || lower === 'usa') return 'US';
-  if (lower === 'united kingdom' || lower === 'uk') return 'GB';
-  return countryName.length === 2 ? countryName.toUpperCase() : 'BD';
+  if (lower === "bangladesh") return "BD";
+  if (lower === "united states" || lower === "usa") return "US";
+  if (lower === "united kingdom" || lower === "uk") return "GB";
+  return countryName.length === 2 ? countryName.toUpperCase() : "BD";
 }
 
 // --- CORE FETCH FUNCTION ---
-let sessionToken = localStorage.getItem('woo-session') || null;
+// Preview imports must remain usable when browser storage is denied.
+let sessionToken: string | null = null;
+if (!isPreview) {
+  try { sessionToken = localStorage.getItem("woo-session"); } catch { /* No persisted session available. */ }
+}
 
 async function fetchGraphQL(query: string, variables = {}) {
-  if (!API_URL) throw new Error('API URL is not configured');
-  
-  const headers: any = { 'Content-Type': 'application/json' };
-  
+  if (isPreview) throw new Error(content.preview.notice);
+  if (!API_URL) throw new Error("API URL is not configured");
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
   if (sessionToken) {
-    headers['woocommerce-session'] = `Session ${sessionToken}`;
+    headers["woocommerce-session"] = `Session ${sessionToken}`;
   }
 
-  const authToken = localStorage.getItem('auth-token');
+  const authToken = localStorage.getItem("auth-token");
   if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
+    headers["Authorization"] = `Bearer ${authToken}`;
   }
 
   const response = await fetch(API_URL, {
-    method: 'POST',
+    method: "POST",
     headers,
     body: JSON.stringify({ query, variables }),
   });
 
-  const newSession = response.headers.get('woocommerce-session');
+  const newSession = response.headers.get("woocommerce-session");
   if (newSession) {
     sessionToken = newSession;
-    localStorage.setItem('woo-session', newSession);
+    localStorage.setItem("woo-session", newSession);
   }
 
   const json = await response.json();
   if (json.errors) {
-    console.error('GraphQL Errors:', json.errors);
+    console.error("GraphQL Errors:", json.errors);
     throw new Error(JSON.stringify(json.errors));
   }
   return json.data;
@@ -341,48 +403,74 @@ async function fetchGraphQL(query: string, variables = {}) {
 
 // <--- NEW: Add the function to update a user's name after they register
 export async function updateUserName(userId: string, name: string) {
-    const data = await fetchGraphQL(UPDATE_USER_MUTATION, { id: userId, firstName: name });
-    return data?.updateUser?.user;
+  const data = await fetchGraphQL(UPDATE_USER_MUTATION, {
+    id: userId,
+    firstName: name,
+  });
+  return data?.updateUser?.user;
 }
 
 export async function fetchProducts(): Promise<Product[]> {
+  if (isPreview) return previewCatalogue.products;
   const data = await fetchGraphQL(PRODUCTS_QUERY);
   return data?.products?.nodes?.map(transformProduct) || [];
 }
 
-export async function fetchProductBySlug(slug: string): Promise<any | null> {
+export async function fetchProductBySlug(
+  slug: string,
+): Promise<Product | null> {
+  if (isPreview)
+    return (
+      previewCatalogue.products.find((product) => product.slug === slug) || null
+    );
   const data = await fetchGraphQL(SINGLE_PRODUCT_QUERY, { slug });
   if (!data?.product) return null;
   return transformProduct(data.product);
 }
 
 export async function fetchPosts(): Promise<BlogPost[]> {
+  if (isPreview) return previewCatalogue.posts;
   const data = await fetchGraphQL(POSTS_QUERY);
   return data?.posts?.nodes?.map(transformPost) || [];
 }
 
-export async function fetchPostBySlug(slug: string): Promise<any | null> {
+export async function fetchPostBySlug(slug: string): Promise<BlogPost | null> {
+  if (isPreview)
+    return previewCatalogue.posts.find((post) => post.slug === slug) || null;
   const data = await fetchGraphQL(SINGLE_POST_QUERY, { slug });
   if (!data?.post) return null;
   return transformPost(data.post);
 }
 
-export async function createComment(postId: number, author: string, email: string, body: string) {
-  const data = await fetchGraphQL(CREATE_COMMENT_MUTATION, { postId, author, email, body });
+export async function createComment(
+  postId: number,
+  author: string,
+  email: string,
+  body: string,
+) {
+  const data = await fetchGraphQL(CREATE_COMMENT_MUTATION, {
+    postId,
+    author,
+    email,
+    body,
+  });
   return data?.createComment;
 }
 
-export async function processCheckout(data: any, cartItems: any[]) {
+export async function processCheckout(
+  data: CheckoutInput,
+  cartItems: { product: Product; quantity: number }[],
+) {
   for (const item of cartItems) {
     await fetchGraphQL(ADD_TO_CART_MUTATION, {
-      productId: parseInt(item.product.id, 10), 
-      quantity: item.quantity
+      productId: parseInt(item.product.id, 10),
+      quantity: item.quantity,
     });
   }
 
   const countryCode = getCountryCode(data.country);
   const input = {
-    paymentMethod: 'cod',
+    paymentMethod: "cod",
     billing: {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -402,33 +490,37 @@ export async function processCheckout(data: any, cartItems: any[]) {
 export async function loginUser(username: string, password: string) {
   const data = await fetchGraphQL(LOGIN_MUTATION, { username, password });
   const loginData = data?.login;
-  
+
   if (loginData?.user) {
-    const avatarUrl = loginData.user.avatar?.url || '';
-    
+    const avatarUrl = loginData.user.avatar?.url || "";
+
     return {
       authToken: loginData.authToken,
       user: {
-        id: String(loginData.user.databaseId || loginData.user.id || ''),
-        name: loginData.user.name || '',
-        email: loginData.user.email || '',
+        id: String(loginData.user.databaseId || loginData.user.id || ""),
+        name: loginData.user.name || "",
+        email: loginData.user.email || "",
         avatar: avatarUrl,
-      }
+      },
     };
   }
   return null;
 }
-  
-export async function registerUser(name: string, email: string, password: string) {
+
+export async function registerUser(
+  name: string,
+  email: string,
+  password: string,
+) {
   const data = await fetchGraphQL(REGISTER_MUTATION, { email, password, name });
   const customer = data?.registerCustomer?.customer;
-  
+
   if (customer) {
     return {
       id: customer.id, // We need the GraphQL ID (e.g. "user:5") for the update mutation
       email: customer.email || email,
       name: customer.firstName || name,
-      avatar: customer.avatar?.url || '',
+      avatar: customer.avatar?.url || "",
     };
   }
   return null;
@@ -438,30 +530,35 @@ export async function fetchCustomerOrders() {
   try {
     const data = await fetchGraphQL(GET_CUSTOMER_ORDERS);
     const orders = data?.customer?.orders?.nodes || [];
-    
-    return orders.map((order: any) => ({
+
+    return orders.map((order: CustomerOrder) => ({
       orderNumber: order.orderNumber,
       date: order.date,
       status: order.status,
       total: order.total,
     }));
   } catch (error) {
-    console.error('Failed to fetch orders:', error);
+    console.error("Failed to fetch orders:", error);
     return [];
   }
 }
 
-export async function submitContactForm(data: { name: string; email: string; message: string; subject?: string }) {
-    const response = await fetchGraphQL(SUBMIT_FORM_MUTATION, {
-      name: data.name,
-      email: data.email,
-      subject: data.subject || 'General Inquiry',
-      message: data.message
-    });
-  
-    if (!response?.submitChronosContact?.success) {
-      throw new Error('Server failed to send email');
-    }
-  
-    return true;
+export async function submitContactForm(data: {
+  name: string;
+  email: string;
+  message: string;
+  subject?: string;
+}) {
+  const response = await fetchGraphQL(SUBMIT_FORM_MUTATION, {
+    name: data.name,
+    email: data.email,
+    subject: data.subject || "General Inquiry",
+    message: data.message,
+  });
+
+  if (!response?.submitChronosContact?.success) {
+    throw new Error("Server failed to send email");
+  }
+
+  return true;
 }

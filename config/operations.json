@@ -1,0 +1,49 @@
+{
+  "capacity": {
+    "status": "design-target-not-load-verified",
+    "targetConcurrentUsers": [
+      10000,
+      100000,
+      1000000
+    ],
+    "sessionSeconds": 300,
+    "htmlRequestsPerSession": 5,
+    "assetRequestsPerSession": 25,
+    "exampleEdgeHitRatio": 0.99,
+    "exampleSessionTransferBytes": 12000000
+  },
+  "availability": {
+    "targetPercent": 99,
+    "windowDays": 30,
+    "probeIntervalSeconds": 60,
+    "timeoutMs": 10000,
+    "paths": [
+      {
+        "path": "/",
+        "expectedText": "TIME IS"
+      },
+      {
+        "path": "/shop",
+        "expectedText": "Find your point of view."
+      },
+      {
+        "path": "/healthz",
+        "expectedText": "chronos-ok"
+      }
+    ],
+    "outputFile": "memory/operations/availability.jsonl"
+  },
+  "localLoad": {
+    "baseUrl": "http://127.0.0.1:4173",
+    "concurrency": 20,
+    "totalRequests": 400,
+    "timeoutMs": 10000,
+    "paths": [
+      "/",
+      "/shop",
+      "/product/nocturne",
+      "/about"
+    ],
+    "outputFile": "memory/operations/local-load.json"
+  }
+}

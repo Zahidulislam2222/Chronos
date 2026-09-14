@@ -54,7 +54,7 @@ jobs:
 
       - name: Build blocks
         working-directory: wordpress/wp-content/plugins/chronos-blocks
-        run: npm run build
+        run: npm run lint:js && npm run build
 
       - name: Run Jest tests
         working-directory: wordpress/wp-content/plugins/chronos-blocks
@@ -78,8 +78,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build frontend
-        run: npm run build
+      - name: Audit and validate frontend
+        run: npm audit --audit-level=moderate && npm run typecheck && npm run lint
+
+      - name: Install rendering browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Build rendered portfolio
+        env:
+          VITE_API_URL: ''
+          VITE_WP_API_URL: ''
+          VITE_SITE_URL: ${{ vars.CHRONOS_SITE_URL || 'https://chronos.example' }}
+          VITE_STOREFRONT_MODE: preview
+          VITE_SEARCH_INDEXABLE: 'true'
+        run: npm run build && npm run verify:release
 
   # ── Deploy to Production — cPanel API (LEGACY / PROOF OF WORK) ──
   # This job was the original AridHost cPanel deployment pipeline.
@@ -111,7 +123,7 @@ jobs:
       - name: Build frontend
         env:
           VITE_API_URL: https://chronosbackend.healthcodeanalysis.com/graphql
-        run: npm run build
+        run: npm run build:client
 
       - name: Deploy backend plugins + frontend via cPanel API
         env:
@@ -212,7 +224,7 @@ jobs:
           VITE_API_URL: https://chronosbackend.35-222-94-93.sslip.io/graphql
           VITE_WP_API_URL: https://chronosbackend.35-222-94-93.sslip.io
           VITE_SITE_URL: https://chronos-vwg.pages.dev
-        run: npm run build
+        run: npm run build:client
 
       - name: Restore Wrangler credentials
         env:

@@ -1,7 +1,17 @@
-import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
-import { Product } from '@/lib/mockData';
+import { isPreview, storageKeys } from "@/config/settings";
+import { previewCatalogue } from "@/content";
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
+import { Product } from "@/lib/mockData";
 // <--- NEW: Import Auth to know who is logged in
-import { useAuth } from '@/context/AuthContext'; 
+import { useAuth } from "@/context/AuthContext";
 
 // --- Types ---
 interface CartItem {
@@ -15,13 +25,13 @@ interface CartState {
 }
 
 type CartAction =
-  | { type: 'ADD_ITEM'; payload: Product }
-  | { type: 'REMOVE_ITEM'; payload: string }
-  | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
-  | { type: 'CLEAR_CART' }
-  | { type: 'TOGGLE_CART' }
-  | { type: 'CLOSE_CART' }
-  | { type: 'SET_CART'; payload: CartItem[] };
+  | { type: "ADD_ITEM"; payload: Product }
+  | { type: "REMOVE_ITEM"; payload: string }
+  | { type: "UPDATE_QUANTITY"; payload: { id: string; quantity: number } }
+  | { type: "CLEAR_CART" }
+  | { type: "TOGGLE_CART" }
+  | { type: "CLOSE_CART" }
+  | { type: "SET_CART"; payload: CartItem[] };
 
 const CartContext = createContext<{
   state: CartState;
@@ -34,76 +44,108 @@ const CartContext = createContext<{
   closeCart: () => void;
   totalItems: number;
   totalPrice: number;
-  isLoading: boolean; 
+  isLoading: boolean;
 } | null>(null);
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
-    case 'SET_CART':
+    case "SET_CART":
       return { ...state, items: action.payload };
-    case 'ADD_ITEM': {
+    case "ADD_ITEM": {
       if (!action.payload || !action.payload.id) return state;
-      const existingItem = state.items.find((item) => item.product.id === action.payload.id);
+      const existingItem = state.items.find(
+        (item) => item.product.id === action.payload.id,
+      );
       if (existingItem) {
         return {
           ...state,
           items: state.items.map((item) =>
-            item.product.id === action.payload.id ? { ...item, quantity: item.quantity + 1 } : item
+            item.product.id === action.payload.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item,
           ),
           isOpen: true,
         };
       }
-      return { ...state, items: [...state.items, { product: action.payload, quantity: 1 }], isOpen: true };
+      return {
+        ...state,
+        items: [...state.items, { product: action.payload, quantity: 1 }],
+        isOpen: true,
+      };
     }
-    case 'REMOVE_ITEM':
-      return { ...state, items: state.items.filter((item) => item.product.id !== action.payload) };
-    case 'UPDATE_QUANTITY':
+    case "REMOVE_ITEM":
+      return {
+        ...state,
+        items: state.items.filter((item) => item.product.id !== action.payload),
+      };
+    case "UPDATE_QUANTITY":
       return {
         ...state,
         items: state.items.map((item) =>
-          item.product.id === action.payload.id ? { ...item, quantity: action.payload.quantity } : item
+          item.product.id === action.payload.id
+            ? { ...item, quantity: action.payload.quantity }
+            : item,
         ),
       };
-    case 'CLEAR_CART':
+    case "CLEAR_CART":
       return { ...state, items: [] };
-    case 'TOGGLE_CART':
+    case "TOGGLE_CART":
       return { ...state, isOpen: !state.isOpen };
-    case 'CLOSE_CART':
+    case "CLOSE_CART":
       return { ...state, isOpen: false };
     default:
       return state;
   }
 };
 
-export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(cartReducer, { items: [], isOpen: false });
-  const [isInitialized, setIsInitialized] = useState(false); 
-  
+export const CartProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [state, dispatch] = useReducer(cartReducer, {
+    items: [],
+    isOpen: false,
+  });
+  const [isInitialized, setIsInitialized] = useState(false);
+
   // <--- NEW: Get the current user
-  const { user } = useAuth(); 
+  const { user } = useAuth();
 
   // <--- NEW: Helper to get the correct storage key
-  const getStorageKey = () => {
+  const getStorageKey = useCallback(() => {
+    if (isPreview) return storageKeys.previewCart;
     if (user && user.email) {
-      return `chronos_cart_${user.email}`; // Unique cart for every user
+      return `${storageKeys.userCartPrefix}${user.email}`; // Unique cart for every user
     }
-    return 'chronos_cart_guest'; // Default cart for guests
-  };
+    return storageKeys.guestCart; // Default cart for guests
+  }, [user]);
 
   // 1. LOAD DATA (Runs whenever the USER changes)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       // Temporarily lock saving so we don't overwrite the new user's cart with old state
-      setIsInitialized(false); 
+      setIsInitialized(false);
 
       const storageKey = getStorageKey(); // <--- Dynamic Key
-      const storedCart = localStorage.getItem(storageKey);
+      let storedCart: string | null = null;
+      try { storedCart = localStorage.getItem(storageKey); } catch { /* Browsing remains available without storage. */ }
 
       if (storedCart) {
         try {
           const parsed = JSON.parse(storedCart);
           if (Array.isArray(parsed)) {
-            dispatch({ type: 'SET_CART', payload: parsed });
+            const items = isPreview
+              ? parsed.flatMap((item) => {
+                  const product = previewCatalogue.products.find(
+                    (p) => p.id === item?.product?.id,
+                  );
+                  return product &&
+                    Number.isSafeInteger(item.quantity) &&
+                    item.quantity > 0
+                    ? [{ product, quantity: item.quantity }]
+                    : [];
+                })
+              : parsed;
+            dispatch({ type: "SET_CART", payload: items });
           }
         } catch (error) {
           console.error("Cart corrupted", error);
@@ -111,42 +153,68 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else {
         // <--- CRITICAL: If no cart found for this user (or guest), CLEAR the state
         // This fixes the issue: Logout -> User is null -> Key is 'guest' -> Guest has no cart -> Clear old user items
-        dispatch({ type: 'CLEAR_CART' }); 
+        dispatch({ type: "CLEAR_CART" });
       }
-      
-      setIsInitialized(true); 
+
+      setIsInitialized(true);
     }
-  }, [user]); // <--- Dependency: Runs when User logs in or out
+  }, [user, getStorageKey]); // <--- Dependency: Runs when User logs in or out
 
   // 2. SAVE DATA (Runs whenever ITEMS change)
   useEffect(() => {
     if (isInitialized) {
       const storageKey = getStorageKey(); // <--- Save to the correct user's box
-      localStorage.setItem(storageKey, JSON.stringify(state.items));
+      try {
+        if (state.items.length) localStorage.setItem(storageKey, JSON.stringify(state.items));
+        else localStorage.removeItem(storageKey);
+      } catch { /* Keep an in-memory selection when storage is unavailable. */ }
     }
-  }, [state.items, isInitialized, user]); // Added user to dependencies
+  }, [state.items, isInitialized, user, getStorageKey]); // Added user to dependencies
 
   // Actions...
-  const addToCart = (product: Product) => dispatch({ type: 'ADD_ITEM', payload: product });
-  const removeFromCart = (productId: string) => dispatch({ type: 'REMOVE_ITEM', payload: productId });
+  const addToCart = (product: Product) =>
+    dispatch({ type: "ADD_ITEM", payload: product });
+  const removeFromCart = (productId: string) =>
+    dispatch({ type: "REMOVE_ITEM", payload: productId });
   const updateQuantity = (productId: string, quantity: number) => {
     if (quantity <= 0) removeFromCart(productId);
-    else dispatch({ type: 'UPDATE_QUANTITY', payload: { id: productId, quantity } });
+    else
+      dispatch({
+        type: "UPDATE_QUANTITY",
+        payload: { id: productId, quantity },
+      });
   };
-  const clearCart = () => dispatch({ type: 'CLEAR_CART' });
-  const toggleCart = () => dispatch({ type: 'TOGGLE_CART' });
-  const closeCart = () => dispatch({ type: 'CLOSE_CART' });
+  const clearCart = useCallback(() => dispatch({ type: "CLEAR_CART" }), []);
+  const toggleCart = () => dispatch({ type: "TOGGLE_CART" });
+  const closeCart = () => dispatch({ type: "CLOSE_CART" });
 
   // Safe Calculations
-  const totalItems = state.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
-  const totalPrice = state.items.reduce((sum, item) => sum + (item.product?.price || 0) * (item.quantity || 1), 0);
+  const totalItems = state.items.reduce(
+    (sum, item) => sum + (item.quantity || 0),
+    0,
+  );
+  const totalPrice = state.items.reduce(
+    (sum, item) =>
+      sum +
+      (item.product?.salePrice ?? item.product?.price ?? 0) *
+        (item.quantity || 1),
+    0,
+  );
 
   return (
     <CartContext.Provider
       value={{
-        state, dispatch, addToCart, removeFromCart, updateQuantity, clearCart, toggleCart, closeCart,
-        totalItems, totalPrice,
-        isLoading: !isInitialized 
+        state,
+        dispatch,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        toggleCart,
+        closeCart,
+        totalItems,
+        totalPrice,
+        isLoading: !isInitialized,
       }}
     >
       {children}
@@ -156,6 +224,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export const useCart = () => {
   const context = useContext(CartContext);
-  if (!context) throw new Error('useCart must be used within a CartProvider');
+  if (!context) throw new Error("useCart must be used within a CartProvider");
   return context;
 };
