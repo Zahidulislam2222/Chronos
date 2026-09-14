@@ -1,7 +1,6 @@
 import { content } from "@/content";
-export const money = (value: number) =>
+export const money = (value: number, currency: string = content.brand.currency) =>
   new Intl.NumberFormat(content.brand.locale, {
     style: "currency",
-    currency: content.brand.currency,
-    maximumFractionDigits: 0,
+    currency,
   }).format(value);

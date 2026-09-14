@@ -4,7 +4,7 @@ import { ArrowUpRight, Plus } from "lucide-react";
 import type { Product } from "@/lib/mockData";
 import { useCart } from "@/context/CartContext";
 import { content } from "@/content";
-import { money } from "@/lib/format";
+import { useMoney } from "@/hooks/use-money";
 export default function ProductCard({
   product,
   index = 0,
@@ -12,6 +12,7 @@ export default function ProductCard({
   product: Product;
   index?: number;
 }) {
+  const money = useMoney();
   const { addToCart } = useCart();
   return (
     <article className={"product-card product-tone-" + index}>
@@ -30,6 +31,7 @@ export default function ProductCard({
         </Link>
         <button
           className="quick-add"
+          disabled={!product.inStock}
           onClick={() => addToCart(product)}
           aria-label={"Add " + product.name + " to bag"}
         >

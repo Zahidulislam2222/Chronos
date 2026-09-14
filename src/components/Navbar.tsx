@@ -5,7 +5,10 @@ import { Search, ShoppingBag, Menu, UserRound } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "./ui/sheet";
 import { content } from "@/content";
+import { useSite } from "@/hooks/use-site";
 export default function Navbar() {
+  const site = useSite();
+  const navigation = site.data?.navigation ?? content.nav;
   const opener = useRef<HTMLElement | null>(null);
   const { totalItems, toggleCart } = useCart();
   const [open, setOpen] = useState(false);
@@ -18,7 +21,7 @@ export default function Navbar() {
           <span>{content.ui.markTagline}</span>
         </Link>
         <nav className="desktop-nav" aria-label="Main navigation">
-          {content.nav.map((n) => (
+          {navigation.map((n) => (
             <Link
               className={pathname === n.href ? "active" : ""}
               key={n.href}
@@ -73,7 +76,7 @@ export default function Navbar() {
           <SheetTitle className="wordmark">{content.brand.name}</SheetTitle>
           <SheetDescription>{content.brand.tagline}</SheetDescription>
           <nav className="mobile-links" aria-label="Mobile navigation">
-            {content.nav.map((n) => (
+            {navigation.map((n) => (
               <Link key={n.href} to={n.href} onClick={() => setOpen(false)}>
                 {n.label}
               </Link>

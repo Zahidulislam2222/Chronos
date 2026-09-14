@@ -27,11 +27,11 @@ A decoupled architecture where a React SPA frontend communicates with a WordPres
 
 ---
 
-The [hosted design demo](https://chronos.zahidul-islam.com) presents the cinematic watch collection, scroll-controlled films and interactive shopping bag. It uses an isolated catalogue and does not submit orders, payments or account registrations. The repository also retains the connected WordPress commerce implementation.
+The [live connected demo](https://chronos.zahidul-islam.com) combines the accepted cinematic design with WordPress products, posts, pages and navigation. Login, order history, contact persistence and hosted Stripe **test** checkout work against the backend. No physical goods or live charges are offered. Administrator access is supplied privately.
 
 ## Engineering evidence
 
-The current demo uses pre-rendered HTML, route-specific metadata, an XML sitemap, truthful website/article/creative-work structured data, and an isolated static runtime. The browser policy restricts scripts, frames, forms and device capabilities. Dependency, browser, accessibility, release-integrity and recovery checks are documented separately from untested production claims.
+The current demo uses pre-rendered HTML, route-specific metadata, an XML sitemap, website/page/article metadata and connected Product structured data without merchant offers, and a constrained frontend runtime connected to WordPress APIs. The browser policy restricts scripts, frames, forms and device capabilities. Dependency, browser, accessibility, release-integrity and recovery checks are documented separately from untested production claims.
 
 - [Scalability and availability architecture](docs/SCALABILITY.md): stateless delivery, cache assumptions, a staged path toward **10k–1M concurrent readers**, and a **99% availability objective**. These are design targets, not verified current capacity or an SLA.
 - [Search, security and US/EU legal review](docs/SEARCH-SECURITY-LEGAL-REVIEW.md): cited applicability matrix, implemented demo controls, and obligations before real commerce.
@@ -41,7 +41,7 @@ The current demo uses pre-rendered HTML, route-specific metadata, an XML sitemap
 
 ## Architecture
 
-Connected architecture retained in the repository; the hosted design demo runs without the backend connection.
+The public frontend is connected to the existing WordPress/WooCommerce backend. CMS changes appear through API reads and the live sitemap without rebuilding; initial HTML snapshots refresh on rebuild.
 
 ```
                          GraphQL / REST API
@@ -51,7 +51,7 @@ Connected architecture retained in the repository; the hosted design demo runs w
   │  Vite + TS       │                           │  WooCommerce         │
   │  Tailwind CSS    │                           │  WPGraphQL           │
   │                  │                           │                      │
-  │  VPS / Cloudflare│                           │  GCP e2-micro / Docker│
+  │  VPS / Cloudflare│                           │  WordPress / PHP / DB│
   └──────────────────┘                           └──────────┬───────────┘
                                                             │
                                                   ┌─────────┴─────────┐
@@ -61,11 +61,11 @@ Connected architecture retained in the repository; the hosted design demo runs w
 
 | Layer | Tech | Purpose |
 |-------|------|---------|
-| **Frontend** | React 18, TypeScript, Vite, Tailwind | Pre-rendered demo with code splitting and search metadata; connected commerce retained separately |
+| **Frontend** | React 18, TypeScript, Vite, Tailwind | Pre-rendered pages, current CMS reads, code splitting and test commerce |
 | **Backend** | WordPress 7.0, WooCommerce, PHP 8.1+ | Headless CMS, product management, order processing |
 | **API** | WPGraphQL, REST API (custom) | Product queries, checkout, payments, AI features |
 | **Database** | MariaDB | WooCommerce data + custom contact submissions table |
-| **DevOps** | Docker, Caddy, Cloudflare, GitHub Actions | Versioned static demo releases; retained manually guarded commerce workflows |
+| **DevOps** | Docker, Caddy, Cloudflare, GitHub Actions | Versioned connected frontend releases; manually guarded workflows |
 
 ---
 
@@ -100,15 +100,15 @@ Connected architecture retained in the repository; the hosted design demo runs w
 
 ### Frontend Highlights
 
-- **Code splitting** — 11 routes (9 lazy-loaded) via `React.lazy`
+- **Code splitting** — Lazy-loaded route screens via `React.lazy`
 - **SEO** — react-helmet-async (OG, Twitter Card, JSON-LD)
-- **Payments** — Real Stripe Checkout redirect flow
+- **Payments** — Hosted Stripe test checkout with verified WooCommerce persistence
 - **Auth** — JWT stateless authentication
-- **A11y** — WCAG 2.1 AA (skip-to-content, ARIA landmarks, focus management)
-- **GDPR** — Cookie consent with `getCookieConsent()` guard
+- **A11y** — Skip navigation, labels and focus management; six public axe scans found zero violations, without claiming full WCAG conformance
+- **Privacy** — Connected-data notice and storage controls; retained CookieConsent component is not mounted and is not a compliance claim
 - **Legal** — Privacy Policy, Terms of Service pages
 
-### WordPress 7.0 AI Integration
+### Retained AI administration (not exercised in this recovery)
 
 - **Generate Description** button on watch edit screen
 - AI-powered contact form auto-responder (sentiment + intent analysis)
@@ -125,9 +125,9 @@ Connected architecture retained in the repository; the hosted design demo runs w
 - Node.js 22.13+ (Node 24 used for the verified release)
 - Git
 
-### Static demo quick start
+### Optional isolated preview
 
-No backend or paid service is required for the portfolio demo.
+The optional local preview needs no backend. The public deployment uses connected mode.
 
 ```bash
 npm ci
@@ -143,9 +143,9 @@ npm run preview
 
 `npm run capacity:model` prints explicit workload assumptions. `npm run monitor:once` records one HTTPS observation; schedule it externally for actual availability measurement. Neither command is a load-capacity or uptime guarantee. The local-only load tool is retained under ignored `tests/` for this workspace; it is not a published distributed-load service.
 
-### Retained connected-backend setup
+### Connected-backend setup
 
-This path requires separate security, legal and payment verification before use with real customers. It is not the public demo topology.
+Set `VITE_STOREFRONT_MODE=connected`, the GraphQL/WordPress/public site origins and all documented settings in the ignored production environment file. The public deployment uses existing hosts; the Docker commands below are an optional local setup. Real customers and live payments need separate commercial-launch verification.
 
 
 ```bash
@@ -205,7 +205,7 @@ POST /contact              Submit contact form (rate-limited)
 
 ### Payments (Stripe)
 ```
-GET  /stripe/config        Publishable key for frontend
+GET  /stripe/config        Checkout availability and test-mode status
 POST /stripe/create-session  Create Checkout Session
 POST /stripe/webhook       Webhook handler (signature verified)
 POST /checkout/custom-fields  Save gift wrapping + delivery instructions
@@ -234,7 +234,7 @@ GET  /ai/status                Feature availability check
 docker exec wordpress-wordpress-1 bash -c \
   "cd /var/www/html/wp-content/plugins/chronos-bridge && vendor/bin/phpcs"
 
-# PHPUnit (33 tests, 47 assertions)
+# PHPUnit (38 tests, 60 assertions)
 docker exec wordpress-wordpress-1 bash -c \
   "cd /var/www/html/wp-content/plugins/chronos-bridge && vendor/bin/phpunit"
 
@@ -253,7 +253,7 @@ npm run build
 
 Deployment configuration lives in `deploy/shared-vps/`. Releases are built locally, staged in a new versioned directory, validated, and compared against the live files by SHA-256. HTML uses `no-transform` to preserve the original page through the CDN. Private access, release ownership and rollback records are maintained outside tracked source.
 
-**Retained deployment workflows:** the existing GCP/Cloudflare Pages workflows are historical paths, not the current static-demo deployment. They are manual and guarded by `workflow_dispatch` and `CHRONOS_ACTIONS_ENABLED`; no workflow was enabled or run for this deployment.
+**Retained deployment workflows:** the existing GCP/Cloudflare Pages workflows are historical paths, not the current connected deployment. They are manual and guarded by `workflow_dispatch` and `CHRONOS_ACTIONS_ENABLED`; no workflow was enabled or run for this deployment.
 
 **Retained backend pipeline** (not migrated or executed for the static demo) (GitHub Actions → GCP via SSH + rsync):
 
@@ -275,7 +275,7 @@ verify              → Health-check GraphQL + frontend URLs
 **Security:**
 - SSH deployment credentials are supplied through private configuration
 - Retained workflows expect the GitHub Actions secrets listed below
-- Current static release contains no application credentials
+- Frontend release contains no privileged application credentials
 - Dependabot scans dependencies weekly
 - Let's Encrypt SSL (auto-renews)
 - Current demo sends X-Content-Type-Options, X-Frame-Options and Referrer-Policy headers
@@ -290,7 +290,7 @@ verify              → Health-check GraphQL + frontend URLs
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account identifier |
 | `GH_PAT` | GitHub PAT used by CI to rotate the Wrangler config |
 
-**Historical manual workflow:** "Deploy to Production" targets the retained infrastructure. Do not use it to update the current VPS demo; use the versioned local-first release process above.
+**Historical manual workflow:** "Deploy to Production" targets the retained infrastructure. Do not use it to update the current VPS frontend; use the versioned local-first release process above.
 
 ### Previous Infrastructure — cPanel (Preserved as Portfolio Reference)
 
@@ -312,7 +312,7 @@ The cPanel infrastructure is no longer active (hosting expired), but the impleme
 | **Backend** | PHP 8.1+, WordPress 7.0, WooCommerce, WPGraphQL, Stripe PHP SDK |
 | **Database** | MariaDB, custom tables via dbDelta |
 | **Testing** | PHPUnit, Jest, PHPCS (WordPress standards) |
-| **DevOps** | Docker, GitHub Actions, GCP e2-micro, Cloudflare Pages |
+| **DevOps** | Docker, Caddy, existing frontend/backend hosts, Cloudflare, manual GitHub Actions |
 | **Security** | JWT auth, nonces, prepared statements, webhook signatures, CORS, CSP headers |
 
 ---

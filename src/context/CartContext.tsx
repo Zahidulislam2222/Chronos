@@ -1,5 +1,5 @@
 import { isPreview, storageKeys } from "@/config/settings";
-import { previewCatalogue } from "@/content";
+import { previewCatalogue, productSchema } from "@/content";
 import React, {
   createContext,
   useContext,
@@ -10,8 +10,8 @@ import React, {
   ReactNode,
 } from "react";
 import { Product } from "@/lib/mockData";
-// <--- NEW: Import Auth to know who is logged in
-import { useAuth } from "@/context/AuthContext";
+
+
 
 // --- Types ---
 interface CartItem {
@@ -107,25 +107,19 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
   });
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // <--- NEW: Get the current user
-  const { user } = useAuth();
-
-  // <--- NEW: Helper to get the correct storage key
+  // Connected selections survive sign-in; logout explicitly clears storage.
   const getStorageKey = useCallback(() => {
     if (isPreview) return storageKeys.previewCart;
-    if (user && user.email) {
-      return `${storageKeys.userCartPrefix}${user.email}`; // Unique cart for every user
-    }
     return storageKeys.guestCart; // Default cart for guests
-  }, [user]);
+  }, []);
 
-  // 1. LOAD DATA (Runs whenever the USER changes)
+  // Restore only validated selections from browser storage.
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Temporarily lock saving so we don't overwrite the new user's cart with old state
+      // Do not save until restoration finishes.
       setIsInitialized(false);
 
-      const storageKey = getStorageKey(); // <--- Dynamic Key
+      const storageKey = getStorageKey();
       let storedCart: string | null = null;
       try { storedCart = localStorage.getItem(storageKey); } catch { /* Browsing remains available without storage. */ }
 
@@ -144,32 +138,35 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
                     ? [{ product, quantity: item.quantity }]
                     : [];
                 })
-              : parsed;
+              : parsed.flatMap((item) => {
+                  const checked = productSchema.safeParse(item?.product);
+                  return checked.success && Number.isSafeInteger(item?.quantity) && item.quantity > 0
+                    ? [{product:checked.data as Product,quantity:item.quantity}]
+                    : [];
+                });
             dispatch({ type: "SET_CART", payload: items });
           }
         } catch (error) {
           console.error("Cart corrupted", error);
         }
       } else {
-        // <--- CRITICAL: If no cart found for this user (or guest), CLEAR the state
-        // This fixes the issue: Logout -> User is null -> Key is 'guest' -> Guest has no cart -> Clear old user items
         dispatch({ type: "CLEAR_CART" });
       }
 
       setIsInitialized(true);
     }
-  }, [user, getStorageKey]); // <--- Dependency: Runs when User logs in or out
+  }, [getStorageKey]);
 
   // 2. SAVE DATA (Runs whenever ITEMS change)
   useEffect(() => {
     if (isInitialized) {
-      const storageKey = getStorageKey(); // <--- Save to the correct user's box
+      const storageKey = getStorageKey();
       try {
         if (state.items.length) localStorage.setItem(storageKey, JSON.stringify(state.items));
         else localStorage.removeItem(storageKey);
       } catch { /* Keep an in-memory selection when storage is unavailable. */ }
     }
-  }, [state.items, isInitialized, user, getStorageKey]); // Added user to dependencies
+  }, [state.items, isInitialized, getStorageKey]);
 
   // Actions...
   const addToCart = (product: Product) =>
@@ -177,6 +174,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
   const removeFromCart = (productId: string) =>
     dispatch({ type: "REMOVE_ITEM", payload: productId });
   const updateQuantity = (productId: string, quantity: number) => {
+    if (!Number.isSafeInteger(quantity)) return;
     if (quantity <= 0) removeFromCart(productId);
     else
       dispatch({

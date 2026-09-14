@@ -1,0 +1,61 @@
+{
+  "pages": [
+    {
+      "slug": "about",
+      "title": "Our perspective",
+      "paragraphs": [
+        "Chronos is a study in considered collecting. A space to slow down, look closely, and discover the details that make an object worth keeping.",
+        "A watch is both useful and deeply personal. Its proportions, materials and small rituals become part of the way we move through a day.",
+        "Our collection explores three different characters: the understated Nocturne, the warm Meridian, and the blue-dial Pelagic. Each is an original fictional concept created for this storefront preview.",
+        "This is an independent portfolio demonstration, not an established watch manufacturer. The products, specifications and prices illustrate the shopping experience; no items are offered for sale in this preview.",
+        "The catalogue and journal are managed in WordPress. This is a demonstration store, not an offer to sell physical watches."
+      ]
+    },
+    {
+      "slug": "privacy",
+      "title": "Privacy",
+      "paragraphs": [
+        "Chronos is a connected WordPress demonstration. Browsing requests reach the hosting provider and WordPress server. Infrastructure providers may process request metadata for delivery and security.",
+        "If you create an account, WordPress stores the name and email you provide and a password hash. The browser stores a sign-in token and your bag on this device. Sign out to remove the active browser token and selection. Do not reuse a password from another service.",
+        "Contact form submissions are stored in the WordPress contact inbox with their supplied name, email, subject and message. Do not include sensitive information.",
+        "Checkout is test-only. Stripe processes the test checkout; WooCommerce stores the corresponding demonstration order. No goods are shipped, and this demonstration does not send order emails. Use Stripe test details, never real card details.",
+        "To request access, correction or deletion of submitted personal data, use the Contact page. Do not submit identity documents through this demonstration."
+      ]
+    },
+    {
+      "slug": "terms",
+      "title": "Terms of use",
+      "paragraphs": [
+        "Chronos is a portfolio demonstration powered by WordPress and WooCommerce. Catalogue records and campaign visuals are illustrative.",
+        "Test checkout does not charge real money or create an agreement to ship goods. Use only Stripe test payment details. No physical products are sold through this demonstration.",
+        "Do not submit confidential information, reuse an important password, or abuse the account, contact or checkout features.",
+        "Content and features may change as this demonstration evolves. Report problems through the Contact page."
+      ]
+    },
+    {
+      "slug": "accessibility",
+      "title": "Accessibility",
+      "paragraphs": [
+        "Chronos supports keyboard navigation, a skip-to-content link, labelled controls and browser zoom. Product information is presented as text alongside imagery.",
+        "The cinematic sequences respond to the reduced-motion preference in your device or browser and use static image fallbacks when motion is reduced or video cannot load. The silent visual sequences contain no spoken instructions or essential information available only in audio.",
+        "The collection and journal remain readable without JavaScript. Interactive filters, gallery controls and the demo bag need JavaScript; ordinary page links remain available.",
+        "Automated and manual checks support ongoing improvements, but do not establish that every assistive technology or every WCAG requirement has been verified. We do not claim certified legal conformity.",
+        "If you encounter a barrier, use the developer contact profile on the contact page. Describe the page, browser and assistive technology if you wish; avoid sharing private information."
+      ]
+    }
+  ],
+  "menu": [
+    {
+      "title": "Collection",
+      "path": "/shop"
+    },
+    {
+      "title": "Our perspective",
+      "path": "/about"
+    },
+    {
+      "title": "The journal",
+      "path": "/blog"
+    }
+  ]
+}

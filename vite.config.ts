@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [react()],
+  optimizeDeps: { entries: ["index.html"] },
   build: {
     rollupOptions: {
       output: {

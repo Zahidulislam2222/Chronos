@@ -10,10 +10,30 @@ const config = z.object({outputDirectory:z.literal('dist'),previewHost:z.literal
 const search = await readJson('src/content/search.json');
 const catalogue = await readJson('src/content/catalogue.json');
 const env = loadEnv('production', process.cwd(), 'VITE_');
-if (env.VITE_STOREFRONT_MODE !== 'preview') throw new Error('This prerender pipeline is for the isolated portfolio; connected commerce requires a separate reviewed renderer.');
+const connected = env.VITE_STOREFRONT_MODE === 'connected';
 const site = new URL(env.VITE_SITE_URL);
 if (!['https:', 'http:'].includes(site.protocol) || site.username || site.password || site.search || site.hash || site.pathname !== '/') throw new Error('Canonical site URL must be an HTTP(S) origin.');
-const routes = [...search.routes.map(r => r.path), ...catalogue.products.map(p => `/product/${p.slug}`), ...catalogue.posts.map(p => `/blog/${p.slug}`), config.notFoundPath];
+let products=catalogue.products, posts=catalogue.posts, pages=[];
+if(connected){
+  const first=z.coerce.number().int().min(1).max(100).parse(env.VITE_CONTENT_PAGE_SIZE);
+  async function records(field){
+    const all=[]; let after=null; const seen=new Set();
+    do {
+      const response=await fetch(env.VITE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:`query Routes($first:Int!,$after:String){${field}(first:$first,after:$after){nodes{slug}pageInfo{hasNextPage endCursor}}}`,variables:{first,after}}),signal:AbortSignal.timeout(config.navigationTimeoutMs)});
+      if(!response.ok)throw new Error('WordPress route inventory failed.');
+      const body=await response.json(); if(body.errors)throw new Error('WordPress route query failed.');
+      const page=body.data[field]; all.push(...page.nodes);
+      if(!page.pageInfo.hasNextPage)return all;
+      after=page.pageInfo.endCursor;if(!after||seen.has(after))throw new Error('Invalid route cursor.');seen.add(after);
+    }while(after);
+    return all;
+  }
+  [products,posts]=await Promise.all([records('products'),records('posts')]);
+  const response=await fetch(env.VITE_WP_API_URL+'/wp-json/chronos/v1/site',{signal:AbortSignal.timeout(config.navigationTimeoutMs)});
+  if(!response.ok)throw new Error('WordPress page inventory failed.');
+  pages=(await response.json()).data.pages;
+}
+const routes = [...new Set([...search.routes.map(r => r.path), ...products.map(p => `/product/${p.slug}`), ...posts.map(p => `/blog/${p.slug}`),...pages.map(p=>new URL(p.url).pathname.replace(/\/$/,'')||'/'), config.notFoundPath])];
 if (new Set(routes).size !== routes.length || routes.some(r => !/^\/(?:[a-z0-9_-]+\/?)*$/.test(r))) throw new Error('Unsafe or duplicate route in maintained data.');
 const server = await preview({preview:{host:config.previewHost,port:config.previewPort,open:false}});
 let browser;
@@ -24,12 +44,14 @@ try {
   const context = await browser.newContext({viewport:config.viewport,reducedMotion:'reduce'});
   const snapshots = [], errors = [];
   context.on('page', p => p.on('pageerror', e => errors.push(e.message)));
-  await context.route('**/*', route => new URL(route.request().url()).origin === base ? route.continue() : route.abort());
+  const allowed = new Set([base,...(connected?[new URL(env.VITE_API_URL).origin,new URL(env.VITE_WP_API_URL).origin]:[])]);
+  await context.route('**/*', route => allowed.has(new URL(route.request().url()).origin) ? route.continue() : route.abort());
   for (const route of routes) {
     const page = await context.newPage();
     await page.goto(base + route, {waitUntil:'networkidle',timeout:config.navigationTimeoutMs});
     await page.locator('main h1').waitFor();
     await page.waitForFunction(() => document.querySelector('meta[name="robots"]') && !document.querySelector('main')?.textContent?.includes('Preparing the collection'));
+    if(connected && await page.locator('main').innerText().then(t=>t.includes('could not be loaded')))throw new Error('WordPress content failed during render: '+route);
     const result = await page.evaluate(() => {
       // Capture the same semantic UI supplied to people; never crawler-only content.
       const clone = document.documentElement.cloneNode(true);

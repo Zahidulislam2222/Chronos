@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { fetchPostBySlug } from "@/utils/api";
 import { content } from "@/content";
+import WordPressContent from "@/components/WordPressContent";
 export default function BlogPost() {
   const { slug = "" } = useParams();
   const {
@@ -45,12 +46,7 @@ export default function BlogPost() {
             <Media src={p.featuredImage} alt="A study of a Chronos timepiece" />
           </div>
           <div className="article-body">
-            {String(p.content)
-              .split(/<\/p>/i)
-              .map((part, i) => {
-                const text = part.replace(/<[^>]*>/g, " ").trim();
-                return text ? <p key={i}>{text}</p> : null;
-              })}
+            <WordPressContent html={p.content} />
             <p className="eyebrow">{p.author.name}</p>
           </div>
         </article>

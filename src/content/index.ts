@@ -1,17 +1,20 @@
 import { z } from "zod";
 import copy from "./storefront.json";
 import catalogue from "./catalogue.json";
+import connected from "./connected.json";
+import { isPreview } from "@/config/settings";
 
 const media = z.string().regex(/^\/images\/[a-z0-9-]+\.(png|webp|jpg)$/);
-const product = z.object({
+export const productSchema = z.object({
   id: z.string(),
   slug: z.string(),
   name: z.string(),
-  price: z.number().nonnegative(),
+  price: z.number().finite().nonnegative(),
+  salePrice: z.number().finite().nonnegative().optional(),
   description: z.string(),
   shortDescription: z.string(),
-  image: media,
-  gallery: z.array(media).min(1),
+  image: z.string(),
+  gallery: z.array(z.string()).min(1),
   category: z.string(),
   brand: z.string(),
   inStock: z.boolean(),
@@ -37,7 +40,7 @@ const post = z.object({
   readTime: z.string(),
   paragraphs: z.array(z.string()),
 });
-z.object({ products: z.array(product), posts: z.array(post) }).parse(catalogue);
+z.object({ products: z.array(productSchema.extend({image:media,gallery:z.array(media).min(1)})), posts: z.array(post) }).parse(catalogue);
 export const previewCatalogue = catalogue;
 
 // Validate maintained copy recursively, preserving its inferred typed structure.
@@ -59,4 +62,14 @@ function validateCopy(value: unknown): void {
   );
 }
 validateCopy(copy);
-export const content = copy;
+validateCopy(connected);
+export const connectedContent = connected;
+export const content = isPreview ? copy : {
+  ...copy,
+  brand: {...copy.brand,...connected.brand},
+  collection: {...copy.collection,...connected.collection},
+  hero: {...copy.hero,...connected.hero},
+  craft: {...copy.craft,...connected.craft},
+  ui: {...copy.ui,...connected.ui},
+  contact: {...copy.contact,...connected.contact},
+};

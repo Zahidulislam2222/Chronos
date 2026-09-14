@@ -12,3 +12,7 @@
 | 2026-09-14 | CDN beacon attempted on 404 responses after hardened-01. | Public error-response network check. | Status-aware no-store/no-transform with always; repeated public route/network assertions. |
 
 | 2026-09-14 | Scoped review found the blocks CI job calling the frontend-only build:client script. | Workflow-to-package script validation. | Restored blocks build script, added block lint to CI, and validated npm script references by working directory. |
+
+| 2026-09-15 | A completed visual preview was presented as project completion while the public storefront remained disconnected from existing WordPress content and admin workflows. | Acceptance review against the full requested CMS workflow and real deployed frontend/backend verification. | Added explicit connected recovery criteria, product/post/page/admin/login/contact/test-payment checks, deployment parity and evidence-based completion reporting. |
+| 2026-09-15 | An interrupted current-user request cleared a valid stored login during rapid full-page navigation. | Repeated authenticated deep-link navigation with interrupted requests. | Preserve the token on transport failure; clear it only on explicit authentication rejection, and rerun the receipt/navigation flow. |
+| 2026-09-15 | Contact endpoint404 was interpreted as a saved submission. | Negative-path browser checks for persistence acknowledgements. | Limit nullable404 to editorial lookup and validate saved record ID; browser404/500/malformed200 retain the unsent note. |

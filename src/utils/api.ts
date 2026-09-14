@@ -1,6 +1,7 @@
 import { settings, isPreview } from "@/config/settings";
 import { previewCatalogue, content } from "@/content";
 import { Product, BlogPost } from "@/lib/mockData";
+import { wordpressMedia, wordpressText } from "@/lib/wordpress";
 
 interface WPProduct {
   databaseId: number;
@@ -13,6 +14,7 @@ interface WPProduct {
   image?: { sourceUrl?: string };
   galleryImages?: { nodes?: { sourceUrl?: string }[] };
   featured?: boolean;
+  stockStatus?: string;
   productCategories?: { nodes?: { name: string }[] };
   watchSpecifications?: {
     movement?: string;
@@ -108,9 +110,10 @@ const REGISTER_MUTATION = `
 // ... (rest of the mutations and queries are the same) ...
 
 const GET_CUSTOMER_ORDERS = `
-  query GetCustomerOrders {
+  query GetCustomerOrders($first: Int!, $after: String) {
     customer {
-      orders {
+      orders(first: $first, after: $after) {
+        pageInfo { hasNextPage endCursor }
         nodes {
           orderNumber
           date
@@ -138,8 +141,9 @@ const SUBMIT_FORM_MUTATION = `
 `;
 
 const PRODUCTS_QUERY = `
-query GetProducts {
-  products(first: 50, where: { stockStatus: IN_STOCK }) {
+query GetProducts($first: Int!, $after: String) {
+  products(first: $first, after: $after) {
+    pageInfo { hasNextPage endCursor }
     nodes {
       databaseId
       slug
@@ -148,8 +152,9 @@ query GetProducts {
       shortDescription
       image { sourceUrl }
       ... on SimpleProduct {
-        price
-        regularPrice
+        price(format: RAW)
+        regularPrice(format: RAW)
+        stockStatus
         galleryImages { nodes { sourceUrl } }
         productCategories { nodes { name } }
         watchSpecifications {
@@ -176,8 +181,9 @@ query GetProductBySlug($slug: ID!) {
     description
     image { sourceUrl }
     ... on SimpleProduct {
-      price
-      regularPrice
+      price(format: RAW)
+      regularPrice(format: RAW)
+      stockStatus
       galleryImages { nodes { sourceUrl } }
       productCategories { nodes { name } }
       watchSpecifications {
@@ -193,8 +199,9 @@ query GetProductBySlug($slug: ID!) {
 `;
 
 const POSTS_QUERY = `
-query GetPosts {
-  posts(first: 10) {
+query GetPosts($first: Int!, $after: String) {
+  posts(first: $first, after: $after) {
+    pageInfo { hasNextPage endCursor }
     nodes {
       databaseId
       id
@@ -278,7 +285,7 @@ mutation Checkout($input: CheckoutInput!) {
 
 function stripHtml(html: string | null | undefined): string {
   if (!html) return "";
-  return html.replace(/<[^>]*>?/gm, "");
+  return wordpressText(html);
 }
 
 const DEFAULT_SPECIFICATIONS = {
@@ -290,9 +297,9 @@ const DEFAULT_SPECIFICATIONS = {
 };
 
 function transformProduct(node: WPProduct): Product & { databaseId: number } {
-  const imageUrl = node.image?.sourceUrl || PLACEHOLDER_IMAGE;
+  const imageUrl = wordpressMedia(node.image?.sourceUrl || "") || PLACEHOLDER_IMAGE;
   const galleryImages =
-    node.galleryImages?.nodes?.map((img) => img?.sourceUrl).filter(Boolean) ||
+    node.galleryImages?.nodes?.map((img) => wordpressMedia(img?.sourceUrl || "")).filter(Boolean) ||
     [];
   const priceStr = node.price || node.regularPrice;
   const price = priceStr ? parseFloat(priceStr.replace(/[^0-9.]/g, "")) : 0;
@@ -311,7 +318,7 @@ function transformProduct(node: WPProduct): Product & { databaseId: number } {
     databaseId: node.databaseId,
     id: String(node.databaseId),
     slug: node.slug,
-    name: node.name,
+    name: wordpressText(node.name),
     price,
     description: node.description || "",
     shortDescription,
@@ -319,7 +326,7 @@ function transformProduct(node: WPProduct): Product & { databaseId: number } {
     gallery: galleryImages.length > 0 ? galleryImages : [imageUrl],
     category: node.productCategories?.nodes?.[0]?.name || "Watch",
     brand: content.brand.name,
-    inStock: true,
+    inStock: node.stockStatus === "IN_STOCK" && Number.isFinite(price) && price > 0,
     featured: node.featured || false,
     specifications,
   };
@@ -332,10 +339,10 @@ function transformPost(
     databaseId: node.databaseId,
     id: node.id,
     slug: node.slug,
-    title: node.title,
+    title: wordpressText(node.title),
     excerpt: stripHtml(node.excerpt),
     content: node.content || "",
-    featuredImage: node.featuredImage?.node?.sourceUrl || PLACEHOLDER_IMAGE,
+    featuredImage: wordpressMedia(node.featuredImage?.node?.sourceUrl || "") || PLACEHOLDER_IMAGE,
     author: {
       name: node.author?.node?.name || "Editor",
       avatar: node.author?.node?.avatar?.url || "",
@@ -374,7 +381,8 @@ async function fetchGraphQL(query: string, variables = {}) {
     headers["woocommerce-session"] = `Session ${sessionToken}`;
   }
 
-  const authToken = localStorage.getItem("auth-token");
+  let authToken: string | null = null;
+  try { authToken = localStorage.getItem("auth-token"); } catch { /* Storage may be unavailable. */ }
   if (authToken) {
     headers["Authorization"] = `Bearer ${authToken}`;
   }
@@ -383,18 +391,23 @@ async function fetchGraphQL(query: string, variables = {}) {
     method: "POST",
     headers,
     body: JSON.stringify({ query, variables }),
+    signal: AbortSignal.timeout(settings.requestTimeoutMs),
   });
+
+  if (!response.ok) throw new Error(`WordPress request failed (${response.status}).`);
 
   const newSession = response.headers.get("woocommerce-session");
   if (newSession) {
     sessionToken = newSession;
-    localStorage.setItem("woo-session", newSession);
+    try { localStorage.setItem("woo-session", newSession); } catch { /* Keep the in-memory session. */ }
   }
 
   const json = await response.json();
   if (json.errors) {
-    console.error("GraphQL Errors:", json.errors);
-    throw new Error(JSON.stringify(json.errors));
+    if (authToken && json.errors.some((error: {message?:string})=>/jwt|token|authorization/i.test(error.message || ""))) {
+      window.dispatchEvent(new Event("chronos-auth-expired"));
+    }
+    throw new Error("WordPress could not complete this request. Please retry or sign in again.");
   }
   return json.data;
 }
@@ -412,8 +425,7 @@ export async function updateUserName(userId: string, name: string) {
 
 export async function fetchProducts(): Promise<Product[]> {
   if (isPreview) return previewCatalogue.products;
-  const data = await fetchGraphQL(PRODUCTS_QUERY);
-  return data?.products?.nodes?.map(transformProduct) || [];
+  return (await fetchConnection<WPProduct>(PRODUCTS_QUERY, "products")).map(transformProduct);
 }
 
 export async function fetchProductBySlug(
@@ -430,8 +442,25 @@ export async function fetchProductBySlug(
 
 export async function fetchPosts(): Promise<BlogPost[]> {
   if (isPreview) return previewCatalogue.posts;
-  const data = await fetchGraphQL(POSTS_QUERY);
-  return data?.posts?.nodes?.map(transformPost) || [];
+  return (await fetchConnection<WPPost>(POSTS_QUERY, "posts")).map(transformPost);
+}
+
+async function fetchConnection<T>(query: string, field: string): Promise<T[]> {
+  const nodes: T[] = [];
+  const cursors = new Set<string>();
+  let after: string | null = null;
+  do {
+    const data = await fetchGraphQL(query, { first: settings.pageSize, after });
+    const connection = data?.[field];
+    if (!Array.isArray(connection?.nodes) || !connection?.pageInfo)
+      throw new Error("Invalid WordPress content response.");
+    nodes.push(...connection.nodes);
+    if (!connection.pageInfo.hasNextPage) return nodes;
+    after = connection.pageInfo.endCursor;
+    if (!after || cursors.has(after)) throw new Error("Invalid WordPress pagination cursor.");
+    cursors.add(after);
+  } while (after);
+  return nodes;
 }
 
 export async function fetchPostBySlug(slug: string): Promise<BlogPost | null> {
@@ -507,6 +536,16 @@ export async function loginUser(username: string, password: string) {
   return null;
 }
 
+export async function fetchCurrentUser() {
+  const data = await fetchGraphQL("query CurrentUser { viewer { databaseId name email avatar { url } } }");
+  const user = data?.viewer;
+  if (!user) {
+    window.dispatchEvent(new Event("chronos-auth-expired"));
+    throw new Error("Please sign in again.");
+  }
+  return {id:String(user.databaseId),name:String(user.name),email:String(user.email),avatar:user.avatar?.url || ""};
+}
+
 export async function registerUser(
   name: string,
   email: string,
@@ -526,21 +565,21 @@ export async function registerUser(
   return null;
 }
 
-export async function fetchCustomerOrders() {
-  try {
-    const data = await fetchGraphQL(GET_CUSTOMER_ORDERS);
-    const orders = data?.customer?.orders?.nodes || [];
-
-    return orders.map((order: CustomerOrder) => ({
-      orderNumber: order.orderNumber,
-      date: order.date,
-      status: order.status,
-      total: order.total,
-    }));
-  } catch (error) {
-    console.error("Failed to fetch orders:", error);
-    return [];
-  }
+export async function fetchCustomerOrders(): Promise<CustomerOrder[]> {
+  const orders: CustomerOrder[] = [];
+  const seen = new Set<string>();
+  let after:string|null = null;
+  do {
+    const data = await fetchGraphQL(GET_CUSTOMER_ORDERS,{first:settings.pageSize,after});
+    const connection=data?.customer?.orders;
+    if (!Array.isArray(connection?.nodes)) throw new Error("Please sign in again.");
+    orders.push(...connection.nodes);
+    if (!connection.pageInfo?.hasNextPage) return orders;
+    after=connection.pageInfo.endCursor;
+    if(!after || seen.has(after))throw new Error("Invalid order pagination cursor.");
+    seen.add(after);
+  } while(after);
+  return orders;
 }
 
 export async function submitContactForm(data: {

@@ -14,6 +14,7 @@ use ChronosBridge\Admin\DashboardWidget;
 use ChronosBridge\Admin\Settings;
 use ChronosBridge\Api\ContactEndpoint;
 use ChronosBridge\Api\WatchEndpoint;
+use ChronosBridge\Api\SiteEndpoint;
 use ChronosBridge\Cache\TransientCache;
 use ChronosBridge\Cron\CleanupJob;
 use ChronosBridge\Database\Migrator;
@@ -78,6 +79,44 @@ final class Plugin {
 	private function boot(): void {
 		// i18n — load text domain.
 		I18nLoader::register();
+		SiteEndpoint::register();
+		add_filter(
+			'rest_pre_serve_request',
+			static function ( $served, $result, $request ) {
+				if ( '/chronos/v1/sitemap' !== $request->get_route() || 200 !== $result->get_status() ) {
+					return $served;
+				}
+				header( 'Content-Type: application/xml; charset=UTF-8' );
+				header( 'Cache-Control: no-store' );
+				echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+				foreach ( $result->get_data() as $url ) {
+					echo '<url><loc>' . esc_xml( $url ) . '</loc></url>';
+				}
+				echo '</urlset>';
+				return true;
+			},
+			10,
+			3
+		);
+		add_filter(
+			'woocommerce_can_reduce_order_stock',
+			static function ( $reduce, $order ) {
+				return $order instanceof \WC_Order && 'yes' === $order->get_meta( '_chronos_demo' ) ? false : $reduce;
+			},
+			10,
+			2
+		);
+		// Demo orders never send transactional email to real recipients.
+		foreach ( array( 'new_order', 'cancelled_order', 'failed_order', 'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order', 'customer_refunded_order', 'customer_invoice', 'customer_note' ) as $email ) {
+			add_filter(
+				'woocommerce_email_enabled_' . $email,
+				static function ( $enabled, $order ) {
+					return $order instanceof \WC_Order && 'yes' === $order->get_meta( '_chronos_demo' ) ? false : $enabled;
+				},
+				10,
+				2
+			);
+		}
 
 		// Database — check for upgrades on admin_init.
 		add_action( 'admin_init', array( Migrator::class, 'maybe_upgrade' ) );
@@ -94,6 +133,7 @@ final class Plugin {
 			'rest_api_init',
 			function (): void {
 				( new ContactEndpoint() )->register_routes();
+				( new SiteEndpoint() )->register_routes();
 				( new WatchEndpoint() )->register_routes();
 				( new CheckoutEndpoint() )->register_routes();
 				( new WebhookHandler() )->register_routes();

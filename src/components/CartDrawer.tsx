@@ -5,8 +5,9 @@ import { Minus, Plus, ArrowUpRight, Trash2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "./ui/sheet";
 import { content } from "@/content";
-import { money } from "@/lib/format";
+import { useMoney } from "@/hooks/use-money";
 export function BagItems() {
+  const money = useMoney();
   const { state, removeFromCart, updateQuantity } = useCart();
   return (
     <div className="bag-items">
@@ -47,6 +48,7 @@ export function BagItems() {
   );
 }
 export default function CartDrawer() {
+  const money = useMoney();
   const opener = useRef<HTMLElement | null>(null);
   const { state, closeCart, totalPrice } = useCart();
   return (

@@ -13,9 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { fetchProductBySlug } from "@/utils/api";
 import { useCart } from "@/context/CartContext";
-import { money } from "@/lib/format";
+import { useMoney } from "@/hooks/use-money";
 import { content } from "@/content";
+import WordPressContent from "@/components/WordPressContent";
 export default function ProductDetail() {
+  const money = useMoney();
   const [selected, setSelected] = useState<string | null>(null);
   const { slug = "" } = useParams();
   const {
@@ -102,9 +104,7 @@ export default function ProductDetail() {
             <h1>{p.name}</h1>
             <p className="detail-subtitle">{p.shortDescription}</p>
             <p className="detail-price">{money(p.salePrice ?? p.price)}</p>
-            <p className="detail-description">
-              {p.description.replace(/<[^>]*>/g, " ")}
-            </p>
+            <WordPressContent html={p.description} />
             <button
               className="button button-dark"
               onClick={() => addToCart(p)}

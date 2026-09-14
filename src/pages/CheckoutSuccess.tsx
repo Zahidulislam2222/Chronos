@@ -1,54 +1,35 @@
-import { isPreview } from "@/config/settings";
+import { isPreview, storageKeys } from "@/config/settings";
+import { useAuth } from "@/context/AuthContext";
 import Checkout from "./Checkout";
 import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { useCart } from "@/context/CartContext";
-import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
+import { authenticatedRequest } from "@/utils/wordpressApi";
+import { connectedContent } from "@/content";
 
-const ConnectedCheckoutSuccess = () => {
-  const { clearCart } = useCart();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get("session_id");
-
-  useEffect(() => {
-    // Clear cart after successful Stripe payment.
-    if (sessionId) {
-      clearCart();
-    }
-  }, [sessionId, clearCart]);
-
-  return (
-    <Layout>
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center max-w-md mx-auto px-4">
-          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-6" />
-          <h1 className="font-display text-4xl mb-4">Order Confirmed</h1>
-          <p className="text-muted-foreground mb-8">
-            Thank you for your purchase. You will receive an order confirmation
-            email shortly.
-          </p>
-          {sessionId && (
-            <p className="text-xs text-muted-foreground mb-6">
-              Session: {sessionId.slice(0, 20)}...
-            </p>
-          )}
-          <div className="flex gap-4 justify-center">
-            <Button variant="luxuryOutline" onClick={() => navigate("/shop")}>
-              Continue Shopping
-            </Button>
-            <Button variant="gold" onClick={() => navigate("/account")}>
-              View Orders
-            </Button>
-          </div>
-        </div>
-      </div>
-    </Layout>
-  );
-};
-
-export default function CheckoutSuccess() {
-  return isPreview ? <Checkout /> : <ConnectedCheckoutSuccess />;
+function ConnectedSuccess() {
+  const {state,clearCart,isLoading:cartLoading} = useCart();
+  const {user,isLoading} = useAuth();
+  const [params] = useSearchParams();
+  const sessionId = params.get("session_id");
+  const result = useQuery({queryKey:["verify-payment",user?.id,sessionId],queryFn:()=>authenticatedRequest("chronos/v1/stripe/verify-session",{sessionId}),enabled:Boolean(sessionId && user && !isLoading)});
+  const paid = result.data?.data?.paid === true;
+  useEffect(()=>{
+    if(!paid || !user || cartLoading) return;
+    try {
+      const key=storageKeys.checkoutAttemptPrefix+user.id;
+      const attempt=JSON.parse(localStorage.getItem(key)||"null");
+      if(attempt?.orderId===result.data?.data?.orderId){
+        localStorage.removeItem(key);
+        const original=JSON.parse(attempt.fingerprint);
+        const current=state.items.map(i=>({productId:Number(i.product.id),quantity:i.quantity}));
+        if(JSON.stringify(original.items)===JSON.stringify(current)) clearCart();
+      }
+    } catch { /* A historical receipt must not clear an unrelated selection. */ }
+  },[paid,clearCart,user,cartLoading,result.data,state.items]);
+  const c=connectedContent.checkout;
+  return <Layout><section className="container section"><h1>{sessionId && result.isFetching ? c.confirming : paid ? c.paid : c.unpaid}</h1><p>{c.notice}</p><Link className="text-link" to={paid ? "/account" : "/checkout"}>{paid ? c.account : c.retry}</Link></section></Layout>;
 }
+export default function CheckoutSuccess() { return isPreview ? <Checkout /> : <ConnectedSuccess />; }

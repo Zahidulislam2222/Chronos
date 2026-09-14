@@ -1,10 +1,12 @@
 # Security Operations and Release Boundaries
 
-The current public deployment is a static portfolio. Its browser catalogue is isolated from the retained commerce backend. No database, upload handler, payment secret, server session or order API is deployed as part of this frontend release.
+The public frontend is connected to WordPress/WooCommerce. Its container serves built assets, while CMS APIs provide account/contact/order persistence and test payments. Privileged secrets remain server-side. Frontend delivery controls and backend authorization are distinct verified boundaries.
 
 ## Controls in the codebase
 
-- Build-time HTML rendering and maintained route inventory; unknown routes and sensitive files return404.
+- Build-time HTML snapshots plus current CMS reads and sitemap; origin route validation returns actual404 for drafts/missing records. New snapshots require rebuild.
+- DOMPurify HTML sanitization, allowed media/link origins, server-derived prices, ownership checks, idempotency locks and persisted payment acknowledgement.
+- Upstream TLS verification remains enabled with an explicit certificate chain depth and bounded proxy timeouts.
 - CSP permits self-hosted scripts and denies inline event handlers, external frames, form submissions, plugins and workers. Inline styles remain allowed for motion/component-library compatibility; the policy is not described as maximally strict.
 - HSTS is hostname-scoped, without preload or includeSubDomains. Frame, MIME, referrer, opener/resource and browser-permission policies are verified at the HTTP boundary.
 - GET/HEAD only, bounded body/timeouts and an aggregate origin request budget. These controls limit work; they do not distinguish every legitimate visitor from an attacker.
@@ -37,7 +39,7 @@ The private origin port is not publicly reachable, but the public Caddy hostname
 
 A CDN logo is not a WAF configuration audit. No paid WAF, managed rate-limit add-on, monitoring subscription or load-balancer product was added. The local-only load test must not be repointed at the shared public site. Representative high-capacity validation needs an isolated environment, an approved traffic plan and provider capacity arrangements.
 
-PHP backend tests require a PHP runtime and were not claimed passed by this frontend release. Retained backend dependencies and business-logic risks must be reviewed independently before enabling real commerce. Public audit counts must identify the package tree and date; a clean frontend audit does not describe every tool in the repository.
+PHP38tests/60assertions passed; PHPCS has0errors/7warnings. Real CMS permissions, contact persistence and hosted test payment were exercised. Real-commerce launch still needs merchant, retention, fulfilment and provider-operating requirements. Public audit counts must identify the package tree and date; a clean frontend audit does not describe every tool in the repository.
 
 ## Disclosure and incident handling
 
@@ -49,6 +51,10 @@ Security scanners remain enabled. The installed Python scanner reports Paramiko 
 
 The root frontend uses the updated Vite7/React Router7 toolchain. Retained Gutenberg tooling uses @wordpress/scripts35 and refreshed WordPress packages. Its transitive overrides select verified patched versions of markdownlint-cli, minimatch3, serialize-javascript and SockJS's uuid dependency. The SockJS source uses the stable uuid.v4 API; a local HTTP-info/WebSocket-echo regression checks that path after the scoped override. No npm audit finding is ignored, and the suggested obsolete WordPress-scripts downgrade is not used.
 
-Unit tests and asset builds verify the retained block package locally; real WordPress editor/PHP integration is still a separate launch gate. These local maintenance changes are not deployed to the static demo server. Version/override decisions should be revisited with the upstream toolchain rather than retained indefinitely.
+Unit tests and asset builds passed, and all three custom blocks loaded in the actual WordPress editor. A custom-block draft survived save/reload. Seventeen changed block files were deployed to the backend with exact parity. Version/override decisions should be revisited with the upstream toolchain rather than retained indefinitely.
 
 The Jest configuration extends the WordPress defaults and transforms only the ESM-only `marked` and `uuid` dependency trees for the CommonJS test runner. Current Gutenberg UUID versions remain intact; the separate SockJS override serves its CommonJS transport. Configuration follows [WordPress test tooling](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/) and [Jest dependency transformation](https://jestjs.io/docs/code-transformation). The config uses `jest.config.js`, which the installed WordPress runner discovers.
+
+## Connected operating boundaries
+
+Browser JWT storage remains sensitive to script compromise. Sign-out removes the token and local selection; network failure alone does not revoke a valid token. Contact failure preserves the note, and successful submission requires a persisted ID. Contact records are administrator-only. Checkout rejects live session IDs, validates products/quantities server-side and reconciles owner/session/amount/currency before reporting payment success. Demo payments suppress stock reduction and order emails. No paid AI or outbound test message was sent.

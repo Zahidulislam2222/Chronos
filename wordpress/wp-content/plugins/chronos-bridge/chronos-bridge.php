@@ -31,7 +31,7 @@ if ( version_compare( PHP_VERSION, '8.1', '<' ) ) {
 }
 
 // Plugin constants.
-define( 'CHRONOS_BRIDGE_VERSION', '2.0.0' );
+define( 'CHRONOS_BRIDGE_VERSION', '2.1.0' );
 define( 'CHRONOS_BRIDGE_FILE', __FILE__ );
 define( 'CHRONOS_BRIDGE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CHRONOS_BRIDGE_URL', plugin_dir_url( __FILE__ ) );

@@ -3,8 +3,9 @@ import Layout from "@/components/Layout";
 import { BagItems } from "@/components/CartDrawer";
 import { useCart } from "@/context/CartContext";
 import { content } from "@/content";
-import { money } from "@/lib/format";
+import { useMoney } from "@/hooks/use-money";
 export default function Cart() {
+  const money = useMoney();
   const { state, totalPrice } = useCart();
   return (
     <Layout>

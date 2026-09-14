@@ -2,7 +2,7 @@
 
 **Architecture goal: a delivery path for 10,000–1,000,000 concurrent readers. Current status: design target, not verified production capacity. Availability objective:99% over a rolling 30-day window, not a measured SLA.**
 
-This repository demonstrates the engineering boundary between a scalable static experience and the infrastructure needed to deliver it. The public Chronos demo has no server session, database lookup, API rendering or per-user server mutation in its browsing path. HTML is rendered once during the build. Product and journal content is maintained as validated data. Images, fonts, video and code are versioned release artifacts. User selection state stays on the visitor's device. These choices make the frontend replicable without shared session state.
+The public Chronos frontend now reads current WordPress/WooCommerce data. HTML snapshots and assets remain replicable, but browser API requests, authenticated operations and dynamic route-status checks reach the CMS/database. The static arithmetic below is an asset-delivery scenario, not a capacity measurement for the connected release. Initial HTML refreshes at build time; browser content and sitemap reflect CMS publication without rebuilding.
 
 The currently deployed topology still has one shared origin server. CDN distribution, process restart and rollback improve delivery and recoverability; they do not create origin redundancy. The repository does not use a 10k/1M badge or mark a target as a passed benchmark. The implementation and the validation plan are the evidence of engineering quality.
 
@@ -24,15 +24,18 @@ The currently deployed topology still has one shared origin server. CDN distribu
 ```mermaid
 flowchart LR
     U[Readers and search crawlers] --> E[CDN delivery and request protection]
-    E --> A[Current static origin]
-    E -. Proposed health-based failover .-> B[Independent static origin]
+    E --> A[Current frontend origin]
+    A --> W[Active CMS route validation]
+    U --> W
+    W --> D[WordPress / WooCommerce database]
+    E -. Proposed health-based failover .-> B[Independent frontend origin]
     A --> R[Same verified immutable release]
     B -. Same release hashes .-> R
 ```
 
 The dashed origin and failover path are a deployment design, not provisioned resources. Scaling this static frontend means replicating the same release and routing requests, rather than rewriting UI components. A second origin should be in an independent failure domain, with its own capacity, health probes and release parity evidence. Its frontend requires no sticky session or application database replication. Any purchased routing, hosting or traffic capacity requires explicit budget approval before implementation.
 
-The retained WordPress commerce system is outside this topology. Enabling real login, inventory, checkout or payments changes the capacity problem: authoritative prices, transactions, idempotency, database connection limits, asynchronous work, failure handling and payment security must be engineered and tested separately. Static read scalability must never be presented as transaction-processing scalability.
+WordPress is active behind this frontend topology. Real login, contact persistence and test checkout add database connections, authoritative prices, idempotency and provider work. Functional authorization/payment tests passed; capacity is unmeasured. Add API request frequency, route validation, anonymous cache/invalidation behavior and CMS/database resilience to the workload before sizing. Static read scalability must never be presented as transaction-processing scalability.
 
 ## Workload model
 

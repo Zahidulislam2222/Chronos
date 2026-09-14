@@ -1,7 +1,7 @@
 import { z } from "zod";
 import raw from "@/content/search.json";
 import { previewCatalogue, content } from "@/content";
-import { settings } from "@/config/settings";
+import { settings, isPreview } from "@/config/settings";
 
 export const searchContent = z.object({
   image: z.string().startsWith("/images/"), imageAlt: z.string().min(1),
@@ -12,19 +12,19 @@ export const searchContent = z.object({
   notFound: z.object({ title: z.string(), description: z.string() }),
 }).parse(raw);
 
-export function pageSearch(pathname: string) {
+export function pageSearch(pathname: string, remote?: {title:string;description:string;image?:string;kind?:string}) {
   const path = pathname.replace(/\/index\.html$/, "").replace(/\/+$/, "") || "/";
-  const product = previewCatalogue.products.find(p => path === `/product/${p.slug}`);
-  const post = previewCatalogue.posts.find(p => path === `/blog/${p.slug}`);
+  const product = isPreview ? previewCatalogue.products.find(p => path === `/product/${p.slug}`) : undefined;
+  const post = isPreview ? previewCatalogue.posts.find(p => path === `/blog/${p.slug}`) : undefined;
   const entry = searchContent.routes.find(p => p.path === path);
-  const title = product ? `${product.name} — ${searchContent.productSuffix}` : post ? post.title : entry?.title || searchContent.notFound.title;
-  const description = product ? `${product.shortDescription} ${searchContent.productDisclosure}` : post ? post.excerpt : entry?.description || searchContent.notFound.description;
+  const title = remote?.title || (product ? `${product.name} — ${searchContent.productSuffix}` : post ? post.title : entry?.title || searchContent.notFound.title);
+  const description = remote?.description || (product ? `${product.shortDescription} ${searchContent.productDisclosure}` : post ? post.excerpt : entry?.description || searchContent.notFound.description);
   const canonical = settings.siteUrl ? new URL(path, settings.siteUrl).href : "";
-  const image = settings.siteUrl ? new URL(product?.image || post?.featuredImage || searchContent.image, settings.siteUrl).href : "";
-  const index = Boolean(settings.searchIndexable && (entry?.index || product || post));
+  const image = settings.siteUrl ? new URL(remote?.image || product?.image || post?.featuredImage || searchContent.image, settings.siteUrl).href : "";
+  const index = Boolean(settings.searchIndexable && (remote || entry?.index || product || post));
   const websiteId = `${settings.siteUrl.replace(/\/$/, "")}/#website`;
   const page = {
-    "@type": post ? "Article" : product ? "CreativeWork" : "WebPage",
+    "@type": remote?.kind || (post ? "Article" : product ? "CreativeWork" : "WebPage"),
     "@id": canonical + "#content", url: canonical, name: title,
     ...(post ? { headline: title, author: { "@type": "Organization", name: post.author.name } } : {}),
     description, image, inLanguage: "en", isPartOf: { "@id": websiteId },
