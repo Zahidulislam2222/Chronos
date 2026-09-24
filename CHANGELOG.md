@@ -54,6 +54,12 @@ Notable changes to Chronos. Format based on
   exponential backtracking (CodeQL `js/redos`, high). A hostile or malformed
   CMS slug could stall the build. Replaced with an equivalent linear pattern
   (identical results on 195,310 generated inputs).
+- `src/lib/parseWPContent.ts` stripped `<script>` tags and HTML with regular
+  expressions (CodeQL `js/bad-tag-filter` and
+  `js/incomplete-multi-character-sanitization`, high). `</script >`,
+  `onerror` handlers and `javascript:` links got through. No page imports
+  the module, so the storefront was not affected. It now uses the same
+  DOMPurify helpers as the rendered CMS content.
 
 ## 2026-09-15 — Connected WordPress storefront
 
