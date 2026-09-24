@@ -1,0 +1,10 @@
+import { readFile } from 'node:fs/promises';
+import { preview } from 'vite';
+const config = JSON.parse(await readFile('config/build.json','utf8'));
+const nginx = await readFile('deploy/shared-vps/nginx.conf','utf8');
+const headers = Object.fromEntries([...nginx.matchAll(/add_header ([\w-]+) "([^"]+)" always;/g)].map(m=>[m[1],m[2]]));
+const manifest = JSON.parse(await readFile(config.outputDirectory+'/render-manifest.json','utf8'));
+const routes = new Set(manifest.map(row=>row.route));
+const routeFiles = {name:'rendered-route-files',configurePreviewServer(server){server.middlewares.use((req,res,next)=>{const url=new URL(req.url,'http://localhost');const route=url.pathname.replace(/\/+$/, '') || '/';if(url.pathname.endsWith('/index.html') || (url.pathname!=='/'&&url.pathname.endsWith('/'))) {res.statusCode=308;res.setHeader('Location',(url.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '') || '/')+url.search);res.end();return;}if(routes.has(route)&&route!=='/') req.url=route+'/index.html'+url.search;else if(!routes.has(route)&&!url.pathname.includes('.')) {res.statusCode=404;req.url='/404.html';}next();});}};
+const server = await preview({appType:'mpa',plugins:[routeFiles],preview:{host:config.previewHost,port:config.publicPreviewPort,strictPort:true,headers}});
+server.printUrls();

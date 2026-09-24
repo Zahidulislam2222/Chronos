@@ -1,3 +1,6 @@
+# RETIRED — CURRENTLY OFF. cPanel Git deployment hook, kept for reference.
+# Worked in production until the cPanel hosting expired in May 2026; the
+# project now runs on VPS hosting (see docs/DEPLOYMENT.md).
 ---
 deployment:
   tasks:

@@ -1,7 +1,8 @@
+import { settings } from '@/config/settings';
 // Utility to parse and sanitize WordPress content
 // Handles HTML strings from WordPress and replaces backend links
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = settings.apiUrl;
 
 /**
  * Parses WordPress HTML content

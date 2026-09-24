@@ -1,0 +1,23 @@
+name: Feature or improvement
+description: Suggest a feature, a scalability or reliability improvement, or a docs change.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is missing or painful today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Link the related roadmap item in docs/ROADMAP.md if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: How would we know it works?
+      description: Measurable acceptance criteria (tests, metrics, load-test result).

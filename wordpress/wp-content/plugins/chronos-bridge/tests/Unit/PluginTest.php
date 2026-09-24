@@ -44,6 +44,6 @@ class PluginTest extends TestCase {
 	}
 
 	public function test_plugin_version_constant(): void {
-		$this->assertSame( '2.0.0', CHRONOS_BRIDGE_VERSION );
+		$this->assertSame( '2.1.0', CHRONOS_BRIDGE_VERSION );
 	}
 }

@@ -1,0 +1,46 @@
+name: Bug report
+description: Something does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Security problems must not be reported here.** Use the private report link in SECURITY.md.
+        Never paste secrets, tokens, database dumps or other people's personal data.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Frontend (React storefront)
+        - chronos-bridge (PHP plugin / REST API)
+        - chronos-blocks (Gutenberg blocks)
+        - CI / GitHub Actions
+        - Deployment configuration
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Run ...\n2. Open ...\n3. Click ..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual behaviour
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "Local Docker / public demo, browser, Node and PHP versions, commit"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots (redact anything sensitive)

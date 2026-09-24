@@ -157,7 +157,8 @@ final class CheckoutFields {
 				array(
 					'methods'             => 'POST',
 					'callback'            => array( self::class, 'handle_custom_fields_api' ),
-					'permission_callback' => '__return_true',
+					'permission_callback' => static function (): bool {
+						return current_user_can( 'manage_woocommerce' ); },
 					'args'                => array(
 						'orderId'              => array(
 							'type'     => 'integer',

@@ -1,11 +1,16 @@
 """
+RETIRED — CURRENTLY OFF. Kept for reference only.
+This deployed Chronos to cPanel shared hosting and worked in production until
+that hosting expired in May 2026. The project now runs on VPS hosting; see
+docs/DEPLOYMENT.md. The workflow jobs that called it are disabled.
+
 Chronos CI/CD — Deploy backend plugins + frontend to production via cPanel API.
 
 1. Backend: Triggers cPanel Git pull → .cpanel.yml → deploy.sh copies plugins
 2. Frontend: Uploads dist/ files to chronos.healthcodeanalysis.com via Fileman API
 
 Required environment variables (set as GitHub Secrets):
-  CPANEL_URL       — https://bdix.aridserver.com:2083
+  CPANEL_URL       — cPanel API base URL, e.g. https://<cpanel-host>:2083
   CPANEL_USERNAME  — cPanel username
   CPANEL_API_TOKEN — cPanel API token
 """

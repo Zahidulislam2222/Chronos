@@ -7,7 +7,7 @@ import {
 	ToggleControl,
 } from '@wordpress/components';
 
-export default function Edit( { attributes, setAttributes } ) {
+export default function Edit( { attributes, setAttributes, clientId } ) {
 	const { heading, description, submitText, successMessage, showSubject } =
 		attributes;
 	const blockProps = useBlockProps( {
@@ -17,9 +17,7 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody
-					title={ __( 'Form Settings', 'chronos-blocks' ) }
-				>
+				<PanelBody title={ __( 'Form Settings', 'chronos-blocks' ) }>
 					<TextControl
 						label={ __( 'Heading', 'chronos-blocks' ) }
 						value={ heading }
@@ -35,30 +33,21 @@ export default function Edit( { attributes, setAttributes } ) {
 						}
 					/>
 					<ToggleControl
-						label={ __(
-							'Show Subject Field',
-							'chronos-blocks'
-						) }
+						label={ __( 'Show Subject Field', 'chronos-blocks' ) }
 						checked={ showSubject }
 						onChange={ ( val ) =>
 							setAttributes( { showSubject: val } )
 						}
 					/>
 					<TextControl
-						label={ __(
-							'Submit Button Text',
-							'chronos-blocks'
-						) }
+						label={ __( 'Submit Button Text', 'chronos-blocks' ) }
 						value={ submitText }
 						onChange={ ( val ) =>
 							setAttributes( { submitText: val } )
 						}
 					/>
 					<TextareaControl
-						label={ __(
-							'Success Message',
-							'chronos-blocks'
-						) }
+						label={ __( 'Success Message', 'chronos-blocks' ) }
 						value={ successMessage }
 						onChange={ ( val ) =>
 							setAttributes( { successMessage: val } )
@@ -81,31 +70,47 @@ export default function Edit( { attributes, setAttributes } ) {
 				<div className="chronos-contact-form__fields">
 					<div className="chronos-contact-form__row">
 						<div className="chronos-contact-form__field">
-							<label>
+							<label htmlFor={ `${ clientId }-name` }>
 								{ __( 'Name', 'chronos-blocks' ) }
 							</label>
-							<input type="text" disabled />
+							<input
+								type="text"
+								id={ `${ clientId }-name` }
+								disabled
+							/>
 						</div>
 						<div className="chronos-contact-form__field">
-							<label>
+							<label htmlFor={ `${ clientId }-email` }>
 								{ __( 'Email', 'chronos-blocks' ) }
 							</label>
-							<input type="email" disabled />
+							<input
+								type="email"
+								id={ `${ clientId }-email` }
+								disabled
+							/>
 						</div>
 					</div>
 					{ showSubject && (
 						<div className="chronos-contact-form__field">
-							<label>
+							<label htmlFor={ `${ clientId }-subject` }>
 								{ __( 'Subject', 'chronos-blocks' ) }
 							</label>
-							<input type="text" disabled />
+							<input
+								type="text"
+								id={ `${ clientId }-subject` }
+								disabled
+							/>
 						</div>
 					) }
 					<div className="chronos-contact-form__field">
-						<label>
+						<label htmlFor={ `${ clientId }-message` }>
 							{ __( 'Message', 'chronos-blocks' ) }
 						</label>
-						<textarea rows="5" disabled />
+						<textarea
+							rows="5"
+							id={ `${ clientId }-message` }
+							disabled
+						/>
 					</div>
 					<button
 						type="button"

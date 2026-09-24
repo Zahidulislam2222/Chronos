@@ -7,7 +7,7 @@
 
 set -e
 
-CONTAINER="wordpress-wordpress-1"
+CONTAINER="${CHRONOS_WP_CONTAINER:-wordpress-wordpress-1}"
 
 echo "🕐 Creating sample watch data..."
 

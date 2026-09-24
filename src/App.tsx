@@ -7,7 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
-import LoginModal from "@/components/auth/LoginModal";
+import { isPreview, settings } from "@/config/settings";
+const LoginModal = lazy(() => import("@/components/auth/LoginModal"));
 
 // Critical pages — loaded eagerly.
 import Index from "./pages/Index";
@@ -25,9 +26,14 @@ const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Account = lazy(() => import("./pages/Account"));
 const Privacy = lazy(() => import("./pages/Privacy"));
+const Accessibility = lazy(() => import("./pages/Accessibility"));
 const Terms = lazy(() => import("./pages/Terms"));
+const WordPressPage = lazy(() => import("./pages/WordPressPage"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({ defaultOptions: { queries: {
+  refetchInterval: isPreview ? false : settings.refreshIntervalMs,
+  retry: false,
+} } });
 
 function PageLoader() {
   return (
@@ -45,7 +51,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <LoginModal />
+            {!isPreview && <Suspense fallback={null}><LoginModal /></Suspense>}
             <BrowserRouter>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
@@ -57,12 +63,14 @@ const App = () => (
                   <Route path="/checkout/success" element={<CheckoutSuccess />} />
                   <Route path="/blog" element={<Blog />} />
                   <Route path="/blog/:slug" element={<BlogPost />} />
-                  <Route path="/about" element={<About />} />
+                  <Route path="/about" element={isPreview ? <About /> : <WordPressPage />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/account" element={<Account />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="*" element={<NotFound />} />
+                  <Route path="/my-account" element={<Account />} />
+                  <Route path="/privacy" element={isPreview ? <Privacy /> : <WordPressPage />} />
+                  <Route path="/terms" element={isPreview ? <Terms /> : <WordPressPage />} />
+                  <Route path="/accessibility" element={isPreview ? <Accessibility /> : <WordPressPage />} />
+                  <Route path="*" element={isPreview ? <NotFound /> : <WordPressPage />} />
                 </Routes>
               </Suspense>
             </BrowserRouter>

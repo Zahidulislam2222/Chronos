@@ -1,0 +1,18 @@
+{
+  "outputDirectory": "dist",
+  "previewHost": "127.0.0.1",
+  "previewPort": 0,
+  "navigationTimeoutMs": 30000,
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "notFoundPath": "/__chronos_missing_page__",
+  "publicAssetDirectories": [
+    "assets",
+    "images",
+    "films",
+    "fonts"
+  ],
+  "publicPreviewPort": 4173
+}

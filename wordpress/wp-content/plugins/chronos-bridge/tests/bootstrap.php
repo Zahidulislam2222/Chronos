@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'CHRONOS_BRIDGE_VERSION' ) ) {
-	define( 'CHRONOS_BRIDGE_VERSION', '2.0.0' );
+	define( 'CHRONOS_BRIDGE_VERSION', '2.1.0' );
 }
 
 if ( ! defined( 'CHRONOS_BRIDGE_FILE' ) ) {

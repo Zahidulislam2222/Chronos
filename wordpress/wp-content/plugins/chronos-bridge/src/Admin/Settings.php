@@ -30,6 +30,8 @@ final class Settings {
 	 * Register all settings, sections, and fields.
 	 */
 	public static function register_settings(): void {
+		add_settings_section( 'chronos_frontend_section', __( 'Connected storefront', 'chronos-bridge' ), '__return_false', self::PAGE_SLUG );
+		self::add_field( 'chronos_frontend_url', __( 'Frontend origin', 'chronos-bridge' ), 'url', 'chronos_frontend_section', '', __( 'Public HTTPS storefront origin. Published View links use this address.', 'chronos-bridge' ) );
 		// Contact settings section.
 		add_settings_section(
 			'chronos_contact_section',

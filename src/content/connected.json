@@ -1,0 +1,68 @@
+{
+  "brand": {
+    "description": "A WordPress-powered watch demonstration. Browse the live catalogue and journal; checkout uses test payments only."
+  },
+  "collection": {
+    "title": "Find the timepiece that speaks to you."
+  },
+  "hero": {
+    "href": "/shop"
+  },
+  "craft": {
+    "href": "/shop",
+    "cta": "Explore the collection"
+  },
+  "ui": {
+    "shopIntro": "Explore the catalogue, maintained in WordPress.",
+    "searchPlaceholder": "Search by name, category or movement",
+    "productNote": "Demonstration catalogue. Checkout accepts test payments only; no goods are shipped.",
+    "available": "In stock",
+    "checkout": "Continue to test checkout"
+  },
+  "contact": {
+    "notice": "Your message is saved in the WordPress contact inbox. Do not include sensitive information.",
+    "action": "Send message",
+    "success": "Your message has been saved.",
+    "failure": "The message could not be saved. Please retry."
+  },
+  "checkout": {
+    "title": "Test checkout",
+    "notice": "Demonstration only. Use Stripe test details; no real money is charged and no goods are shipped. Prices and availability are checked by the server.",
+    "signIn": "Sign in to continue",
+    "submit": "Continue to Stripe test checkout",
+    "pending": "Opening test checkout\u2026",
+    "unavailable": "Test checkout is currently unavailable. Your bag has been kept.",
+    "gift": "Gift wrapping",
+    "instructions": "Delivery instructions",
+    "retry": "Start a new checkout",
+    "confirming": "Verifying test payment\u2026",
+    "paid": "Test payment verified",
+    "unpaid": "Payment has not been confirmed. Your bag has been kept.",
+    "account": "View your orders",
+    "noEmail": "This demonstration does not send order emails."
+  },
+  "account": {
+    "title": "Your account",
+    "signIn": "Sign in or create an account",
+    "orders": "Your orders",
+    "empty": "No orders yet.",
+    "failure": "Your orders could not be loaded. Sign in again or retry.",
+    "logout": "Sign out"
+  },
+  "fields": {
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message"
+  },
+  "auth": {
+    "login": "Sign in",
+    "register": "Create account",
+    "password": "Password",
+    "notice": "This is a demonstration account. Do not reuse a password from another service.",
+    "pending": "Please wait\u2026",
+    "failure": "Sign-in or registration failed. Check your details and try again.",
+    "name": "Name",
+    "email": "Email"
+  }
+}

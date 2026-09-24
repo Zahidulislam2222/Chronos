@@ -12,8 +12,16 @@ import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 export default function Edit( { attributes, setAttributes } ) {
-	const { columns, perPage, brand, movement, orderby, order, showPrice, showBrand } =
-		attributes;
+	const {
+		columns,
+		perPage,
+		brand,
+		movement,
+		orderby,
+		order,
+		showPrice,
+		showBrand,
+	} = attributes;
 	const [ watches, setWatches ] = useState( [] );
 	const [ brands, setBrands ] = useState( [] );
 	const [ movements, setMovements ] = useState( [] );
@@ -74,9 +82,7 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody
-					title={ __( 'Grid Settings', 'chronos-blocks' ) }
-				>
+				<PanelBody title={ __( 'Grid Settings', 'chronos-blocks' ) }>
 					<RangeControl
 						label={ __( 'Columns', 'chronos-blocks' ) }
 						value={ columns }
@@ -117,9 +123,7 @@ export default function Edit( { attributes, setAttributes } ) {
 						label={ __( 'Brand', 'chronos-blocks' ) }
 						value={ brand }
 						options={ brandOptions }
-						onChange={ ( val ) =>
-							setAttributes( { brand: val } )
-						}
+						onChange={ ( val ) => setAttributes( { brand: val } ) }
 					/>
 					<SelectControl
 						label={ __( 'Movement', 'chronos-blocks' ) }
@@ -155,23 +159,15 @@ export default function Edit( { attributes, setAttributes } ) {
 						value={ order }
 						options={ [
 							{
-								label: __(
-									'Descending',
-									'chronos-blocks'
-								),
+								label: __( 'Descending', 'chronos-blocks' ),
 								value: 'DESC',
 							},
 							{
-								label: __(
-									'Ascending',
-									'chronos-blocks'
-								),
+								label: __( 'Ascending', 'chronos-blocks' ),
 								value: 'ASC',
 							},
 						] }
-						onChange={ ( val ) =>
-							setAttributes( { order: val } )
-						}
+						onChange={ ( val ) => setAttributes( { order: val } ) }
 					/>
 				</PanelBody>
 			</InspectorControls>
@@ -218,19 +214,17 @@ export default function Edit( { attributes, setAttributes } ) {
 									) }
 								</div>
 								<div className="chronos-watch-grid__info">
-									{ showBrand &&
-										watch.brands?.length > 0 && (
-											<span className="chronos-watch-grid__brand">
-												{ watch.brands[ 0 ] }
-											</span>
-										) }
+									{ showBrand && watch.brands?.length > 0 && (
+										<span className="chronos-watch-grid__brand">
+											{ watch.brands[ 0 ] }
+										</span>
+									) }
 									<h4 className="chronos-watch-grid__title">
 										{ watch.title }
 									</h4>
 									{ showPrice && watch.price > 0 && (
 										<span className="chronos-watch-grid__price">
-											$
-											{ watch.price.toLocaleString() }
+											${ watch.price.toLocaleString() }
 										</span>
 									) }
 								</div>

@@ -1,240 +1,125 @@
-import { useState, useMemo, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useSearchParams } from 'react-router-dom';
-import Layout from '@/components/Layout';
-import SEOHead from '@/components/SEOHead';
-import ProductCard from '@/components/ProductCard';
-import { fetchProducts } from '@/utils/api';
-import { Product } from '@/lib/mockData';
-import { Button } from '@/components/ui/button';
-import { SlidersHorizontal, X } from 'lucide-react';
-
-const Shop = () => {
-  const [searchParams] = useSearchParams();
-  const isCollections = searchParams.get('featured') === 'true';
-
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('featured');
-  const [showFilters, setShowFilters] = useState(false);
-
-  // --- FETCH REAL PRODUCTS ON LOAD (NEW) ---
-  useEffect(() => {
-    const loadProducts = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchProducts();
-        setAllProducts(data);
-      } catch (error) {
-        console.error("Failed to load products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadProducts();
-  }, []);
-
-  // --- YOUR FILTER/SORT LOGIC (MODIFIED TO USE API DATA) ---
-  const filteredProducts = useMemo(() => {
-    let products = [...allProducts];
-
-    // Filter by featured if on Collections page
-    if (isCollections) {
-      products = products.filter((p) => p.featured);
-    }
-
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      products = products.filter(
-        (p) => p.category.toLowerCase() === selectedCategory.toLowerCase()
-      );
-    }
-
-    // Sort (Your logic is perfect, no change needed)
-    switch (sortBy) {
-      case 'price-low':
-        products.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        products.sort((a, b) => b.price - a.price);
-        break;
-      case 'name':
-        products.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'featured':
-      default:
-        products.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
-    }
-
-    return products;
-  }, [allProducts, selectedCategory, sortBy, isCollections]);
-
-  // --- DYNAMICALLY CREATE CATEGORIES FROM REAL PRODUCTS (NEW) ---
-  const categories = useMemo(() => {
-    const categoryCounts = new Map<string, number>();
-    allProducts.forEach(p => {
-      if (p.category) {
-        categoryCounts.set(p.category, (categoryCounts.get(p.category) || 0) + 1);
-      }
-    });
-
-    const categoryList = Array.from(categoryCounts.entries()).map(([name, count], index) => ({
-      id: String(index + 2),
-      name,
-      slug: name.toLowerCase(),
-      count,
-    }));
-
-    return [
-      { id: '1', name: 'All Watches', slug: 'all', count: allProducts.length },
-      ...categoryList,
-    ];
-  }, [allProducts]);
-
-  // --- LOADING STATE RENDER (NEW) ---
-  if (loading) {
-    return (
-      <Layout>
-        <div className="min-h-screen flex items-center justify-center bg-background text-primary">
-          Loading Collection...
-        </div>
-      </Layout>
+import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
+import { Search, X } from "lucide-react";
+import Layout from "@/components/Layout";
+import ProductCard from "@/components/ProductCard";
+import Reveal from "@/components/Reveal";
+import { fetchProducts } from "@/utils/api";
+import { content } from "@/content";
+export default function Shop() {
+  const [params, setParams] = useSearchParams();
+  const q = params.get("q") ?? "";
+  const category = params.get("category") ?? "";
+  const sort = params.get("sort") ?? "featured";
+  const {
+    data = [],
+    isPending,
+    isError,
+    refetch,
+  } = useQuery({ queryKey: ["products"], queryFn: fetchProducts });
+  const update = (key: string, value: string) => {
+    const next = new URLSearchParams(params);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setParams(next, { replace: true });
+  };
+  const products = data
+    .filter(
+      (p) =>
+        (!category || p.category === category) &&
+        [p.name, p.description, p.shortDescription]
+          .join(" ")
+          .toLowerCase()
+          .includes(q.toLowerCase()),
+    )
+    .sort((a, b) =>
+      sort === "low"
+        ? a.price - b.price
+        : sort === "high"
+          ? b.price - a.price
+          : sort === "name"
+            ? a.name.localeCompare(b.name)
+            : 0,
     );
-  }
-
   return (
     <Layout>
-      <SEOHead
-        title={isCollections ? "Collections" : "Shop"}
-        description={isCollections
-          ? "Our featured luxury timepieces — handpicked signature pieces from the Chronos collection."
-          : "Browse our curated collection of luxury timepieces from world-renowned brands."
-        }
-      />
-      <section className="py-24 bg-card">
-        <div className="container mx-auto px-4 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <span className="text-primary tracking-[0.3em] uppercase text-sm mb-4 block">
-              {isCollections ? 'Featured Selection' : 'Our Collection'}
-            </span>
-            <h1 className="font-display text-5xl md:text-6xl mb-6">
-              {isCollections ? 'Signature Pieces' : 'Timepieces'}
-            </h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              {isCollections
-                ? 'Handpicked masterpieces that define the art of watchmaking — our most coveted timepieces.'
-                : 'Explore our curated selection of exceptional watches, each crafted with precision and passion.'
-              }
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Shop Content (UNCHANGED DESIGN, DYNAMIC DATA) */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4 lg:px-8">
-          {/* Toolbar (UNCHANGED) */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden"
+      <div className="page-intro container">
+        <p className="eyebrow">{content.collection.eyebrow}</p>
+        <h1>{content.ui.shopTitle}</h1>
+        <p>{content.ui.shopIntro}</p>
+      </div>
+      <section className="container shop-section">
+        <div className="shop-toolbar">
+          <label className="search-field">
+            <Search size={18} />
+            <span className="sr-only">{content.ui.search}</span>
+            <input
+              autoFocus={params.has("search")}
+              value={q}
+              onChange={(e) => update("q", e.target.value)}
+              placeholder={content.ui.searchPlaceholder}
+            />
+            {q && (
+              <button
+                aria-label={content.ui.clearSearch}
+                onClick={() => update("q", "")}
               >
-                <SlidersHorizontal className="w-4 h-4 mr-2" />
-                Filters
-              </Button>
-              <p className="text-muted-foreground text-sm">
-                {filteredProducts.length} products
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <label className="text-sm text-muted-foreground">Sort by:</label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-secondary border border-border rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="all">All</option>
-                <option value="featured">Featured</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="name">Name</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex gap-12">
-            {/* Sidebar (UPDATED TO USE DYNAMIC CATEGORIES) */}
-            <aside
-              className={`${
-                showFilters ? 'fixed inset-0 z-50 bg-card p-6' : 'hidden'
-              } lg:block lg:static lg:bg-transparent lg:p-0 lg:w-64 flex-shrink-0`}
+                <X size={17} />
+              </button>
+            )}
+          </label>
+          <label className="sort-field">
+            {content.ui.sort}
+            <select
+              value={sort}
+              onChange={(e) => update("sort", e.target.value)}
             >
-              <div className="flex items-center justify-between lg:hidden mb-6">
-                <h3 className="font-display text-xl">Filters</h3>
-                <button onClick={() => setShowFilters(false)}>
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <h4 className="font-display text-lg mb-4">Categories</h4>
-                  <div className="space-y-2">
-                    {categories.map((category) => (
-                      <button
-                        key={category.id}
-                        onClick={() => {
-                          setSelectedCategory(category.slug);
-                          setShowFilters(false);
-                        }}
-                        className={`block w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                          selectedCategory === category.slug
-                            ? 'bg-primary/10 text-primary'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                        }`}
-                      >
-                        {category.name}
-                        <span className="text-muted-foreground ml-2">({category.count})</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </aside>
-
-            {/* Products Grid (UNCHANGED) */}
-            <div className="flex-1">
-              {filteredProducts.length === 0 ? (
-                <div className="text-center py-16">
-                  <p className="text-muted-foreground mb-4">No products found</p>
-                  <Button
-                    variant="luxuryOutline"
-                    onClick={() => setSelectedCategory('all')}
-                  >
-                    Clear Filters
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredProducts.map((product, index) => (
-                    <ProductCard key={product.id} product={product} index={index} />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+              <option value="featured">{content.ui.featured}</option>
+              <option value="low">{content.ui.low}</option>
+              <option value="high">{content.ui.high}</option>
+              <option value="name">{content.ui.name}</option>
+            </select>
+          </label>
         </div>
+        <div className="filter-row">
+          <div>
+            {["", ...new Set(data.map((p) => p.category))].map((c) => (
+              <button
+                className={category === c ? "selected" : ""}
+                key={c}
+                onClick={() => update("category", c)}
+              >
+                {c || content.ui.all}
+              </button>
+            ))}
+          </div>
+          <span>{products.length} timepieces</span>
+        </div>
+        {isPending ? (
+          <p role="status">{content.ui.loading}</p>
+        ) : isError ? (
+          <div role="alert">
+            {content.ui.failure}
+            <button onClick={() => refetch()}>{content.ui.retry}</button>
+          </div>
+        ) : products.length ? (
+          <div className="product-grid">
+            {products.map((p, i) => (
+              <Reveal key={p.id}>
+                <ProductCard product={p} index={i} />
+              </Reveal>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <p>{content.ui.noResults}</p>
+            <button className="text-link" onClick={() => setParams({})}>
+              {content.ui.clear}
+            </button>
+          </div>
+        )}
+        <p className="catalogue-note">{content.preview.notice}</p>
       </section>
     </Layout>
   );
-};
-
-export default Shop;
+}
