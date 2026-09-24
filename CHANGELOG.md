@@ -50,6 +50,10 @@ Notable changes to Chronos. Format based on
 - The backup workflow no longer uploads database dumps as GitHub Actions
   artifacts, which a public repository would expose to any signed-in GitHub
   user. The steps are commented out and documented.
+- Route validation in `scripts/prerender.mjs` used a regular expression with
+  exponential backtracking (CodeQL `js/redos`, high). A hostile or malformed
+  CMS slug could stall the build. Replaced with an equivalent linear pattern
+  (identical results on 195,310 generated inputs).
 
 ## 2026-09-15 — Connected WordPress storefront
 

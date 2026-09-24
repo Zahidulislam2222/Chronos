@@ -34,7 +34,7 @@ if(connected){
   pages=(await response.json()).data.pages;
 }
 const routes = [...new Set([...search.routes.map(r => r.path), ...products.map(p => `/product/${p.slug}`), ...posts.map(p => `/blog/${p.slug}`),...pages.map(p=>new URL(p.url).pathname.replace(/\/$/,'')||'/'), config.notFoundPath])];
-if (new Set(routes).size !== routes.length || routes.some(r => !/^\/(?:[a-z0-9_-]+\/?)*$/.test(r))) throw new Error('Unsafe or duplicate route in maintained data.');
+if (new Set(routes).size !== routes.length || routes.some(r => !/^\/(?:[a-z0-9_-]+(?:\/[a-z0-9_-]+)*\/?)?$/.test(r))) throw new Error('Unsafe or duplicate route in maintained data.');
 const server = await preview({preview:{host:config.previewHost,port:config.previewPort,open:false}});
 let browser;
 try {
