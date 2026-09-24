@@ -1,4 +1,12 @@
-name: Deploy to Production
+# ─────────────────────────────────────────────────────────────────
+# RETIRED — CURRENTLY OFF (kept as reference, not deleted)
+# This manual workflow deployed the WordPress plugins to the original
+# AridHost cPanel production server through the cPanel Fileman API. It
+# worked in production until the cPanel hosting expired in May 2026.
+# Chronos now runs on VPS hosting; see docs/DEPLOYMENT.md. Every job is
+# switched off with `if: false`, so dispatching it only shows skipped jobs.
+# ─────────────────────────────────────────────────────────────────
+name: Deploy to Production (cPanel — Retired)
 
 on:
   workflow_dispatch:
@@ -17,7 +25,7 @@ jobs:
   validate:
     name: Validate Build
     runs-on: ubuntu-latest
-    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' }}
+    if: ${{ false }}  # retired — was: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -44,7 +52,7 @@ jobs:
   dry-run:
     name: Dry Run
     needs: validate
-    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' && inputs.dry_run == true }}
+    if: ${{ false }}  # retired — was: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' && inputs.dry_run == true }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -76,7 +84,7 @@ jobs:
   deploy:
     name: Deploy to Production
     needs: validate
-    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' && inputs.dry_run == false && needs.validate.result == 'success' }}
+    if: ${{ false }}  # retired — was: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' && inputs.dry_run == false && needs.validate.result == 'success' }}
     runs-on: ubuntu-latest
     environment: production
     steps:

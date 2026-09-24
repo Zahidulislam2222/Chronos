@@ -1,0 +1,49 @@
+name: CodeQL
+
+# Static analysis of the TypeScript/JavaScript code (React frontend and
+# Gutenberg blocks) and the workflow files themselves. Results appear in the
+# repository's Security > Code scanning tab. CodeQL is free for public
+# repositories. PHP is not a CodeQL language; the PHP plugin is covered by
+# PHPCS (WordPress security sniffs), PHPUnit and composer audit.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '30 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, actions]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          config: |
+            paths-ignore:
+              - '**/node_modules/**'
+              - '**/vendor/**'
+              - '**/build/**'
+              - 'dist/**'
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:${{ matrix.language }}

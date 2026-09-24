@@ -1,3 +1,14 @@
+# ─────────────────────────────────────────────────────────────────
+# CURRENTLY OFF — do not re-enable the artifact upload in this repository.
+# This repository is public. Workflow artifacts in a public repository can
+# be downloaded by anyone with read access, i.e. any signed-in GitHub user,
+# so a database dump must never be uploaded as an artifact here.
+# The server-side backup steps are kept; the download/upload steps are
+# commented out (not deleted). The job only runs on a manual dispatch when
+# the repository variable CHRONOS_ACTIONS_ENABLED is 'true' (unset today).
+# Planned replacement: encrypted backups to private object storage — see
+# docs/AVAILABILITY-AND-DR.md.
+# ─────────────────────────────────────────────────────────────────
 name: Weekly Backup
 
 on:
@@ -47,29 +58,30 @@ jobs:
             ls -lh "$BACKUP_DIR"/
           ENDSSH
 
-      - name: Download backups to runner
-        env:
-          GCP_HOST: ${{ secrets.GCP_HOST }}
-        run: |
-          DATE=$(date +%Y-%m-%d)
-          scp -i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no \
-            ubuntu@${GCP_HOST}:/home/ubuntu/backups/db_${DATE}.sql.gz \
-            ./chronos-db-${DATE}.sql.gz
-          scp -i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no \
-            ubuntu@${GCP_HOST}:/home/ubuntu/backups/uploads_${DATE}.tar.gz \
-            ./chronos-uploads-${DATE}.tar.gz
+      # Off-server copy disabled for the public repository (see header).
+      # - name: Download backups to runner
+        # env:
+          # GCP_HOST: ${{ secrets.GCP_HOST }}
+        # run: |
+          # DATE=$(date +%Y-%m-%d)
+          # scp -i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no \
+            # ubuntu@${GCP_HOST}:/home/ubuntu/backups/db_${DATE}.sql.gz \
+            # ./chronos-db-${DATE}.sql.gz
+          # scp -i ~/.ssh/chronos_gcp -o StrictHostKeyChecking=no \
+            # ubuntu@${GCP_HOST}:/home/ubuntu/backups/uploads_${DATE}.tar.gz \
+            # ./chronos-uploads-${DATE}.tar.gz
 
-      - name: Upload to GitHub Artifacts (off-server copy)
-        uses: actions/upload-artifact@v4
-        with:
-          name: chronos-backup-${{ github.run_number }}
-          path: |
-            chronos-db-*.sql.gz
-            chronos-uploads-*.tar.gz
-          retention-days: 14
+      # - name: Upload to GitHub Artifacts (off-server copy)
+        # uses: actions/upload-artifact@v4
+        # with:
+          # name: chronos-backup-${{ github.run_number }}
+          # path: |
+            # chronos-db-*.sql.gz
+            # chronos-uploads-*.tar.gz
+          # retention-days: 14
 
-      - name: Verify backup sizes
-        run: |
-          echo "=== Backup uploaded to GitHub Artifacts ==="
-          ls -lh chronos-db-*.sql.gz chronos-uploads-*.tar.gz
-          echo "Retention: 14 days (2 weekly backups always available)"
+      # - name: Verify backup sizes
+        # run: |
+          # echo "=== Backup uploaded to GitHub Artifacts ==="
+          # ls -lh chronos-db-*.sql.gz chronos-uploads-*.tar.gz
+          # echo "Retention: 14 days (2 weekly backups always available)"

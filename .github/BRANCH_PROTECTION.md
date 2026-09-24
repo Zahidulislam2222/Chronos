@@ -18,7 +18,14 @@ These rules should be configured via GitHub Settings > Branches > Add rule.
     - `PHP Tests` (from CI Pipeline workflow)
     - `Blocks Build & Tests` (from CI Pipeline workflow)
     - `Frontend Build` (from CI Pipeline workflow)
+    - `npm audit` and `composer audit` (from Security workflow)
+    - `Analyze (javascript-typescript)` (from CodeQL workflow)
   - Require branches to be up to date before merging
+
+> All of these run automatically on every pull request since the open-source
+> release. With a single maintainer, a required approval blocks your own
+> PRs, so set the approval count to 0 until there is a second reviewer.
+> Keep the required status checks either way.
 
 - [x] **Do not allow bypassing the above settings**
 
@@ -40,7 +47,7 @@ Or use GitHub CLI:
 ```bash
 gh api repos/Zahidulislam2222/Chronos/branches/main/protection \
   --method PUT \
-  --field required_status_checks='{"strict":true,"contexts":["PHP Tests","Blocks Build & Tests","Frontend Build"]}' \
-  --field required_pull_request_reviews='{"required_approving_review_count":1,"dismiss_stale_reviews":true}' \
+  --field required_status_checks='{"strict":true,"contexts":["PHP Tests","Blocks Build & Tests","Frontend Build","npm audit","composer audit","Analyze (javascript-typescript)"]}' \
+  --field required_pull_request_reviews='{"required_approving_review_count":0,"dismiss_stale_reviews":true}' \
   --field enforce_admins=true
 ```

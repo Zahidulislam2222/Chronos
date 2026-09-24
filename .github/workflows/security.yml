@@ -1,6 +1,13 @@
 name: Security
 
+# Dependency vulnerability audits. They run on pushes to main, on pull
+# requests, weekly (Monday 06:00 UTC) and on demand. No secrets are needed.
 on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -11,7 +18,6 @@ jobs:
   npm-audit:
     name: npm audit
     runs-on: ubuntu-latest
-    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,7 +36,6 @@ jobs:
   composer-audit:
     name: composer audit
     runs-on: ubuntu-latest
-    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -48,6 +53,4 @@ jobs:
         working-directory: wordpress/wp-content/plugins/chronos-bridge
         run: composer audit
 
-  # CodeQL SAST requires GitHub Advanced Security (paid) for private repos.
-  # Enable it if you upgrade: uncomment the codeql job below.
-  # For now, npm audit + composer audit + Dependabot cover dependency scanning.
+  # Static analysis (CodeQL) runs in .github/workflows/codeql.yml.

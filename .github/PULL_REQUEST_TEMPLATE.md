@@ -1,29 +1,29 @@
 ## Summary
 
-<!-- What does this PR do? Keep it to 1-3 bullet points. -->
+<!-- What does this PR do and why? 1–3 bullet points. -->
 
 -
 
-## Type of Change
+## Type of change
 
 - [ ] Bug fix
 - [ ] New feature
-- [ ] Enhancement
-- [ ] Refactoring
+- [ ] Enhancement / refactor
 - [ ] Documentation
-- [ ] CI/CD
+- [ ] CI/CD or deployment configuration
 
 ## Checklist
 
-- [ ] PHPCS passes (`vendor/bin/phpcs`)
-- [ ] PHPUnit passes (`vendor/bin/phpunit`)
-- [ ] Jest passes (`npm test` in chronos-blocks)
-- [ ] Frontend builds (`npm run build`)
-- [ ] Tested in running WordPress (endpoints, admin pages)
-- [ ] BUILD_PLAN.md updated (if completing a task)
+- [ ] CI is green (PHP Tests, Blocks Build & Tests, Frontend Build, Security, CodeQL)
+- [ ] Tests added or updated for behaviour changes
+- [ ] No secrets, `.env`, `wp-config.php`, database dumps or uploads included
+- [ ] No hardcoded URLs, limits or copy in feature code (config/data files instead)
+- [ ] New REST routes declare a `permission_callback`; queries use `$wpdb->prepare`
+- [ ] Docs and `CHANGELOG.md` updated if behaviour, configuration or APIs changed
+- [ ] Claims about capacity, uptime or compliance are labelled as targets unless measured
 
-## Test Plan
+## Test plan
 
-<!-- How can a reviewer verify this works? -->
+<!-- How did you verify this? Commands run, flows exercised, screenshots. -->
 
 -

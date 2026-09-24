@@ -1,14 +1,26 @@
 name: CI Pipeline
 
+# Quality gates (PHP, blocks, frontend) run on every push to main and every
+# pull request. They need no secrets, so forks can run them safely.
+# Deployment jobs below stay manual and opt-in — see the notes on each job.
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # ── PHP Lint & Tests (chronos-bridge) ──────────────────────────
   php-tests:
     name: PHP Tests
     runs-on: ubuntu-latest
-    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +48,6 @@ jobs:
   blocks-tests:
     name: Blocks Build & Tests
     runs-on: ubuntu-latest
-    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +75,6 @@ jobs:
   frontend-build:
     name: Frontend Build
     runs-on: ubuntu-latest
-    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -93,14 +103,16 @@ jobs:
           VITE_SEARCH_INDEXABLE: 'true'
         run: npm run build && npm run verify:release
 
-  # ── Deploy to Production — cPanel API (LEGACY / PROOF OF WORK) ──
-  # This job was the original AridHost cPanel deployment pipeline.
-  # Kept intact as a portfolio artifact showing cPanel API integration.
-  # Muted with if: false — AridHost hosting expired 2026-05.
+  # ── Deploy to Production — cPanel API (RETIRED, CURRENTLY OFF) ──
+  # This was the original production pipeline on AridHost cPanel. It worked
+  # end-to-end in production (cPanel UAPI Git pull + Fileman upload) until
+  # the cPanel hosting expired in May 2026. The project now runs on VPS
+  # hosting (frontend VPS + GCP backend VM). The code is kept intact as a
+  # reference; `if: false` switches the job off so it can never run or fail.
   deploy-cpanel-legacy:
-    name: Deploy via cPanel (Legacy — Muted)
+    name: Deploy via cPanel (Retired — Off)
     needs: [php-tests, blocks-tests, frontend-build]
-    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' && false }}
+    if: ${{ false }}
     runs-on: ubuntu-latest
 
     steps:
@@ -145,6 +157,10 @@ jobs:
           echo "Frontend: HTTP $FSTATUS"
 
   # ── Deploy Backend Plugins to GCP (SSH + rsync) ──────────────────
+  # Opt-in only: runs on a manual dispatch from main when the repository
+  # variable CHRONOS_ACTIONS_ENABLED is 'true'. Current releases are
+  # promoted manually with local-vs-live SHA-256 parity checks, so this
+  # variable is intentionally unset and the job is skipped by default.
   deploy-gcp:
     name: Deploy Backend to GCP
     needs: [php-tests, blocks-tests, frontend-build]
@@ -201,11 +217,15 @@ jobs:
              && wp rewrite flush --allow-root 2>/dev/null || true \
              && echo 'GCP deploy complete.'"
 
-  # ── Deploy Frontend to Cloudflare Pages ──────────────────────────
+  # ── Deploy Frontend to Cloudflare Pages (SUPERSEDED, CURRENTLY OFF) ──
+  # Worked as the interim frontend host (May to Sep 2026). The public frontend
+  # moved to a versioned VPS release at https://chronos.zahidul-islam.com,
+  # deployed with the process in deploy/shared-vps/. Kept for reference;
+  # `if: false` switches it off.
   deploy-frontend:
-    name: Deploy Frontend to Cloudflare Pages
+    name: Deploy Frontend to Cloudflare Pages (Superseded — Off)
     needs: [php-tests, blocks-tests, frontend-build]
-    if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' }}
+    if: ${{ false }}
     runs-on: ubuntu-latest
 
     steps:
@@ -253,7 +273,7 @@ jobs:
   # ── Verify Full Stack After Deploy ───────────────────────────────
   verify:
     name: Verify Deployment
-    needs: [deploy-gcp, deploy-frontend]
+    needs: [deploy-gcp]
     if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
 
@@ -272,6 +292,6 @@ jobs:
         run: |
           echo "Checking frontend..."
           FSTATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 \
-            "https://chronos-vwg.pages.dev/" || echo "000")
+            "https://chronos.zahidul-islam.com/" || echo "000")
           echo "Frontend: HTTP $FSTATUS"
           [ "$FSTATUS" = "200" ] || (echo "Frontend check failed!" && exit 1)

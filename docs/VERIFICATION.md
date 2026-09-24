@@ -14,24 +14,44 @@ The eight engineering acceptance areas cover drift inventory, authoritative cata
 | Publish/edit without rebuild | 5 browser checks plus actual Nginx routes and sitemap passed |
 | Real test payment | Hosted Stripe test payment reconciled to a paid processing Woo order; stock unchanged |
 | Payment/persistence regressions | 3 repeated-receipt checks, 2 account/inbox persistence checks, 8 authorization/input HTTP checks |
-| Contact error handling | 404, 500 and malformed200 preserve note and display failure |
+| Contact error handling | 404, 500 and malformed 200 preserve note and display failure |
 | Public browser | 16 content/login/responsive checks plus 3 focused login/logout checks; zero runtime errors |
 | Accessibility | 6 public mobile/desktop axe scans, zero detected violations |
-| Public HTTPS | 12 checks passed; root HTML exactly matches release; current sitemap and genuine draft404s |
+| Public HTTPS | 12 checks passed; root HTML exactly matches release; current sitemap and genuine draft 404s |
 | Render/release | 25 HTML documents, 20 indexable canonical URLs; release verifier passed |
-| Deployment parity | Frontend78/78 files and backend86/86 runtime files match local; archive restoration passed |
-| PHP | 38 tests, 60 assertions passed; PHPCS0errors/7warnings |
+| Deployment parity | Frontend 78/78 files and backend 86/86 runtime files match local; archive restoration passed |
+| PHP | 38 tests, 60 assertions passed; PHPCS 0 errors / 7 warnings |
 | Gutenberg | 19 tests, lint and build passed; 17 changed source/build files deployed with parity |
-| Frontend gates | Types/client build/render/release passed; lint0errors/12existingwarnings |
+| Frontend gates | Types/client build/render/release passed; lint 0 errors / 12 existing warnings |
 | Dependency audits | Zero npm advisories in frontend and Gutenberg package trees |
-| Configuration/security | Eight public settings documented; installed final103-path source scan passed |
+| Configuration/security | Eight public settings documented; installed final 103-path source scan passed |
 | Fresh-context review | PASS after receipt/authentication/contact error-path defects were corrected |
 
-The first final render attempt timed out on a backend page request; the retry rendered all25pages successfully. A broad public test incorrectly expected logout to stay on the account page; actual logout redirects home. The test was corrected and the focused public login/logout flow passed. These failures are retained in private evidence rather than counted as successful first runs.
+The first final render attempt timed out on a backend page request; the retry rendered all 25 pages successfully. A broad public test incorrectly expected logout to stay on the account page; actual logout redirects home. The test was corrected and the focused public login/logout flow passed. These failures are retained in private evidence rather than counted as successful first runs.
+
+## Open-source release checks (24 September 2026)
+
+Run before the repository documentation and CI changes were merged for the
+open-source release. CI results on GitHub are recorded on the pull request.
+
+| Check | Observed result |
+|---|---|
+| Frontend | `npm audit` 0 advisories; typecheck passed; lint 0 errors; build, pre-render and `verify:release` passed |
+| Gutenberg blocks | Lint, build and 19/19 Jest tests passed (Linux container, LF checkout) |
+| PHP plugin | After the dev-tool lockfile update: PHPCS 0 errors, PHPUnit 38 tests / 60 assertions passed, `composer audit` clean |
+| Backend setup from a clean checkout | README Quick start run on an isolated Docker stack from a `git archive` copy. The first attempt exposed that `setup.sh` could never finish on a fresh install; after the fix, `setup.sh` installed a checksum-verified WP-CLI, WordPress and the plugins (exit 0). It also re-runs cleanly on an installed site and fails fast with a message when the container is stopped. The three WPGraphQL add-ons installed from their release zips; sample data (8 watches) and the editorial seed (4 pages + menu) completed; JWT login returned a token |
+| Workflows | All workflow and issue-template YAML parses; `actionlint` reports only the intentional `if: ${{ false }}` on retired jobs and info-level shellcheck notes in the disabled/opt-in deploy scripts |
+| Secrets | gitleaks on the staged change set: no leaks |
+| Documentation links | All relative links in changed Markdown files resolve |
+| Independent review | Fresh-context review of the diff; its accuracy findings (health-check restart wording, live-key wording, CI trigger wording and others) were corrected before commit |
+
+Not verified here: a fresh local stack has no WooCommerce products (no seed
+script yet; see the roadmap), so the connected storefront catalogue and
+checkout were not exercised against it.
 
 ## Reproduce repository gates
 
-Use the lockfiles and Node22.13+; PHP8.1+ is required for backend checks.
+Use the lockfiles and Node 22.12+; PHP 8.1+ is required for backend checks.
 
 ```bash
 npm ci
@@ -61,8 +81,8 @@ Private manual/browser tests and raw authenticated evidence stay in the ignored 
 
 - Initial HTML snapshots update on rebuild. New CMS routes work through browser rendering and the live sitemap, but do not receive automatically regenerated snapshots.
 - Stripe is test-only. No real charge, shipping, order email or paid AI call was performed. Legacy custom Watch/AI/analytics/cron behavior is not comprehensively certified by storefront tests.
-- Full-history gitleaks scanned54commits and flagged two vendored JWT documentation key examples. Exact upstream-version key hashes matched. No real secret was found in the changed-source scope; raw history is not claimed clean.
-- The10k–1Mreader and99%availability goals have no representative distributed-load or continuous30-day proof. Active CMS/API/route-status traffic is outside the earlier static workload model.
+- Full-history gitleaks scanned 54 commits and flagged two vendored JWT documentation key examples. Exact upstream-version key hashes matched. No real secret was found in the changed-source scope; raw history is not claimed clean.
+- The 10k–1M reader and 99% availability goals have no representative distributed-load or continuous 30-day proof. Active CMS/API/route-status traffic is outside the earlier static workload model.
 - Automated accessibility is not complete manual WCAG verification. Host penetration testing, full CDN-origin isolation, commercial legal compliance and universal provider failure recovery remain separate work.
 - PHPCS warnings cover direct database/schema operations and WooCommerce capability analysis; frontend warnings include existing Fast Refresh exports and vendored SMTP directives. They were not suppressed.
 

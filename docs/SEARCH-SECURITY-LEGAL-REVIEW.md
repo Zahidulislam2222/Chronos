@@ -108,7 +108,7 @@ US copyright analysis distinguishes human authorship from material generated sol
 
 [7] CNIL. [Cookies et traceurs: que dit la loi?](https://www.cnil.fr/fr/cookies-et-autres-traceurs/que-dit-la-loi).
 
-[8] Cloudflare. [Cloudflare cookies](https://developers.cloudflare.com/fundamentals/reference/policies-compliances/cloudflare-cookies/), updated 5May 2026.
+[8] Cloudflare. [Cloudflare cookies](https://developers.cloudflare.com/fundamentals/reference/policies-compliances/cloudflare-cookies/), updated 5 May 2026.
 
 [9] EDPB. [Guidelines 3/2018 on territorial scope](https://www.edpb.europa.eu/sites/default/files/files/file1/edpb_guidelines_3_2018_territorial_scope_after_public_consultation_en_1.pdf).
 

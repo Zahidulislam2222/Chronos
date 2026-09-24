@@ -4,7 +4,7 @@ The public frontend is connected to WordPress/WooCommerce. Its container serves 
 
 ## Controls in the codebase
 
-- Build-time HTML snapshots plus current CMS reads and sitemap; origin route validation returns actual404 for drafts/missing records. New snapshots require rebuild.
+- Build-time HTML snapshots plus current CMS reads and sitemap; origin route validation returns an actual 404 for drafts/missing records. New snapshots require rebuild.
 - DOMPurify HTML sanitization, allowed media/link origins, server-derived prices, ownership checks, idempotency locks and persisted payment acknowledgement.
 - Upstream TLS verification remains enabled with an explicit certificate chain depth and bounded proxy timeouts.
 - CSP permits self-hosted scripts and denies inline event handlers, external frames, form submissions, plugins and workers. Inline styles remain allowed for motion/component-library compatibility; the policy is not described as maximally strict.
@@ -12,7 +12,7 @@ The public frontend is connected to WordPress/WooCommerce. Its container serves 
 - GET/HEAD only, bounded body/timeouts and an aggregate origin request budget. These controls limit work; they do not distinguish every legitimate visitor from an attacker.
 - Non-root, read-only container; dropped capabilities; no privilege escalation; loopback-only port; resource and diagnostic-log limits.
 - Request-driven browser selection storage, clear action and denied-storage fallback. Preview import paths must not read commerce session storage eagerly.
-- Versioned release directories, exact SHA256comparison, health checks and previous-release recovery. Each mutation has a project-local checkpoint.
+- Versioned release directories, exact SHA-256 comparison, health checks and previous-release recovery. Each mutation has a project-local checkpoint.
 
 ## Repeatable local gates
 
@@ -29,7 +29,7 @@ npm run preview
 
 The retained workspace tests exercise routes, keyboard/gallery/bag behaviour, reduced motion, failed media, no-JavaScript content, structured metadata, aliases, denied storage, accessibility and a harmless CSP injection probe. They accept an explicit configuration-file argument; do not rely on custom WSL environment variables reaching Windows Node. Verify the reported target and evidence path before counting a run as live.
 
-Manual GitHub workflows remain guarded and were not triggered. Root and block dependency audits now fail their jobs on moderate-or-higher findings instead of hiding failure with `|| true`. The current frontend validation installs the rendering browser and validates the static artifact. Legacy cloud deployment jobs are retained historical paths, not the current release mechanism.
+Since the open-source release, CI (PHP, blocks, frontend), dependency audits and CodeQL run automatically on every push to `main` and every pull request. They need no secrets. Root and block dependency audits fail their jobs on moderate-or-higher findings instead of hiding failure with `|| true`. The frontend validation installs the rendering browser and validates the static artifact. Deployment jobs are not automatic: the retired cPanel and Cloudflare Pages jobs are disabled with `if: ${{ false }}` and kept for reference, and the GCP plugin deploy is opt-in. The backup workflow no longer uploads database dumps as workflow artifacts, because artifacts on a public repository can be downloaded by any signed-in GitHub user. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Operating limits and owners
 
@@ -39,17 +39,17 @@ The private origin port is not publicly reachable, but the public Caddy hostname
 
 A CDN logo is not a WAF configuration audit. No paid WAF, managed rate-limit add-on, monitoring subscription or load-balancer product was added. The local-only load test must not be repointed at the shared public site. Representative high-capacity validation needs an isolated environment, an approved traffic plan and provider capacity arrangements.
 
-PHP38tests/60assertions passed; PHPCS has0errors/7warnings. Real CMS permissions, contact persistence and hosted test payment were exercised. Real-commerce launch still needs merchant, retention, fulfilment and provider-operating requirements. Public audit counts must identify the package tree and date; a clean frontend audit does not describe every tool in the repository.
+PHP: 38 tests / 60 assertions passed; PHPCS has 0 errors / 7 warnings. Real CMS permissions, contact persistence and hosted test payment were exercised. Real-commerce launch still needs merchant, retention, fulfilment and provider-operating requirements. Public audit counts must identify the package tree and date; a clean frontend audit does not describe every tool in the repository.
 
 ## Disclosure and incident handling
 
-Use the developer contact profile linked by the site for initial contact; do not publish secrets or exploit payloads containing personal data in public issues. There is no claimed staffed24/7incident service or bug-bounty programme. Report the affected release, route, observed behaviour, impact and a minimal safe reproduction. Preserve logs and before-state privately, fix locally, run the relevant gate, deploy a verified release and record the incident and proof in the private dossier.
+Report vulnerabilities privately as described in [SECURITY.md](../SECURITY.md) (GitHub private vulnerability reporting or email); do not publish secrets or exploit payloads containing personal data in public issues. There is no claimed staffed 24/7 incident service or bug-bounty programme. Report the affected release, route, observed behaviour, impact and a minimal safe reproduction. Preserve logs and before-state privately, fix locally, run the relevant gate, deploy a verified release and record the incident and proof in the private dossier.
 
 Security scanners remain enabled. The installed Python scanner reports Paramiko execution as an advisory in private deployment helpers; trusted fixed scripts, shell-quoted configuration and pinned SSH host keys are reviewed explicitly. No finding is suppressed to manufacture a clean scan. Zero known frontend dependency advisories is not a claim that the application is attack-proof.
 
 ## Dependency maintenance decisions
 
-The root frontend uses the updated Vite7/React Router7 toolchain. Retained Gutenberg tooling uses @wordpress/scripts35 and refreshed WordPress packages. Its transitive overrides select verified patched versions of markdownlint-cli, minimatch3, serialize-javascript and SockJS's uuid dependency. The SockJS source uses the stable uuid.v4 API; a local HTTP-info/WebSocket-echo regression checks that path after the scoped override. No npm audit finding is ignored, and the suggested obsolete WordPress-scripts downgrade is not used.
+The root frontend uses the updated Vite 7 / React Router 7 toolchain. Retained Gutenberg tooling uses @wordpress/scripts 35 and refreshed WordPress packages. Its transitive overrides select verified patched versions of markdownlint-cli, minimatch 3, serialize-javascript and SockJS's uuid dependency. The SockJS source uses the stable uuid.v4 API; a local HTTP-info/WebSocket-echo regression checks that path after the scoped override. No npm audit finding is ignored, and the suggested obsolete WordPress-scripts downgrade is not used.
 
 Unit tests and asset builds passed, and all three custom blocks loaded in the actual WordPress editor. A custom-block draft survived save/reload. Seventeen changed block files were deployed to the backend with exact parity. Version/override decisions should be revisited with the upstream toolchain rather than retained indefinitely.
 

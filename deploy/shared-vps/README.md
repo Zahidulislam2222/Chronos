@@ -1,17 +1,73 @@
-# Static storefront deployment
+# Frontend release on a shared VPS
 
-The public design demo uses the validated local Vite build with `VITE_STOREFRONT_MODE=preview`. It creates no server-side customer data or payment transactions.
+This folder holds the public, non-secret templates for the frontend that is
+live at **https://chronos.zahidul-islam.com**. The static, pre-rendered React
+build is served by a hardened Nginx container. Caddy terminates HTTPS on the
+VPS, and Cloudflare sits in front. The WordPress backend runs separately (see
+[docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md)).
 
-Build locally with the public URL in the ignored production environment. Copy `dist/`, `compose.yaml`, `nginx.conf`, a privately supplied runtime `.env`, and the rendered Caddy site into a new immutable release. Pin the verified image digest and reserve an unused loopback port before allocation. Validate Compose and Nginx with the actual UID, filesystem and mounts before activation.
+| File | Purpose |
+|---|---|
+| `compose.yaml` | Container definition and hardening |
+| `nginx.connected.template` | **Current production config** (connected mode): routing, security headers, request budget, sitemap proxy, and route validation against WordPress. `__WORDPRESS_ORIGIN__` and `__WORDPRESS_HOST__` are filled in at release time |
+| `nginx.conf` | Config for a fully static preview-mode build (`VITE_STOREFRONT_MODE=preview`), which needs no backend |
+| `site.caddy.template` | Caddy site block for HTTPS and the reverse proxy to the loopback port |
+| `runtime.env.example` | Runtime settings: pinned image digest and loopback port |
 
-The Nginx container runs as UID101 with a read-only root and static content. Only temporary runtime files use tmpfs. Versioned JavaScript/CSS assets are immutable; non-versioned media revalidates periodically; HTML revalidates and forbids CDN payload transformation. Unknown static assets return404 rather than an SPA document. Maintained routes serve pre-rendered index documents; unknown routes return the rendered404page with HTTP404. Explicit index-file and trailing-slash aliases redirect to canonical URLs.
+## Container hardening (`compose.yaml`)
 
-Caddy handles public HTTPS and reverse proxies to the private loopback binding. Install only the project's site; never replace shared configuration. Check origin TLS, Cloudflare response, deep links, video ranges, browser flows, and all file hashes after deployment. Preserve the previous release for rollback.
+- Nginx runs as UID 101 with a **read-only root filesystem**. Only `/tmp` is
+  writable (tmpfs, 16 MB, `noexec`).
+- All Linux capabilities dropped, `no-new-privileges`, `pids_limit: 64`,
+  128 MB memory, 0.5 CPU.
+- The image is pinned by digest and never pulled implicitly
+  (`pull_policy: never`).
+- Published only on `127.0.0.1`; Caddy is the only public entry point.
+- A health check on `/healthz`; Docker logs rotate at 10 MB × 3 files.
 
-The private project-local deployment checkpoint is the operational recovery source. Access details, DNS identifiers, actual release locations and rollback commands do not belong in this public guide. No automatic deployment workflow is enabled by these files.
+## Nginx behaviour
 
-The origin permits GET/HEAD only, applies a script-restricting CSP plus HSTS and browser capability restrictions, rejects sensitive paths, and limits request sizes/timeouts. The100request/second aggregate origin budget with250burst protects this shared deployment; it is not a concurrency claim. Keep it aligned with measured infrastructure capacity. Docker diagnostic logs rotate at10MB across3files; routine Chronos access logs are disabled.
+- Only `GET` and `HEAD` are allowed; other methods get `405`.
+- Security headers: script-restricting CSP, HSTS, `Permissions-Policy`,
+  frame and content-type protections.
+- Caching: fingerprinted `/assets/` are immutable for one year. Images, films
+  and fonts revalidate hourly. HTML revalidates and forbids CDN
+  transformation (`no-transform`).
+- Dotfiles, `.php`, `.env`, `.sql`, `.map`, keys and config files return 404.
+- Maintained routes serve pre-rendered documents. Any other path is checked
+  with an `auth_request` to the WordPress `route-status` endpoint, so drafts
+  and missing content return a **real HTTP 404** page instead of an SPA
+  shell.
+- `/sitemap.xml` is proxied from the WordPress sitemap endpoint over verified
+  TLS.
+- An aggregate origin budget of **100 requests/second with a burst of 250**
+  (`429` beyond that) protects the shared VPS. This is a safety limit, not a
+  capacity claim; see [docs/SCALABILITY.md](../../docs/SCALABILITY.md).
+- Access logs are off; errors go to stderr.
 
-Validate the actual candidate container before promotion, including error/redirect headers and video range requests. A network-none temporary container with no published port is an isolation option when local Docker is unavailable. Record image/config hashes, then promote exactly that release. Changes to shared Caddy must preserve other sites.
+## Release procedure
 
-For frontend build CI, install the Playwright Chromium browser and use the typed preview environment. The manual frontend build job accepts CHRONOS_SITE_URL; without it the validation uses a reserved example origin, which must never be promoted as the real public canonical URL. Retained legacy deployments use build:client and are not this static release pipeline.
+1. Build locally with the production settings in an ignored env file:
+   `npm ci && npx playwright install chromium && npm run build && npm run verify:release`.
+2. Copy `dist/`, `compose.yaml`, the rendered Nginx config, a privately
+   supplied runtime `.env` and the rendered Caddy site into a **new, immutable
+   release directory**. Keep the previous release for rollback.
+3. Validate the candidate before promotion: Compose and Nginx config tests
+   with the real UID, filesystem and mounts; health check; routes, 404s,
+   redirects, headers and video range requests. A temporary container with
+   `--network none` and no published port can be used for isolation.
+4. Promote exactly the validated release. Install only this project's Caddy
+   site and never overwrite shared Caddy configuration used by other sites.
+5. Verify through Cloudflare (TLS, deep links, headers, browser flows), then
+   re-hash every deployed file with SHA-256 and confirm local equals live.
+
+No GitHub workflow deploys the frontend automatically. Server access details,
+DNS identifiers, release paths and rollback commands are kept in a private
+operations record and are not part of this public repository.
+
+## CI note
+
+The CI frontend job builds with the typed preview environment and a reserved
+example origin (`https://chronos.example`) unless the repository variable
+`CHRONOS_SITE_URL` is set. That example origin
+must never be promoted as the public canonical URL.

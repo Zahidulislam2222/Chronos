@@ -8,17 +8,49 @@
 
 set -e
 
-CONTAINER="wordpress-wordpress-1"
-SITE_URL="http://localhost:8888"
+CONTAINER="${CHRONOS_WP_CONTAINER:-wordpress-wordpress-1}"
+SITE_URL="${CHRONOS_SITE_URL:-http://localhost:8888}"
 ADMIN_USER="admin"
 ADMIN_PASS="admin"
 ADMIN_EMAIL="admin@chronos.local"
+WP_CLI_URL="${CHRONOS_WP_CLI_URL:-https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar}"
+WAIT_ATTEMPTS="${CHRONOS_WAIT_ATTEMPTS:-90}" # × 2 s
 
-echo "⏳ Waiting for WordPress container..."
-until docker exec "$CONTAINER" wp core is-installed --allow-root 2>/dev/null; do
+if ! docker inspect -f '{{.State.Running}}' "$CONTAINER" 2>/dev/null | grep -q true; then
+  echo "❌ Container $CONTAINER is not running. Start it with: docker-compose up -d" >&2
+  exit 1
+fi
+
+# The official wordpress image ships without WP-CLI. Verify the download
+# against the SHA-512 checksum published next to the phar.
+if ! docker exec "$CONTAINER" sh -c 'command -v wp' >/dev/null 2>&1; then
+  echo "📥 Installing WP-CLI in $CONTAINER..."
+  docker exec "$CONTAINER" sh -c "
+    curl -sSfLo /tmp/wp-cli.phar '$WP_CLI_URL' &&
+    curl -sSfLo /tmp/wp-cli.phar.sha512 '$WP_CLI_URL.sha512' &&
+    echo \"\$(cat /tmp/wp-cli.phar.sha512)  /tmp/wp-cli.phar\" | sha512sum -c - &&
+    mv /tmp/wp-cli.phar /usr/local/bin/wp && chmod +x /usr/local/bin/wp"
+fi
+
+# Wait for wp-config.php (written by the image entrypoint) and the database,
+# not for an installed site: a fresh clone has no site yet, so waiting on
+# `wp core is-installed` would never finish.
+echo "⏳ Waiting for wp-config.php and the database..."
+attempt=0
+# shellcheck disable=SC2016 # expanded by PHP inside the container
+until docker exec "$CONTAINER" php -r '
+  if (!is_file("/var/www/html/wp-config.php")) { exit(1); }
+  [$h, $p] = array_pad(explode(":", getenv("WORDPRESS_DB_HOST")), 2, "3306");
+  try { new mysqli($h, getenv("WORDPRESS_DB_USER"), getenv("WORDPRESS_DB_PASSWORD"), getenv("WORDPRESS_DB_NAME"), (int) $p); }
+  catch (Throwable $e) { exit(1); }' 2>/dev/null; do
+  attempt=$((attempt + 1))
+  if [ "$attempt" -ge "$WAIT_ATTEMPTS" ]; then
+    echo "❌ Database not reachable after $((WAIT_ATTEMPTS * 2)) s. Check the db container and the WORDPRESS_DB_* settings." >&2
+    exit 1
+  fi
   sleep 2
 done
-echo "✅ WordPress is running."
+echo "✅ WordPress and database are reachable."
 
 # Install WordPress if not configured.
 if ! docker exec "$CONTAINER" wp option get siteurl --allow-root 2>/dev/null | grep -q "$SITE_URL"; then
