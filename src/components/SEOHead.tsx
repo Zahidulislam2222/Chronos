@@ -1,3 +1,4 @@
+import { useLayoutEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 import { content } from "@/content";
@@ -7,6 +8,7 @@ import { fetchProductBySlug, fetchPostBySlug } from "@/utils/api";
 import { fetchPage } from "@/utils/wordpressApi";
 import { isPreview } from "@/config/settings";
 import { wordpressText } from "@/lib/wordpress";
+import { removeStaleHeadNodes } from "@/lib/head";
 
 export default function SEOHead() {
   const { pathname } = useLocation();
@@ -17,6 +19,7 @@ export default function SEOHead() {
   const cms = useQuery({queryKey:["wordpress-page",pathname],queryFn:()=>fetchPage(pathname),enabled:!isPreview&&!productSlug&&!postSlug&&!["/","/shop","/blog","/cart","/checkout","/checkout/success","/account","/my-account","/contact"].includes(pathname)});
   const remote = product.data ? {title:product.data.name,description:product.data.shortDescription,image:product.data.image,kind:"Product"} : post.data ? {title:post.data.title,description:post.data.excerpt,image:post.data.featuredImage,kind:"Article"} : cms.data ? {title:cms.data.title,description:wordpressText(cms.data.content).slice(0,160),kind:"WebPage"} : undefined;
   const page = pageSearch(pathname,remote);
+  useLayoutEffect(removeStaleHeadNodes, []);
   return <Helmet>
     <title data-chronos-head="">{page.title}</title>
     <meta data-chronos-head="" name="description" content={page.description} />

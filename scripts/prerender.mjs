@@ -42,6 +42,8 @@ try {
   const base = `http://${config.previewHost}:${address.port}`;
   browser = await chromium.launch();
   const context = await browser.newContext({viewport:config.viewport,reducedMotion:'reduce'});
+  // Record whether the route loader ever mounts during the initial render.
+  await context.addInitScript(() => { new MutationObserver(() => { if (document.querySelector('[data-page-loader]')) window.__chronosLoaderShown = true; }).observe(document, {childList:true, subtree:true}); });
   const snapshots = [], errors = [];
   context.on('page', p => p.on('pageerror', e => errors.push(e.message)));
   const allowed = new Set([base,...(connected?[new URL(env.VITE_API_URL).origin,new URL(env.VITE_WP_API_URL).origin]:[])]);
@@ -51,6 +53,8 @@ try {
     await page.goto(base + route, {waitUntil:'networkidle',timeout:config.navigationTimeoutMs});
     await page.locator('main h1').waitFor();
     await page.waitForFunction(() => document.querySelector('meta[name="robots"]') && !document.querySelector('main')?.textContent?.includes('Preparing the collection'));
+    const live = await page.evaluate(() => ({loader:Boolean(window.__chronosLoaderShown),title:document.querySelectorAll('title').length,description:document.querySelectorAll('meta[name="description"]').length,canonical:document.querySelectorAll('link[rel="canonical"]').length}));
+    if (live.loader || live.title !== 1 || live.description !== 1 || live.canonical > 1) throw new Error('Initial render showed the page loader or duplicated head tags: '+route+' '+JSON.stringify(live));
     if(connected && await page.locator('main').innerText().then(t=>t.includes('could not be loaded')))throw new Error('WordPress content failed during render: '+route);
     const result = await page.evaluate(() => {
       // Capture the same semantic UI supplied to people; never crawler-only content.

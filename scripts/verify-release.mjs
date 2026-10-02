@@ -10,7 +10,8 @@ for(const page of manifest){
  const html=await readFile(await outputPath('dist',file),'utf8');
  assert.equal((html.match(/<title[\s>]/g)||[]).length,1,'Exactly one initial title');
  assert.equal((html.match(/<meta[^>]*name="description"/g)||[]).length,1,'Exactly one meta description');
- assert.ok((html.match(/<link[^>]*rel="canonical"/g)||[]).length<=1,'At most one canonical link');
+ const canonicals=(html.match(/<link[^>]*rel="canonical"/g)||[]).length;
+ assert.ok(page.index?canonicals===1:canonicals<=1,'One canonical link on indexable pages, at most one elsewhere');
  assert.ok(!html.includes('//'+config.previewHost),'No preview-server origin in rendered HTML');
  assert.ok(html.includes('id="main-content"')&&html.includes('<h1'),'Rendered semantic content');
  if(page.index){assert.ok(!titles.has(page.title),'Unique public title');titles.add(page.title);assert.ok(html.includes(page.canonical),'Canonical in initial HTML');assert.ok(html.includes('application/ld+json'),'Structured data in initial HTML');}
