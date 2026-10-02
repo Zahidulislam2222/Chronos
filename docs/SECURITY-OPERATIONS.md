@@ -49,7 +49,7 @@ Security scanners remain enabled. The installed Python scanner reports Paramiko 
 
 ## Dependency maintenance decisions
 
-The root frontend uses the updated Vite 7 / React Router 7 toolchain. Retained Gutenberg tooling uses @wordpress/scripts 35 and refreshed WordPress packages. Its transitive overrides select verified patched versions of markdownlint-cli, minimatch 3, serialize-javascript and SockJS's uuid dependency. The SockJS source uses the stable uuid.v4 API; a local HTTP-info/WebSocket-echo regression checks that path after the scoped override. No npm audit finding is ignored, and the suggested obsolete WordPress-scripts downgrade is not used.
+The root frontend uses the updated Vite 8 / React Router 7 toolchain. Retained Gutenberg tooling uses @wordpress/scripts 35 and refreshed WordPress packages. Its transitive overrides select verified patched versions of markdownlint-cli, minimatch 3, serialize-javascript and SockJS's uuid dependency. The SockJS source uses the stable uuid.v4 API; a local HTTP-info/WebSocket-echo regression checks that path after the scoped override. No npm audit finding is ignored, and the suggested obsolete WordPress-scripts downgrade is not used.
 
 Unit tests and asset builds passed, and all three custom blocks loaded in the actual WordPress editor. A custom-block draft survived save/reload. Seventeen changed block files were deployed to the backend with exact parity. Version/override decisions should be revisited with the upstream toolchain rather than retained indefinitely.
 

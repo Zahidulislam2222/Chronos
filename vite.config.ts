@@ -12,27 +12,26 @@ export default defineConfig(({ mode }) => ({
   plugins: [react()],
   optimizeDeps: { entries: ["index.html"] },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks(id) {
-          if (
-            id.includes("node_modules/framer-motion") ||
-            id.includes("node_modules/motion-")
-          )
-            return "motion";
-          if (
-            /node_modules\/(react|react-dom|react-router|react-router-dom|scheduler)\//.test(
-              id,
-            )
-          )
-            return "react-vendor";
+        codeSplitting: {
+          groups: [
+            {
+              name: "react-vendor",
+              test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/,
+            },
+            {
+              name: "motion",
+              test: /node_modules[\\/](framer-motion|motion-[^\\/]+)[\\/]/,
+            },
+          ],
         },
       },
     },
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
 }));
