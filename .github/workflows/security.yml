@@ -20,9 +20,9 @@ jobs:
     name: npm audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
 
@@ -38,7 +38,7 @@ jobs:
     name: composer audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up PHP 8.1
         uses: shivammathur/setup-php@v2
@@ -64,7 +64,7 @@ jobs:
       contents: read
       pull-requests: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -82,7 +82,7 @@ jobs:
     name: semgrep
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Scan with p/security-audit
         run: pipx run --spec semgrep==1.168.0 semgrep scan --error --config p/security-audit --metrics=off
@@ -92,7 +92,7 @@ jobs:
     name: bandit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Scan Python files
         run: pipx run --spec bandit==1.9.4 bandit -q -ll -r . -x ./node_modules,./wordpress/wp-content/plugins/chronos-bridge/vendor
