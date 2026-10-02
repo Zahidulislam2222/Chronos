@@ -55,9 +55,9 @@ installed on the server; dev tools are not needed there.
 | Workflow | Trigger | What it does | State |
 |---|---|---|---|
 | **CI Pipeline** (`ci.yml`) | push to `main`, every pull request, manual | PHP (PHPCS + PHPUnit on PHP 8.1), Gutenberg blocks (lint, build, Jest; audited in Security), frontend (audit, typecheck, lint, pre-render build, release check) | **Active** |
-| **Security** (`security.yml`) | push to `main`, pull requests, weekly Monday 06:00 UTC, manual | `npm audit` (frontend + blocks), `composer audit` | **Active** |
+| **Security** (`security.yml`) | push to `main`, pull requests, weekly Monday 06:00 UTC, manual | `npm audit` (frontend + blocks), `composer audit`, gitleaks (new commits; full history weekly/manual), Semgrep `p/security-audit`, bandit | **Active** |
 | **CodeQL** (`codeql.yml`) | push to `main`, pull requests, weekly, manual | Static analysis of TypeScript/JavaScript and workflow files | **Active** |
-| CI → `deploy-gcp` + `verify` | manual on `main`, only if repo variable `CHRONOS_ACTIONS_ENABLED=true` | rsync custom plugins to the backend VM over SSH, then health-check | Opt-in, **off by default** |
+| CI → `deploy-gcp` + `verify` | manual on `main`, only if repo variable `CHRONOS_ACTIONS_ENABLED=true`; `verify` also needs `CHRONOS_BACKEND_URL` and `CHRONOS_SITE_URL` | rsync custom plugins to the backend VM over SSH, then health-check | Opt-in, **off by default** |
 | CI → `deploy-frontend` | — | Cloudflare Pages deploy | **Superseded, off** (`if: false`) |
 | CI → `deploy-cpanel-legacy` | — | cPanel UAPI deploy | **Retired, off** (`if: false`) |
 | Deploy to Production (`deploy.yml`) | — | cPanel Fileman deploy with dry-run gate | **Retired, off** (`if: false`) |
