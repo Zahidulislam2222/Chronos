@@ -96,7 +96,7 @@ replacement design (encrypted backups to private object storage) is in
 | Secret | Used by |
 |---|---|
 | `GCP_SSH_PRIVATE_KEY`, `GCP_HOST` | `deploy-gcp`, `backup` |
-| `CF_WRANGLER_CONFIG`, `CLOUDFLARE_ACCOUNT_ID`, `GH_PAT` | superseded `deploy-frontend` |
-| `CPANEL_URL`, `CPANEL_USERNAME`, `CPANEL_API_TOKEN` | retired cPanel jobs |
+| `CF_WRANGLER_CONFIG`, `CLOUDFLARE_ACCOUNT_ID`, `GH_PAT` | superseded `deploy-frontend` (removed from the repo 2026-10-03; re-create to re-enable) |
+| `CPANEL_URL`, `CPANEL_USERNAME`, `CPANEL_API_TOKEN` | retired cPanel jobs (removed from the repo 2026-10-03; re-create to re-enable) |
 
 No secret is needed to build, test or contribute.
