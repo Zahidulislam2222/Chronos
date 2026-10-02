@@ -98,8 +98,9 @@ Required before selling real products to real customers. See
 - Versioned public API contract with a deprecation policy.
 - Regenerate HTML snapshots automatically on publish (webhook → build).
 - Reduce CSP `'unsafe-inline'` for styles.
-- Resume Dependabot version-update PRs with grouped updates, and review the
-  open stripe-php major upgrade (16 → 20).
+- Resume Dependabot version-update PRs with grouped updates.
+- Deploy the stripe-php 20 upgrade to the backend VM (`composer install --no-dev`)
+  and re-run a test-mode checkout against it.
 - Automated browser end-to-end tests in CI against a disposable stack.
 - WooCommerce product seed script for local development (from
   `src/content/catalogue.json`), so a fresh clone has a working connected
