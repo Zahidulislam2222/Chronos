@@ -9,6 +9,7 @@ for(const page of manifest){
  const file=page.route===config.notFoundPath?'404.html':path.join(page.route.slice(1),'index.html');
  const html=await readFile(await outputPath('dist',file),'utf8');
  assert.equal((html.match(/<title>/g)||[]).length,1,'Exactly one initial title');
+ assert.ok(!html.includes('//'+config.previewHost),'No preview-server origin in rendered HTML');
  assert.ok(html.includes('id="main-content"')&&html.includes('<h1'),'Rendered semantic content');
  if(page.index){assert.ok(!titles.has(page.title),'Unique public title');titles.add(page.title);assert.ok(html.includes(page.canonical),'Canonical in initial HTML');assert.ok(html.includes('application/ld+json'),'Structured data in initial HTML');}
  assert.ok(!html.includes('"@type":"Offer"')&&!html.includes('aggregateRating'),'No invented merchant offers or reviews');

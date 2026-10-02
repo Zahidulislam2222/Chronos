@@ -55,6 +55,8 @@ try {
     const result = await page.evaluate(() => {
       // Capture the same semantic UI supplied to people; never crawler-only content.
       const clone = document.documentElement.cloneNode(true);
+      // Vite 8's preload helper writes absolute URLs on the preview server's origin.
+      clone.querySelectorAll('[href],[src]').forEach(n => { for (const a of ['href','src']) { const v = n.getAttribute(a); if (v && v.startsWith(location.origin + '/')) n.setAttribute(a, v.slice(location.origin.length)); } });
       clone.removeAttribute('style');
       clone.classList.add('prerendered');
       clone.querySelectorAll('script[data-chronos-runtime], [data-radix-portal]').forEach(n => n.remove());
