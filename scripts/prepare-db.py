@@ -1,18 +1,20 @@
 """
 Prepare Chronos database backup for new GCP host.
 Replaces all old URLs with new domain.
+
+Configuration (environment):
+  CHRONOS_OLD_URLS  comma-separated URLs found in the dump, e.g.
+                    "https://old-backend.example,http://localhost:8888"
+  CHRONOS_NEW_URL   backend URL to write, e.g. "https://new-backend.example"
 """
+import os
 import re
 import sys
 
-OLD_URLS = [
-    "https://chronosbackend.healthcodeanalysis.com",
-    "http://chronosbackend.healthcodeanalysis.com",
-    "http://140.245.33.37:8090",   # old local/dev IP seen in DB
-    "http://localhost:8888",
-    "http://localhost:8090",
-]
-NEW_URL = "https://chronosbackend.35-222-94-93.sslip.io"
+OLD_URLS = [u.strip() for u in os.environ.get("CHRONOS_OLD_URLS", "").split(",") if u.strip()]
+NEW_URL = os.environ.get("CHRONOS_NEW_URL", "").strip()
+if not OLD_URLS or not NEW_URL:
+    sys.exit("Set CHRONOS_OLD_URLS and CHRONOS_NEW_URL (see the docstring).")
 
 INPUT  = "wordpress/database-backup.sql"
 OUTPUT = "wordpress/database-backup-gcp.sql"
@@ -31,12 +33,30 @@ for old in OLD_URLS:
 
 # Also fix serialized PHP strings — WordPress stores URLs in serialized data
 # e.g. s:35:"http://old-url.com"; must become s:XX:"http://new-url.com";
+# mysqldump escapes the quotes (s:35:\"...\";), and PHP lengths are UTF-8
+# byte counts of the unescaped value. Only strings holding NEW_URL change.
+MYSQL_ESCAPES = {"0": "\x00", "n": "\n", "r": "\r", "Z": "\x1a", "t": "\t"}
+
+
+def unescape_mysql(value):
+    return re.sub(r"\\(.)", lambda m: MYSQL_ESCAPES.get(m.group(1), m.group(1)), value)
+
+
 def fix_serialized(text):
-    pattern = r's:(\d+):"([^"]*chronos[^"]*)"'
-    def replacer(m):
+    def escaped(m):
         s = m.group(2)
-        return f's:{len(s)}:"{s}"'
-    return re.sub(pattern, replacer, text)
+        if NEW_URL not in s:
+            return m.group(0)
+        return f's:{len(unescape_mysql(s).encode("utf-8"))}:\\"{s}\\";'
+
+    def plain(m):
+        s = m.group(2)
+        if NEW_URL not in s:
+            return m.group(0)
+        return f's:{len(s.encode("utf-8"))}:"{s}";'
+
+    text = re.sub(r'(?<![\\\w])s:(\d+):\\"((?:[^\\]|\\.)*?)\\";', escaped, text)
+    return re.sub(r'(?<![\\\w])s:(\d+):"([^"\\]*)";', plain, text)
 
 content = fix_serialized(content)
 

@@ -137,7 +137,7 @@ A backup that has never been restored is not a backup.
 |---|---|---|
 | Bad frontend release | Previous immutable release kept | Switch back to the previous release directory; verify hashes and `/healthz` |
 | Bad plugin release | Local source is the source of truth | Redeploy the previous commit's plugin files; re-hash local vs live |
-| Backend VM lost | Full dynamic outage; data at risk | Rebuild from `scripts/gcp-setup.sh`, restore latest DB + uploads, re-issue TLS, update the hostname if the IP changed |
+| Backend VM lost | Full dynamic outage; data at risk | Rebuild from `scripts/gcp-setup.sh` (with `CHRONOS_BACKEND_DOMAIN` set), restore latest DB + uploads, re-issue TLS, update the hostname if the IP changed |
 | Backend IP changes | Hostname and frontend config break | Avoid stopping the VM; target: static IP + owned domain |
 | Database corruption / bad migration | No PITR | Restore latest dump into a copy, verify, then switch |
 | Domain or hosting expiry | **Happened in 2026**: the original domain and cPanel hosting expired | Registrar auto-renew, expiry alerts, and DNS documented in the private recovery record |

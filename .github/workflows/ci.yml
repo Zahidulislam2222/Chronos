@@ -168,6 +168,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # The verify job needs these; fail before touching the server, not after.
+      - name: Require verify target URLs
+        env:
+          BACKEND_URL: ${{ vars.CHRONOS_BACKEND_URL }}
+          SITE_URL: ${{ vars.CHRONOS_SITE_URL }}
+        run: |
+          [ -n "$BACKEND_URL" ] && [ -n "$SITE_URL" ] || \
+            (echo "Set the CHRONOS_BACKEND_URL and CHRONOS_SITE_URL repository variables." && exit 1)
+
       - uses: actions/checkout@v4
 
       - name: Configure SSH key
@@ -276,13 +285,22 @@ jobs:
     needs: [deploy-gcp]
     if: ${{ vars.CHRONOS_ACTIONS_ENABLED == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    # Public URLs come from repository variables (Settings > Variables > Actions).
+    env:
+      BACKEND_URL: ${{ vars.CHRONOS_BACKEND_URL }}
+      SITE_URL: ${{ vars.CHRONOS_SITE_URL }}
 
     steps:
+      - name: Require target URLs
+        run: |
+          [ -n "$BACKEND_URL" ] && [ -n "$SITE_URL" ] || \
+            (echo "Set the CHRONOS_BACKEND_URL and CHRONOS_SITE_URL repository variables." && exit 1)
+
       - name: Check backend GraphQL
         run: |
           echo "Checking backend GraphQL..."
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 \
-            -X POST https://chronosbackend.35-222-94-93.sslip.io/graphql \
+            -X POST "${BACKEND_URL%/}/graphql" \
             -H "Content-Type: application/json" \
             -d '{"query":"{products{nodes{name}}}"}' || echo "000")
           echo "GraphQL: HTTP $STATUS"
@@ -292,6 +310,6 @@ jobs:
         run: |
           echo "Checking frontend..."
           FSTATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 \
-            "https://chronos.zahidul-islam.com/" || echo "000")
+            "${SITE_URL%/}/" || echo "000")
           echo "Frontend: HTTP $FSTATUS"
           [ "$FSTATUS" = "200" ] || (echo "Frontend check failed!" && exit 1)

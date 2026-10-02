@@ -10,3 +10,21 @@ repos:
         args: [--maxkb=500]
       - id: detect-private-key
       - id: check-merge-conflict
+
+  # Security layer: secrets and Python SAST. Requires gitleaks and bandit on
+  # the contributor's PATH. Semgrep runs in .github/workflows/security.yml
+  # (it has no reliable native Windows install), together with gitleaks and
+  # bandit, so nothing depends on a local install alone.
+  - repo: local
+    hooks:
+      - id: gitleaks-staged
+        name: gitleaks (secrets in staged diff)
+        entry: gitleaks git --pre-commit --staged --redact --no-banner --verbose
+        language: system
+        pass_filenames: false
+
+      - id: bandit
+        name: bandit (Python SAST, medium+ severity)
+        entry: bandit -q -ll
+        language: system
+        types: [python]

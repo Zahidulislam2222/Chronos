@@ -1,0 +1,5 @@
+# Sample keys printed in the firebase/php-jwt README (documentation examples,
+# not credentials). They entered history with vendored plugin code in e7cbff1
+# and are no longer tracked.
+e7cbff12c7a4e31ff09f519f4fcf7e4562c5727c:wordpress/wp-content/plugins/wp-graphql-jwt-authentication-0.7.0/vendor/firebase/php-jwt/README.md:private-key:75
+e7cbff12c7a4e31ff09f519f4fcf7e4562c5727c:wordpress/wp-content/plugins/wp-graphql-woocommerce-v0.19.0/vendor/firebase/php-jwt/README.md:private-key:112

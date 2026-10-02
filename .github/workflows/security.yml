@@ -1,7 +1,8 @@
 name: Security
 
-# Dependency vulnerability audits. They run on pushes to main, on pull
-# requests, weekly (Monday 06:00 UTC) and on demand. No secrets are needed.
+# Dependency audits plus secret (gitleaks), Semgrep and Python (bandit)
+# scans. They run on pushes to main, on pull requests, weekly (Monday 06:00
+# UTC) and on demand. No repository secrets are needed.
 on:
   push:
     branches: [main]
@@ -52,5 +53,48 @@ jobs:
       - name: Audit dependencies
         working-directory: wordpress/wp-content/plugins/chronos-bridge
         run: composer audit
+
+  # ── Secrets (gitleaks) ─────────────────────────────────────────
+  # Push/PR runs scan the new commits; the weekly and manual runs scan the
+  # full history. Known documentation sample keys are in .gitleaksignore.
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: 8.30.1
+          # Findings fail the job and show (redacted) in the log. No PR comments
+          # (would need write access) and no SARIF artifact on a public repo.
+          GITLEAKS_ENABLE_COMMENTS: false
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
+
+  # ── Semgrep security rules ─────────────────────────────────────
+  semgrep:
+    name: semgrep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan with p/security-audit
+        run: pipx run --spec semgrep==1.168.0 semgrep scan --error --config p/security-audit --metrics=off
+
+  # ── Python SAST ────────────────────────────────────────────────
+  bandit:
+    name: bandit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan Python files
+        run: pipx run --spec bandit==1.9.4 bandit -q -ll -r . -x ./node_modules,./wordpress/wp-content/plugins/chronos-bridge/vendor
 
   # Static analysis (CodeQL) runs in .github/workflows/codeql.yml.

@@ -3,7 +3,10 @@
 # Runs on the GCP e2-micro instance to configure WordPress backend
 set -e
 
-DOMAIN="chronosbackend.35-222-94-93.sslip.io"
+# Backend hostname, e.g. chronosbackend.<ip-with-dashes>.sslip.io. It follows
+# the VM's IP, so it is supplied per run rather than stored here. Run as root,
+# keeping the variable: sudo CHRONOS_BACKEND_DOMAIN=<host> bash scripts/gcp-setup.sh
+DOMAIN="${CHRONOS_BACKEND_DOMAIN:?Set CHRONOS_BACKEND_DOMAIN to the backend hostname}"
 DB_NAME="chronos_wp"
 DB_USER="chronos_user"
 DB_PASS="$(openssl rand -base64 24)"
