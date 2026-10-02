@@ -3,9 +3,11 @@ import * as ResizablePrimitive from "react-resizable-panels";
 
 import { cn } from "@/lib/utils";
 
+// v4 sets the group's flex-direction inline from `orientation`. Numeric
+// defaultSize/minSize/maxSize are pixels in v4 (percent in v2); pass "50%" for percent.
 const ResizablePanelGroup = ({ className, ...props }: ResizablePrimitive.GroupProps) => (
   <ResizablePrimitive.Group
-    className={cn("flex h-full w-full aria-[orientation=vertical]:flex-col", className)}
+    className={cn("flex h-full w-full", className)}
     {...props}
   />
 );
