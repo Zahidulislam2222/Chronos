@@ -2,7 +2,7 @@
   <a href="https://github.com/Zahidulislam2222/Chronos/actions/workflows/ci.yml"><img src="https://github.com/Zahidulislam2222/Chronos/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI" /></a>
   <a href="https://github.com/Zahidulislam2222/Chronos/actions/workflows/security.yml"><img src="https://github.com/Zahidulislam2222/Chronos/actions/workflows/security.yml/badge.svg?branch=main" alt="Security" /></a>
   <a href="https://github.com/Zahidulislam2222/Chronos/actions/workflows/codeql.yml"><img src="https://github.com/Zahidulislam2222/Chronos/actions/workflows/codeql.yml/badge.svg?branch=main" alt="CodeQL" /></a>
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react" alt="React 18" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react" alt="React 19" />
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" alt="TypeScript" />
   <img src="https://img.shields.io/badge/WordPress-headless-21759B?style=flat-square&logo=wordpress" alt="WordPress" />
   <img src="https://img.shields.io/badge/WooCommerce-GraphQL-96588A?style=flat-square&logo=woocommerce" alt="WooCommerce" />
@@ -15,7 +15,7 @@
 **Open-source headless WordPress + WooCommerce storefront with a cinematic,
 pre-rendered React frontend.**
 
-A luxury-watch shop demo: React 18 + TypeScript on the front, WordPress +
+A luxury-watch shop demo: React 19 + TypeScript on the front, WordPress +
 WooCommerce as the headless CMS and commerce engine, connected through
 WPGraphQL and a custom REST API. It includes real accounts, a persisted
 contact inbox and a server-priced, idempotent Stripe **test** checkout.
@@ -40,7 +40,7 @@ contact inbox and a server-priced, idempotent Stripe **test** checkout.
 
 ## Features
 
-**Storefront (React 18, TypeScript, Vite 8)**
+**Storefront (React 19, TypeScript, Vite 8)**
 - Cinematic scroll-driven hero films with reduced-motion and failed-media fallbacks
 - Build-time pre-rendering: real HTML, per-route metadata, JSON-LD, sitemap. Crawlable without JavaScript
 - Live WooCommerce catalogue, WordPress posts, pages and menus
@@ -73,7 +73,7 @@ flowchart LR
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18, TypeScript 5, Vite 8, React Router 7, TanStack Query, Tailwind CSS, Framer Motion, Zod, DOMPurify |
+| Frontend | React 19, TypeScript 5, Vite 8, React Router 7, TanStack Query, Tailwind CSS, Framer Motion, Zod, DOMPurify |
 | Backend | WordPress, WooCommerce, WPGraphQL (+ WooCommerce, JWT), PHP 8.1+, Stripe PHP SDK |
 | Data | MySQL/MariaDB (WooCommerce + custom contact table) |
 | Delivery | Docker Nginx container behind Caddy + Cloudflare (frontend); Nginx + PHP-FPM on a Google Cloud VM (backend) |
