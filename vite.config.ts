@@ -12,6 +12,10 @@ export default defineConfig(({ mode }) => ({
   plugins: [react()],
   optimizeDeps: { entries: ["index.html"] },
   build: {
+    // Vite 7's default browser floor. Vite 8 raised it to Safari/iOS 16.4, which
+    // lets Lightning CSS emit range media queries (width<=640px) that Safari
+    // before 16.4 ignores, dropping every responsive breakpoint there.
+    target: ["chrome107", "edge107", "firefox104", "safari16", "ios16"],
     rolldownOptions: {
       output: {
         codeSplitting: {
