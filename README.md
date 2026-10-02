@@ -40,7 +40,7 @@ contact inbox and a server-priced, idempotent Stripe **test** checkout.
 
 ## Features
 
-**Storefront (React 18, TypeScript, Vite 7)**
+**Storefront (React 18, TypeScript, Vite 8)**
 - Cinematic scroll-driven hero films with reduced-motion and failed-media fallbacks
 - Build-time pre-rendering: real HTML, per-route metadata, JSON-LD, sitemap. Crawlable without JavaScript
 - Live WooCommerce catalogue, WordPress posts, pages and menus
@@ -73,7 +73,7 @@ flowchart LR
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18, TypeScript 5, Vite 7, React Router 7, TanStack Query, Tailwind CSS, Framer Motion, Zod, DOMPurify |
+| Frontend | React 18, TypeScript 5, Vite 8, React Router 7, TanStack Query, Tailwind CSS, Framer Motion, Zod, DOMPurify |
 | Backend | WordPress, WooCommerce, WPGraphQL (+ WooCommerce, JWT), PHP 8.1+, Stripe PHP SDK |
 | Data | MySQL/MariaDB (WooCommerce + custom contact table) |
 | Delivery | Docker Nginx container behind Caddy + Cloudflare (frontend); Nginx + PHP-FPM on a Google Cloud VM (backend) |

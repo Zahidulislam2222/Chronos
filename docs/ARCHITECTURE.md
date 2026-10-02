@@ -37,7 +37,7 @@ is on the [roadmap](ROADMAP.md).
 
 ## Frontend
 
-- **Stack:** React 18, TypeScript 5, Vite 7, React Router 7, TanStack Query,
+- **Stack:** React 18, TypeScript 5, Vite 8, React Router 7, TanStack Query,
   Tailwind CSS, Framer Motion, Zod.
 - **Rendering:** `npm run build` runs `vite build`, then
   `scripts/prerender.mjs` uses a headless Chromium to write a real HTML
