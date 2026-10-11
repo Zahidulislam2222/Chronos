@@ -18,6 +18,7 @@ The publication branch contains the completed storefront source, both first-part
 | Local WordPress setup | Both Compose variants bind published ports to loopback; committed regression PASS and included in CI |
 | Documentation | 180 local Markdown targets checked, zero missing; no rejected presentation wording in maintained prose |
 | Independent review | Source/setup/docs PASS after inventory and local-port findings were fixed; dependency gate BLOCKED |
+| GitHub checks | [Draft PR #41](https://github.com/Zahidulislam2222/Chronos/pull/41): 12 successful checks, one npm-audit failure and four deployment jobs skipped; frontend/PHP/block/integration builds/tests, CodeQL, gitleaks, Semgrep, Bandit and Composer audit passed |
 
 The inventory fixes add container overrides, persistent batch freshness and sanitized errors. They are source changes awaiting a separate drift-checked installed-service rollout. The source SDK upgrade also remains separate from the deployed PHP runtime. This publication does not attach Claude, enable Meta campaigns, publish n8n or provision future infrastructure. Actual Meta/Claude connection, representative capacity and continuous availability remain separate verification gates.
 
