@@ -11,7 +11,7 @@ The public frontend is connected to WordPress/WooCommerce. Its container serves 
 - HSTS is hostname-scoped, without preload or includeSubDomains. Frame, MIME, referrer, opener/resource and browser-permission policies are verified at the HTTP boundary.
 - GET/HEAD only, bounded body/timeouts and an aggregate origin request budget. These controls limit work; they do not distinguish every legitimate visitor from an attacker.
 - Non-root, read-only container; dropped capabilities; no privilege escalation; loopback-only port; resource and diagnostic-log limits.
-- Request-driven browser selection storage, clear action and denied-storage fallback. Preview import paths must not read commerce session storage eagerly.
+- Request-driven browser selection storage, clear action and denied-storage fallback. Offline import paths must not read commerce session storage eagerly.
 - Versioned release directories, exact SHA-256 comparison, health checks and previous-release recovery. Each mutation has a project-local checkpoint.
 
 ## Repeatable local gates
@@ -57,4 +57,18 @@ The Jest configuration extends the WordPress defaults and transforms only the ES
 
 ## Connected operating boundaries
 
-Browser JWT storage remains sensitive to script compromise. Sign-out removes the token and local selection; network failure alone does not revoke a valid token. Contact failure preserves the note, and successful submission requires a persisted ID. Contact records are administrator-only. Checkout rejects live session IDs, validates products/quantities server-side and reconciles owner/session/amount/currency before reporting payment success. Demo payments suppress stock reduction and order emails. No paid AI or outbound test message was sent.
+Browser JWT storage remains sensitive to script compromise. Sign-out removes the token and local selection; network failure alone does not revoke a valid token. Contact failure preserves the note, and successful submission requires a persisted ID. Contact records are administrator-only. Checkout rejects live session IDs, validates products/quantities server-side and reconciles owner/session/amount/currency before reporting payment success. Test payments suppress stock reduction and order emails. No paid AI or outbound test message was sent.
+
+## Verification policy and software supply chain
+
+Current publication blocker: the Gutenberg build/test toolchain retains unpatched `braces` and `sprintf-js` dependencies. The full audit remains failing; the draft publication is for review and is not eligible for merge/promotion. [Verification](VERIFICATION.md) records current counts and upstream evidence. Historical clean audits are dated evidence, not today's result.
+
+The parser 7, TOML 1.9 and KaTeX 0.19 overrides deliberately cross some tooling consumers' declared ranges. They require compatibility verification as well as an audit: selector traversal/serialization, TOML-loaded Markdown configuration, inline/display mathematics and direct math rendering are exercised against the installed candidate. KaTeX is a Markdown-tooling dependency, not a storefront runtime dependency. Retain the coherent locked WordPress package cohort; broad dependency refreshes can introduce mutually incompatible private-API versions even through minor package updates. Review WordPress cohort upgrades separately and run the actual block tests without private-API mocks.
+
+Use [OWASP ASVS 5](https://owasp.org/projects/asvs/) as a control-review reference for validation, authentication, session management, authorization, cryptography, data protection, logging and communications. Current checks cover selected controls and do not constitute an ASVS certification. Maintain a control-to-test map when expanding the commerce or remote automation scope.
+
+Keep MFA/access ownership, token expiration/revocation, recovery access, dependency provenance and restore evidence in the operator's private records. The browser JWT migration to HttpOnly cookies or a backend-for-frontend must include CSRF/origin checks and session invalidation; it is a future change. Security tests must include unauthorized users and wrong-account resources, not just successful requests.
+
+Both Python integration workflows run behavioral tests, types, lint, SAST, dependency audit and package builds without production tokens. Inventory regressions cover stale pending batches, malformed photo URLs, sanitized startup errors and the container path/network contract. Before deploying those source changes, compare installed files, back up state, verify the candidate and prove local/live hashes. Generate an SBOM/dependency inventory when preparing a commercial distribution and define update/support ownership.
+
+GitHub branch protection and push protection are account settings, separate from workflow files. Publication checks enforce review and green CI for the release; consult the repository's live settings before claiming protection is enforced. Full-tree secret scanning and [CONFIGURATION.md](CONFIGURATION.md) audit complement the staged hook. No security finding is waived for publication.

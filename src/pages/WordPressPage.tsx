@@ -1,4 +1,4 @@
-import { useLocation, Navigate } from "react-router-dom";
+import { useLocation, Navigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import WordPressContent from "@/components/WordPressContent";
@@ -6,6 +6,7 @@ import NotFound from "./NotFound";
 import { fetchPage } from "@/utils/wordpressApi";
 import { wordpressLink } from "@/lib/wordpress";
 import { content } from "@/content";
+import { navigationSettings } from "@/config/navigation";
 
 export default function WordPressPage() {
   const {pathname} = useLocation();
@@ -15,5 +16,21 @@ export default function WordPressPage() {
   if (!result.data) return <NotFound />;
   const canonical = wordpressLink(result.data.url).replace(/\/$/, "");
   if (canonical !== pathname.replace(/\/$/, "") && canonical.startsWith("/")) return <Navigate to={canonical} replace />;
-  return <Layout><article className="article container"><h1>{result.data.title}</h1><WordPressContent html={result.data.content} /></article></Layout>;
+  return <Layout>
+    <article className="container information-page">
+      <nav className="page-breadcrumb" aria-label="Breadcrumb">
+        <Link to="/">{navigationSettings.pages.homeLabel}</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{result.data.title}</span>
+      </nav>
+      <div className="information-grid">
+        <header className="information-heading">
+          <p className="eyebrow">{navigationSettings.pages.eyebrow}</p>
+          <h1>{result.data.title}</h1>
+          <Link className="text-link" to={navigationSettings.pages.collectionHref}>{navigationSettings.pages.collectionLabel}</Link>
+        </header>
+        <WordPressContent html={result.data.content} />
+      </div>
+    </article>
+  </Layout>;
 }

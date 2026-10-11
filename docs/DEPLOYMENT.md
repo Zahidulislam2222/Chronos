@@ -100,3 +100,11 @@ replacement design (encrypted backups to private object storage) is in
 | `CPANEL_URL`, `CPANEL_USERNAME`, `CPANEL_API_TOKEN` | retired cPanel jobs (removed from the repo 2026-10-03; re-create to re-enable) |
 
 No secret is needed to build, test or contribute.
+
+## Integration CI and rollout scope
+
+`meta-ads.yml` and `inventory.yml` validate their Python packages on relevant PRs/pushes using Python 3.12 and hash-locked tools. Both run pytest, mypy, Ruff, Bandit, dependency auditing and distributable builds. They need no Meta, Claude, n8n or production credentials and perform no external mutation. Standard public-repository GitHub-hosted runners are used.
+
+Source publication includes both integrations and public runbooks; it does not attach Claude, activate campaigns, publish n8n, provision capacity or upgrade the installed inventory service. The latter requires drift comparison, private state backup, scoped deploy/restart, manual workflow verification and hash parity. A new empty/latest-batch marker supersedes old unfinished work; run a fresh complete source sync after upgrading. The live Stripe PHP SDK upgrade also remains a separately verified runtime change.
+
+Use [OPERATIONS.md](OPERATIONS.md) for release/restore ownership and [TESTING.md](TESTING.md) for commands. Future multi-zone hosting and paid distributed load are specified in [SCALABILITY.md](SCALABILITY.md), with costs approved before execution.

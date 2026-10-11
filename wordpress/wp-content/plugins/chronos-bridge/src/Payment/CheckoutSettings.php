@@ -1,6 +1,6 @@
 <?php
 /**
- * One owner for the demonstration checkout's operational configuration.
+ * One owner for the test checkout's operational configuration.
  *
  * @package ChronosBridge
  */
@@ -19,7 +19,7 @@ final class CheckoutSettings {
 			'max_items'        => (int) get_option( 'chronos_checkout_max_items', 20 ),
 			'max_quantity'     => (int) get_option( 'chronos_checkout_max_quantity', 10 ),
 			'max_instructions' => (int) get_option( 'chronos_checkout_max_instructions', 500 ),
-			'order_label'      => (string) get_option( 'chronos_checkout_order_label', 'Chronos demonstration order' ),
+			'order_label'      => (string) get_option( 'chronos_checkout_order_label', 'Chronos test order' ),
 		);
 	}
 }

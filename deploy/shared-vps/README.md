@@ -10,7 +10,7 @@ VPS, and Cloudflare sits in front. The WordPress backend runs separately (see
 |---|---|
 | `compose.yaml` | Container definition and hardening |
 | `nginx.connected.template` | **Current production config** (connected mode): routing, security headers, request budget, sitemap proxy, and route validation against WordPress. `__WORDPRESS_ORIGIN__` and `__WORDPRESS_HOST__` are filled in at release time |
-| `nginx.conf` | Config for a fully static preview-mode build (`VITE_STOREFRONT_MODE=preview`), which needs no backend |
+| `nginx.conf` | Config for a fully static offline build (`VITE_STOREFRONT_MODE=preview`), which needs no backend |
 | `site.caddy.template` | Caddy site block for HTTPS and the reverse proxy to the loopback port |
 | `runtime.env.example` | Runtime settings: pinned image digest and loopback port |
 
@@ -67,7 +67,13 @@ operations record and are not part of this public repository.
 
 ## CI note
 
-The CI frontend job builds with the typed preview environment and a reserved
+The CI frontend job builds with the typed offline environment and a reserved
 example origin (`https://chronos.example`) unless the repository variable
 `CHRONOS_SITE_URL` is set. That example origin
 must never be promoted as the public canonical URL.
+
+## Current release and next steps
+
+The 12 October 2026 storefront release renders 21 HTML documents with 16 indexable URLs and includes direction-aware navigation, five photographed products and three complete journal articles. Packaged frontend deployment parity was 99/99 files; [verification](../../docs/VERIFICATION.md) records the full browser, HTTP and test-checkout scope. A repository publication does not redeploy that artifact.
+
+Before uploading any future release, compare touched live files with local source, reconcile drift, validate privately configured canonical/API origins and preserve the previous release. Review [configuration ownership](../../docs/CONFIGURATION.md), [operations](../../docs/OPERATIONS.md) and [testing](../../docs/TESTING.md). Monitoring and backups are distinct operating tasks; the container health check is not an end-to-end uptime record. Independent origins, anonymous caching and funded load/restore tests form the [1M+ growth plan](../../docs/SCALABILITY.md).

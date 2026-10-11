@@ -2,6 +2,12 @@
 
 These rules should be configured via GitHub Settings > Branches > Add rule.
 
+Read-only settings check on 12 October 2026 found no repository rulesets and no
+protection on `main`. The checklist below is a recommendation, not an enforced
+configuration. Release publication still requires reviewed changes and green
+checks before merging. Conditional integration jobs should not be required on
+unrelated PRs unless their trigger policy is changed to always report a status.
+
 ## Recommended Settings
 
 ### Branch name pattern

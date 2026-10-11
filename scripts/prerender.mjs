@@ -9,6 +9,7 @@ const readJson = async file => JSON.parse(await readFile(file, 'utf8'));
 const config = z.object({outputDirectory:z.literal('dist'),previewHost:z.literal('127.0.0.1'),previewPort:z.number().int().min(0).max(65535),navigationTimeoutMs:z.number().positive(),viewport:z.object({width:z.number().positive(),height:z.number().positive()}),notFoundPath:z.string().startsWith('/'),publicAssetDirectories:z.array(z.string())}).parse(await readJson('config/build.json'));
 const search = await readJson('src/content/search.json');
 const catalogue = await readJson('src/content/catalogue.json');
+const cataloguePolicy = z.object({excludedProductIds:z.array(z.number().int().positive()),excludedPostIds:z.array(z.number().int().positive())}).parse(await readJson('config/catalogue.json'));
 const env = loadEnv('production', process.cwd(), 'VITE_');
 const connected = env.VITE_STOREFRONT_MODE === 'connected';
 const site = new URL(env.VITE_SITE_URL);
@@ -19,7 +20,7 @@ if(connected){
   async function records(field){
     const all=[]; let after=null; const seen=new Set();
     do {
-      const response=await fetch(env.VITE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:`query Routes($first:Int!,$after:String){${field}(first:$first,after:$after){nodes{slug}pageInfo{hasNextPage endCursor}}}`,variables:{first,after}}),signal:AbortSignal.timeout(config.navigationTimeoutMs)});
+      const response=await fetch(env.VITE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:`query Routes($first:Int!,$after:String){${field}(first:$first,after:$after){nodes{databaseId slug}pageInfo{hasNextPage endCursor}}}`,variables:{first,after}}),signal:AbortSignal.timeout(config.navigationTimeoutMs)});
       if(!response.ok)throw new Error('WordPress route inventory failed.');
       const body=await response.json(); if(body.errors)throw new Error('WordPress route query failed.');
       const page=body.data[field]; all.push(...page.nodes);
@@ -29,6 +30,8 @@ if(connected){
     return all;
   }
   [products,posts]=await Promise.all([records('products'),records('posts')]);
+  products=products.filter(product=>!cataloguePolicy.excludedProductIds.includes(product.databaseId));
+  posts=posts.filter(post=>!cataloguePolicy.excludedPostIds.includes(post.databaseId));
   const response=await fetch(env.VITE_WP_API_URL+'/wp-json/chronos/v1/site',{signal:AbortSignal.timeout(config.navigationTimeoutMs)});
   if(!response.ok)throw new Error('WordPress page inventory failed.');
   pages=(await response.json()).data.pages;

@@ -15,13 +15,13 @@
 **Open-source headless WordPress + WooCommerce storefront with a cinematic,
 pre-rendered React frontend.**
 
-A luxury-watch shop demo: React 19 + TypeScript on the front, WordPress +
+A luxury-watch website: React 19 + TypeScript on the front, WordPress +
 WooCommerce as the headless CMS and commerce engine, connected through
 WPGraphQL and a custom REST API. It includes real accounts, a persisted
 contact inbox and a server-priced, idempotent Stripe **test** checkout.
 
 <p align="center">
-  <a href="https://chronos.zahidul-islam.com"><strong>Live demo</strong></a> ·
+  <a href="https://chronos.zahidul-islam.com"><strong>Live website</strong></a> ·
   <a href="docs/ARCHITECTURE.md">Architecture</a> ·
   <a href="docs/API.md">API</a> ·
   <a href="docs/SCALABILITY.md">Scaling to 1M+</a> ·
@@ -29,16 +29,21 @@ contact inbox and a server-priced, idempotent Stripe **test** checkout.
   <a href="#getting-started">Getting started</a>
 </p>
 
-> **What is real and what is a target.** The live demo works end to end:
-> WordPress content, login, contact persistence and Stripe test payments
-> were verified in September 2026 ([evidence](docs/VERIFICATION.md)). It runs
-> on deliberately small free-tier hosting. **1M+ concurrent users and 99.9%
-> availability are design targets** with a staged plan and exit criteria,
-> not measured capacity. Products are fictional, and no real money moves.
+> **Release and growth plan.** Storefront content, accounts, contact persistence and
+> Stripe test checkout were verified on 12 October 2026 ([release evidence](docs/VERIFICATION.md)).
+> The roadmap targets **1M+ concurrent sessions**, an initial **99% availability
+> objective** and a later **99.9% objective**, with defined workloads and stage exits.
+> Payments remain in test mode; physical fulfilment is outside the current service.
 
 ---
 
 ## Features
+
+The deployed storefront includes a header that hides on downward scroll and returns upward, clear primary page links, grouped footer navigation and responsive information pages. Five photographed products and three completed journal articles are published; four unfinished records remain drafts. Scroll thresholds and links live in validated navigation data; one runtime/build policy owns catalogue eligibility. Live browser, payment, release parity and independent review results are recorded in [verification](docs/VERIFICATION.md).
+
+**Business automation**
+- [Claude–Meta advertising tools](integrations/meta-ads/README.md): account-scoped reporting and separately approved paused-campaign changes. Actual Meta account connection and Claude attachment remain owner setup gates.
+- [n8n inventory workflow](integrations/inventory/README.md): existing WooCommerce catalog, ordered photo galleries, sequential processing and a private social listing review queue. No catalog duplication or marketplace publication.
 
 **Storefront (React 19, TypeScript, Vite 8)**
 - Cinematic scroll-driven hero films with reduced-motion and failed-media fallbacks
@@ -73,7 +78,7 @@ flowchart LR
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, TypeScript 5, Vite 8, React Router 7, TanStack Query, Tailwind CSS, Framer Motion, Zod, DOMPurify |
+| Frontend | React 19, TypeScript 5, Vite 8, React Router 7, TanStack Query, Tailwind CSS 4, Framer Motion, Zod, DOMPurify |
 | Backend | WordPress, WooCommerce, WPGraphQL (+ WooCommerce, JWT), PHP 8.1+, Stripe PHP SDK |
 | Data | MySQL/MariaDB (WooCommerce + custom contact table) |
 | Delivery | Docker Nginx container behind Caddy + Cloudflare (frontend); Nginx + PHP-FPM on a Google Cloud VM (backend) |
@@ -83,10 +88,23 @@ Details and design decisions: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Getting started
 
-Requirements: Node.js ≥ 22.12, Docker (for WordPress), and optionally PHP 8.1+
-with Composer.
+### Claude and Meta advertising integration
 
-### 1. Frontend only (preview mode, no backend)
+The separate [advertising tool](integrations/meta-ads/README.md) provides eight local MCP
+tools for Claude Desktop, account-scoped Meta reports, durable campaign proposals and
+interactive owner approval. It starts offline; live access requires the owner's Meta setup. Live writes are limited to paused awareness
+campaign creation and campaign pausing. Activation, budgets and ad publication are unavailable.
+This local integration has not been verified against an actual Meta account or attached
+to the owner's Claude Desktop. It adds no inference API call to the storefront.
+
+See its runbook for installation, business customization, cost boundaries and power-loss
+recovery. Python 3.12+ is required for this component only.
+
+Requirements: Node.js ≥ 22.12, Docker (for WordPress), and optionally PHP 8.1+
+with Composer. The Tailwind 4 storefront supports Safari 16.4+, Chrome/Edge 111+
+and Firefox 128+.
+
+### 1. Frontend only (offline catalogue, no backend)
 
 ```bash
 git clone https://github.com/Zahidulislam2222/Chronos.git
@@ -95,7 +113,7 @@ npm ci
 npm run dev            # http://localhost:8080
 ```
 
-Preview mode uses bundled demo content and blocks all external calls.
+Offline mode uses bundled catalogue content and blocks all external calls.
 
 ### 2. Full stack (WordPress + frontend)
 
@@ -216,3 +234,11 @@ AI-generated; products and brand are fictional.
 ---
 
 <p align="center">Built by <a href="https://github.com/Zahidulislam2222">Zahidul Islam</a></p>
+
+## Maintenance and public handoff
+
+[Documentation index](docs/README.md) · [Configuration](docs/CONFIGURATION.md) · [Testing](docs/TESTING.md) · [Operations](docs/OPERATIONS.md) · [Legal and compliance](docs/COMPLIANCE.md).
+
+The repository contains frontend source, both first-party WordPress plugins, advertising MCP tools, inventory service and n8n graph, safe configuration templates and CI. Runtime secrets, database/media backups, private recovery records and personal verification tools stay outside Git. Source publication and runtime deployment have separate acceptance checks. The current deployed storefront is recorded independently from pending service/SDK upgrades.
+
+Maintainer: **Zahidul Islam**. Contributions follow [CONTRIBUTING.md](CONTRIBUTING.md); security reports use [SECURITY.md](SECURITY.md). Future infrastructure is provisioned only after workload validation, provider-capacity review and budget approval.

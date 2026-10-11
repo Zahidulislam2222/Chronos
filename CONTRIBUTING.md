@@ -91,7 +91,7 @@ Use `git config core.autocrlf input`, or run the checks in WSL or Docker.
 
 Use the issue templates. Include steps to reproduce, expected vs actual
 behaviour, and the environment (browser, Node/PHP version, local or public
-demo).
+website).
 
 ## License of contributions
 

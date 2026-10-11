@@ -97,4 +97,7 @@ jobs:
       - name: Scan Python files
         run: pipx run --spec bandit==1.9.4 bandit -q -ll -r . -x ./node_modules,./wordpress/wp-content/plugins/chronos-bridge/vendor
 
+      - name: Verify local development port isolation
+        run: python3 -m unittest discover -s wordpress/ci_tests
+
   # Static analysis (CodeQL) runs in .github/workflows/codeql.yml.
