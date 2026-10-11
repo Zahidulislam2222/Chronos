@@ -1,0 +1,13 @@
+{
+  "name": "Chronos inventory to social review",
+  "workflow_id": "chronosInventoryReview01",
+  "service_origin": "http://inventory:5680",
+  "source_path": "/source",
+  "item_path": "/items",
+  "summary_path": "/batches/",
+  "webhook_path": "chronos-inventory-review",
+  "request_timeout_ms": 30000,
+  "execution_timeout_seconds": 300,
+  "service_credential_id": "chronosInventoryService01",
+  "intake_credential_id": "chronosInventoryIntake01"
+}

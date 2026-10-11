@@ -1,0 +1,40 @@
+name: Meta advertising integration
+
+on:
+  pull_request:
+    paths: ['integrations/meta-ads/**', '.github/workflows/meta-ads.yml']
+  push:
+    branches: [main]
+    paths: ['integrations/meta-ads/**', '.github/workflows/meta-ads.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: integrations/meta-ads
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install locked dependencies and verification tools
+        run: |
+          python -m pip install --require-hashes -r requirements-dev.lock
+          python -m pip install --no-deps .
+      - name: Behavior, policy and configuration regressions
+        run: python -m pytest ci_tests -q
+      - name: Types and lint
+        run: |
+          python -m mypy
+          python -m ruff check .
+      - name: Python security and dependency audit
+        run: |
+          python -m bandit -r src -ll
+          python -m pip_audit -r requirements.lock
+      - name: Build distributable
+        run: python -m build --wheel

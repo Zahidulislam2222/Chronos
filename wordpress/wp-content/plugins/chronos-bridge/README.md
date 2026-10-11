@@ -96,3 +96,11 @@ their own licenses (for example `stripe/stripe-php`, MIT); see
 ## Author
 
 **Zahidul Islam** — [GitHub](https://github.com/Zahidulislam2222)
+
+## Operating contract
+
+WooCommerce is authoritative for checkout products, quantities, prices and payment state. The plugin's `chronos_watch` content type serves editorial/block uses. Preserve test-payment safeguards, ownership checks, request fingerprints, signature verification and receipt reconciliation when modifying the payment path. The retained legacy order marker is a compatibility field; changing it requires a migration plan.
+
+The Composer lock includes the source SDK upgrade; the deployed runtime version is tracked separately in [verification](../../../../docs/VERIFICATION.md). Do not treat a GitHub merge as a runtime dependency upgrade. Back up state, compare touched remote files, deploy locally verified source/dependencies and prove hash parity. A future HPOS rollout requires real read/write compatibility tests, and a future Redis deployment requires invalidation/failover verification.
+
+[Testing](../../../../docs/TESTING.md) · [Configuration](../../../../docs/CONFIGURATION.md) · [Operations](../../../../docs/OPERATIONS.md) · [API](../../../../docs/API.md). Provider/admin secrets stay private; optional AI helpers require separate provider setup and approval before paid usage.

@@ -16,7 +16,7 @@ export default function About() {
         <div className="about-image">
           <Media
             src={c.image}
-            alt="The Meridian, an original rose-tone concept"
+            alt="The Meridian, a rose-tone watch design"
           />
         </div>
         <Reveal className="prose-copy">

@@ -106,3 +106,22 @@ wordpress/wp-content/debug.log
 
 # Local verification tooling
 /tests/
+
+# Local Python integration artifacts and state
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.venv/
+*.egg-info/
+/integrations/meta-ads/build/
+/integrations/meta-ads/dist/
+/integrations/inventory/build/
+/integrations/inventory/dist/
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Local browser verification artifacts
+.playwright-mcp/

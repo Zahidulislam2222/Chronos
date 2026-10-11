@@ -48,6 +48,9 @@ Third-party plugins are excluded by `.gitignore`. Their licenses are listed in
 ### Requirements
 
 - Docker Desktop (or Docker Engine + Compose)
+- Use a maintained Docker Engine version (28+); both local Compose variants
+  explicitly bind development ports to loopback. They are local setup files,
+  not a public-host production configuration.
 - Node.js ≥ 22.12 (for the blocks build)
 - Composer on the host, or the `composer:2` Docker image
 
@@ -57,7 +60,8 @@ Third-party plugins are excluded by `.gitignore`. Their licenses are listed in
 cd wordpress
 
 # 1. PHP dependencies for chronos-bridge (it stays inactive without vendor/)
-docker run --rm --user "$(id -u):$(id -g)" \n  -v "$PWD/wp-content/plugins/chronos-bridge:/app" -w /app composer:2 install --no-dev
+docker run --rm --user "$(id -u):$(id -g)" \
+  -v "$PWD/wp-content/plugins/chronos-bridge:/app" -w /app composer:2 install --no-dev
 
 # 2. Start WordPress, MySQL and phpMyAdmin
 docker-compose up -d
@@ -82,7 +86,8 @@ docker cp ../src/content/wordpress-pages.json $C:/tmp/wordpress-pages.json
 docker exec $C wp eval-file /tmp/seed-connected.php /tmp/wordpress-pages.json --allow-root
 
 # 6. JWT signing secret for GraphQL login (random, local only, never commit)
-docker exec $C wp config set GRAPHQL_JWT_AUTH_SECRET_KEY "$(openssl rand -base64 48)" --quiet --allow-root
+# Configure GRAPHQL_JWT_AUTH_SECRET_KEY through private wp-config.php or
+# an approved secret-store mechanism. Do not pass the secret in CLI arguments.
 
 # 7. Optional: rebuild the Gutenberg blocks (build/ is committed)
 cd wp-content/plugins/chronos-blocks && npm ci && npm run build
@@ -94,7 +99,7 @@ Notes:
   `chronos/v1/watches` API and the Gutenberg blocks. It does **not** create
   WooCommerce products, which the connected storefront catalogue and checkout
   use. Add products in wp-admin → Products (or import a CSV); until then the
-  connected catalogue is empty. Preview mode needs no backend.
+  connected catalogue is empty. Offline mode needs no backend.
 
 - `setup.sh` also tries to activate the add-ons by the folder names used in
   production (`wp-graphql-jwt-authentication-0.7.0`,
@@ -113,7 +118,7 @@ Notes:
   `MSYS_NO_PATHCONV=1` so paths such as `/tmp/...` are not rewritten.
 - `setup.sh` and `sample-data.sh` read `CHRONOS_WP_CONTAINER` and
   `CHRONOS_SITE_URL` if your container name or port differ.
-- Step 6 writes `GRAPHQL_JWT_AUTH_SECRET_KEY` into the container's
+- Step 6 requires configuring `GRAPHQL_JWT_AUTH_SECRET_KEY` in the container's
   `wp-config.php`; without it GraphQL login fails. Existing tokens stop
   working if you change it.
 - `seed-connected.php` is idempotent: it creates the editorial pages and the
@@ -196,3 +201,11 @@ Details, workflow states and hosting history:
 - Never commit third-party plugins; install them as shown above.
 - Test GraphQL and REST changes against `http://localhost:8888` before
   opening a pull request.
+
+## Content ownership and service handoff
+
+WooCommerce owns connected sale-product IDs, prices, stock and orders; WordPress owns published posts/pages and menus. `chronos_watch` is the custom editorial/block content type and is not a substitute for WooCommerce sale products. Maintained catalogue/editorial manifests and eligibility settings are described in [configuration](../docs/CONFIGURATION.md). Review seeded content before publishing; keep unfinished records as drafts.
+
+The inventory automation reads only the public Store API and keeps social drafts private. The advertising MCP service is a separate owner tool and does not install browser tracking. See [inventory](../integrations/inventory/README.md), [advertising](../integrations/meta-ads/README.md), [testing](../docs/TESTING.md) and [operations](../docs/OPERATIONS.md) for setup and recovery boundaries.
+
+Public PHP requirements and the committed Composer lock describe source installation. The current deployed Stripe runtime remains on its earlier SDK until a separate local-first upgrade, test checkout and parity verification. HPOS, persistent cache, multi-node PHP and a managed HA database are future capacity stages, not enabled by installing these plugins. Real sales also require the [business/legal launch checklist](../docs/COMPLIANCE.md).

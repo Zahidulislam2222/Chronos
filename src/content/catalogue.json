@@ -18,10 +18,10 @@
       "inStock": true,
       "featured": true,
       "specifications": {
-        "movement": "Automatic concept",
+        "movement": "Automatic design",
         "caseMaterial": "Stainless steel",
         "dialColor": "Anthracite",
-        "waterResistance": "Concept — not rated",
+        "waterResistance": "design — not rated",
         "caseDiameter": "40 mm"
       }
     },
@@ -33,16 +33,18 @@
       "description": "Warmth in the smallest details. An ivory dial meets a rose-toned case in a study of light, proportion and everyday elegance.",
       "shortDescription": "Ivory · Leather · Rose tone",
       "image": "/images/meridian.webp",
-      "gallery": ["/images/meridian.webp"],
+      "gallery": [
+        "/images/meridian.webp"
+      ],
       "category": "Dress",
       "brand": "Chronos",
       "inStock": true,
       "featured": true,
       "specifications": {
-        "movement": "Automatic concept",
+        "movement": "Automatic design",
         "caseMaterial": "Rose-tone steel",
         "dialColor": "Warm ivory",
-        "waterResistance": "Concept — not rated",
+        "waterResistance": "design — not rated",
         "caseDiameter": "40 mm"
       }
     },
@@ -54,16 +56,18 @@
       "description": "Midnight blue meets a sculpted titanium-tone case and textured rubber strap. A sporting expression with an assured silhouette.",
       "shortDescription": "Midnight blue · Rubber",
       "image": "/images/pelagic.webp",
-      "gallery": ["/images/pelagic.webp"],
+      "gallery": [
+        "/images/pelagic.webp"
+      ],
       "category": "Sport",
       "brand": "Chronos",
       "inStock": true,
       "featured": true,
       "specifications": {
-        "movement": "Automatic concept",
-        "caseMaterial": "Titanium-tone concept",
+        "movement": "Automatic design",
+        "caseMaterial": "Titanium-tone design",
         "dialColor": "Midnight blue",
-        "waterResistance": "Concept — not rated",
+        "waterResistance": "design — not rated",
         "caseDiameter": "40 mm"
       }
     }
@@ -102,10 +106,10 @@
       },
       "date": "2026-09-14",
       "readTime": "3 min read",
-      "content": "<p>A watch is a small object with a surprising number of surfaces. Brushing, polish and the color of a dial each change how those surfaces respond to their surroundings.</p><p>In the Meridian concept, warm metal and an ivory dial share a restrained palette. The contrast comes from texture: a broad brushed plane beside a narrow polished edge.</p><p>Looking at an object in different light is part of understanding it. A render can illustrate a design intention; inspecting a physical watch is how that intention becomes tangible.</p>",
+      "content": "<p>A watch is a small object with a surprising number of surfaces. Brushing, polish and the color of a dial each change how those surfaces respond to their surroundings.</p><p>In the Meridian design, warm metal and an ivory dial share a restrained palette. The contrast comes from texture: a broad brushed plane beside a narrow polished edge.</p><p>Looking at an object in different light is part of understanding it. A render can illustrate a design intention; inspecting a physical watch is how that intention becomes tangible.</p>",
       "paragraphs": [
         "A watch is a small object with a surprising number of surfaces. Brushing, polish and the color of a dial each change how those surfaces respond to their surroundings.",
-        "In the Meridian concept, warm metal and an ivory dial share a restrained palette. The contrast comes from texture: a broad brushed plane beside a narrow polished edge.",
+        "In the Meridian design, warm metal and an ivory dial share a restrained palette. The contrast comes from texture: a broad brushed plane beside a narrow polished edge.",
         "Looking at an object in different light is part of understanding it. A render can illustrate a design intention; inspecting a physical watch is how that intention becomes tangible."
       ]
     },
@@ -122,11 +126,11 @@
       },
       "date": "2026-09-14",
       "readTime": "3 min read",
-      "content": "<p>Fastening a watch is a small ritual. A brief pause between getting ready and setting out. The weight on the wrist makes the abstract idea of time a little more physical.</p><p>Good design leaves space for these ordinary moments. A legible dial, a balanced case and a comfortable bracelet are qualities that matter every day.</p><p>The Pelagic concept explores that idea in midnight blue and steel. It is an exercise in useful restraint: a familiar object with a particular character.</p>",
+      "content": "<p>Fastening a watch is a small ritual. A brief pause between getting ready and setting out. The weight on the wrist makes the abstract idea of time a little more physical.</p><p>Good design leaves space for these ordinary moments. A legible dial, a balanced case and a comfortable bracelet are qualities that matter every day.</p><p>The Pelagic design explores that idea in midnight blue and steel. It is an exercise in useful restraint: a familiar object with a particular character.</p>",
       "paragraphs": [
         "Fastening a watch is a small ritual. A brief pause between getting ready and setting out. The weight on the wrist makes the abstract idea of time a little more physical.",
         "Good design leaves space for these ordinary moments. A legible dial, a balanced case and a comfortable bracelet are qualities that matter every day.",
-        "The Pelagic concept explores that idea in midnight blue and rubber. It is an exercise in useful restraint: a familiar object with a particular character."
+        "The Pelagic design explores that idea in midnight blue and rubber. It is an exercise in useful restraint: a familiar object with a particular character."
       ]
     }
   ]

@@ -1,20 +1,26 @@
-import { useRef } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Search, ShoppingBag, Menu, UserRound } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "./ui/sheet";
 import { content } from "@/content";
 import { useSite } from "@/hooks/use-site";
+import { useScrollHeader } from "@/hooks/use-scroll-header";
+import { navigationSettings } from "@/config/navigation";
 export default function Navbar() {
   const site = useSite();
-  const navigation = site.data?.navigation ?? content.nav;
+  const navigation = [...(site.data?.navigation ?? content.nav), ...navigationSettings.supplementalLinks]
+    .filter((link, index, links) => links.findIndex(item => item.href === link.href) === index);
   const opener = useRef<HTMLElement | null>(null);
-  const { totalItems, toggleCart } = useCart();
+  const { totalItems, toggleCart, state: cart } = useCart();
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const { headerRef, hidden, scrolled } = useScrollHeader(pathname, open || cart.isOpen);
   return (
-    <header className={"site-header " + (pathname === "/" ? "on-dark" : "")}>
+    <header
+      ref={headerRef}
+      className={["site-header", pathname === "/" && "header-home", pathname === "/" && !scrolled && "on-dark", hidden && "header-hidden", scrolled && "header-scrolled"].filter(Boolean).join(" ")}
+    >
       <div className="nav-inner">
         <Link to="/" className="wordmark" aria-label="Chronos home">
           {content.brand.name}
@@ -24,6 +30,7 @@ export default function Navbar() {
           {navigation.map((n) => (
             <Link
               className={pathname === n.href ? "active" : ""}
+              aria-current={pathname === n.href ? "page" : undefined}
               key={n.href}
               to={n.href}
             >
@@ -58,6 +65,7 @@ export default function Navbar() {
             className="icon-button mobile-menu"
             onClick={() => setOpen(true)}
             aria-label={content.ui.openNavigation}
+            aria-expanded={open}
           >
             <Menu size={22} />
           </button>
@@ -77,11 +85,10 @@ export default function Navbar() {
           <SheetDescription>{content.brand.tagline}</SheetDescription>
           <nav className="mobile-links" aria-label="Mobile navigation">
             {navigation.map((n) => (
-              <Link key={n.href} to={n.href} onClick={() => setOpen(false)}>
+              <Link key={n.href} to={n.href} aria-current={pathname === n.href ? "page" : undefined} onClick={() => setOpen(false)}>
                 {n.label}
               </Link>
             ))}
-            <Link to="/contact">Contact</Link>
           </nav>
         </SheetContent>
       </Sheet>
