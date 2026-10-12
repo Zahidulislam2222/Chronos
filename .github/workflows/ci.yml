@@ -71,6 +71,9 @@ jobs:
         working-directory: wordpress/wp-content/plugins/chronos-blocks
         run: npm test
 
+      - name: Verify dependency security behavior
+        run: node scripts/ci-tests/dependency-security.cjs wordpress/wp-content/plugins/chronos-blocks
+
   # ── Frontend Build (React + Vite) ─────────────────────────────
   frontend-build:
     name: Frontend Build
@@ -90,6 +93,9 @@ jobs:
 
       - name: Audit and validate frontend
         run: npm audit --audit-level=moderate && npm run typecheck && npm run lint
+
+      - name: Verify dependency security behavior
+        run: node scripts/ci-tests/dependency-security.cjs .
 
       - name: Install rendering browser
         run: npx playwright install --with-deps chromium
