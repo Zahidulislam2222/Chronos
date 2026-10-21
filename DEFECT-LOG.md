@@ -74,3 +74,5 @@ Fresh dependency audits also invalidated older clean results. Compatible patches
 |---|---|---|
 | Pinned running images still contained vulnerable system/embedded dependencies; a pinned digest alone had been treated as sufficient runtime evidence | Full audit of the exact image and embedded Node dependency versions before promotion | Yes: complete unchanged image scans, measured Node/OpenSSL/Undici versions, signed pinned package updates, retained findings and independent review; local model paused pending a patched engine |
 | Maintained source used a newer payment SDK than the installed runtime dependency cohort | Native deployed dependency and artifact parity check | Yes: immutable runtime cohort, native SDK/API-version probe, controlled rollback, hosted TEST reconciliation and per-file parity |
+
+| 2026-10-21 | The initial publication candidate retained a CA bundle covered by a newly published certifi advisory; CI caught it before merge | Fresh local locked Python dependency audit before pushing | Local full-lock audits now executed; existing CI audit retained unchanged, three certifi locks updated with official hashes |

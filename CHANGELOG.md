@@ -2,6 +2,8 @@
 
 ## 2026-10-21 — final runtime and public handover
 
+- Pin all integration runtime/development locks to certifi 2026.10.19 using official distribution hashes after [PYSEC-2026-4320](https://raw.githubusercontent.com/pypa/advisory-database/main/vulns/certifi/PYSEC-2026-4320.yaml); fresh complete-lock audits report zero known vulnerabilities.
+
 - Deploy patched frontend and remote AI runtime; pause vulnerable local inference with model data retained. Preserve the existing total inference cap and uncertain reservations.
 - Upgrade deployed Stripe PHP SDK 20.3.1 through an immutable cohort, native rollback/compatibility checks and hosted test-payment reconciliation without shared PHP restarts.
 - Verify frontend rollback/resume, guide journal-preserving recovery, exact artifact parity, real remote tasks and public commerce/browser journeys.
