@@ -1,0 +1,6 @@
+{
+  "excludedProductIds": [29, 50, 27],
+  "excludedPostIds": [48],
+  "readingWordsPerMinute": 200,
+  "readingTimeLabel": "{minutes} min read"
+}

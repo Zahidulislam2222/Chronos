@@ -25,10 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Set up PHP 8.1
+      - name: Set up PHP 8.2
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.2'
           extensions: mbstring, xml, curl, zip
           tools: composer:v2
 
@@ -67,12 +67,12 @@ jobs:
         working-directory: wordpress/wp-content/plugins/chronos-blocks
         run: npm run lint:js && npm run build
 
+      - name: Verify parser security regressions
+        run: node verification/dependency-security.cjs wordpress/wp-content/plugins/chronos-blocks
+
       - name: Run Jest tests
         working-directory: wordpress/wp-content/plugins/chronos-blocks
         run: npm test
-
-      - name: Verify dependency security behavior
-        run: node scripts/ci-tests/dependency-security.cjs wordpress/wp-content/plugins/chronos-blocks
 
   # ── Frontend Build (React + Vite) ─────────────────────────────
   frontend-build:
@@ -94,11 +94,14 @@ jobs:
       - name: Audit and validate frontend
         run: npm audit --audit-level=moderate && npm run typecheck && npm run lint
 
-      - name: Verify dependency security behavior
-        run: node scripts/ci-tests/dependency-security.cjs .
+      - name: Verify assistant HTTP, privacy and budget boundaries
+        run: npm run test:assistant
 
       - name: Install rendering browser
         run: npx playwright install --with-deps chromium
+
+      - name: Verify data readiness
+        run: npm run test:render && npm run test:render:browser
 
       - name: Build rendered portfolio
         env:
@@ -108,6 +111,9 @@ jobs:
           VITE_STOREFRONT_MODE: preview
           VITE_SEARCH_INDEXABLE: 'true'
         run: npm run build && npm run verify:release
+
+      - name: Verify assistant browser and recovery flows
+        run: node verification/assistant-ui.mjs . memory/assistant-browser.json chromium
 
   # ── Deploy to Production — cPanel API (RETIRED, CURRENTLY OFF) ──
   # This was the original production pipeline on AridHost cPanel. It worked

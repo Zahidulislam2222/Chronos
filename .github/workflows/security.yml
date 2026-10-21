@@ -40,10 +40,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Set up PHP 8.1
+      - name: Set up PHP 8.2
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.2'
           tools: composer:v2
 
       - name: Install dependencies
@@ -96,5 +96,8 @@ jobs:
 
       - name: Scan Python files
         run: pipx run --spec bandit==1.9.4 bandit -q -ll -r . -x ./node_modules,./wordpress/wp-content/plugins/chronos-bridge/vendor
+
+      - name: Verify local development port isolation
+        run: python3 -m unittest discover -s wordpress/ci_tests
 
   # Static analysis (CodeQL) runs in .github/workflows/codeql.yml.

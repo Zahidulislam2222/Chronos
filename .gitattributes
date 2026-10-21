@@ -1,0 +1,5 @@
+# The maintained WordPress source gates require LF on every checkout.
+wordpress/wp-content/plugins/chronos-bridge/src/**/*.php text eol=lf
+wordpress/wp-content/plugins/chronos-blocks/src/**/*.js text eol=lf
+src/**/*.tsx text eol=lf
+src/**/*.css text eol=lf

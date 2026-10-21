@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-21",
+  "source": "https://openrouter.ai/api/v1/models",
+  "model": "qwen/qwen3-30b-a3b-instruct-2507",
+  "contextTokens": 262144,
+  "maximumPromptPricePerMillion": 0.09,
+  "maximumCompletionPricePerMillion": 0.30,
+  "authorizedBudgetUsd": 0.10,
+  "maxJournalBytes": 8388608,
+  "maxReservations": 1000
+}

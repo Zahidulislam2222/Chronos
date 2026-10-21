@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { loadAssistantConfig, protocol } from "./scripts/assistant/config.mjs";
 
 
 // https://vitejs.dev/config/
@@ -8,14 +9,18 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "127.0.0.1",
     port: 8080,
+    proxy: {
+      [protocol.message.slice(0, protocol.message.lastIndexOf("/"))]: {
+        target: `http://${loadAssistantConfig().bindHost}:${loadAssistantConfig().port}`,
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [react()],
   optimizeDeps: { entries: ["index.html"] },
   build: {
-    // Vite 7's default browser floor. Vite 8 raised it to Safari/iOS 16.4, which
-    // lets Lightning CSS emit range media queries (width<=640px) that Safari
-    // before 16.4 ignores, dropping every responsive breakpoint there.
-    target: ["chrome107", "edge107", "firefox104", "safari16", "ios16"],
+    // Match the CSS framework's supported browser floor.
+    target: ["chrome111", "edge111", "firefox128", "safari16.4", "ios16.4"],
     rolldownOptions: {
       output: {
         codeSplitting: {

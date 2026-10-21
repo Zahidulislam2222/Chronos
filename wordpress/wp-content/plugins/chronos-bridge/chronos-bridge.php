@@ -37,8 +37,19 @@ define( 'CHRONOS_BRIDGE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CHRONOS_BRIDGE_URL', plugin_dir_url( __FILE__ ) );
 define( 'CHRONOS_BRIDGE_BASENAME', plugin_basename( __FILE__ ) );
 
-// Composer autoloader.
-$autoloader = CHRONOS_BRIDGE_DIR . 'vendor/autoload.php';
+// The maintained runtime selector permits immutable dependency upgrades.
+require_once CHRONOS_BRIDGE_DIR . 'src/Configuration/Runtime.php';
+try {
+	$autoloader = ChronosBridge\Configuration\Runtime::autoloader( CHRONOS_BRIDGE_DIR );
+} catch ( \UnexpectedValueException ) {
+	add_action( 'admin_notices', static function (): void {
+		printf(
+			'<div class="notice notice-error"><p>%s</p></div>',
+			esc_html__( 'Chronos Bridge: Runtime configuration is missing or invalid. Restore the reviewed runtime configuration before enabling the plugin.', 'chronos-bridge' )
+		);
+	} );
+	return;
+}
 
 if ( ! file_exists( $autoloader ) ) {
 	add_action( 'admin_notices', static function (): void {

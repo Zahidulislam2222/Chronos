@@ -2,7 +2,7 @@
 
 **Status:** Chronos has a **99% availability objective**. It has no measured
 uptime record and no SLA. This document defines how availability is measured,
-what the current topology can realistically achieve, and what is required for
+the current failure domains, and what is required for
 99% and then 99.9%.
 
 ## Service level objectives
@@ -34,15 +34,15 @@ reliability fixes ship until the budget recovers.
 | Fact | Consequence |
 |---|---|
 | One frontend origin, one backend VM, database on that VM | Any host failure is a full outage for dynamic features |
-| Google's Compute Engine SLA for a single instance is ≥ 99.9% in Premium Tier regions ([Compute Engine SLA](https://cloud.google.com/compute/sla)) | That covers the VM, not WordPress, PHP, MySQL, TLS renewal or our releases. Whether SLA credits apply to always-free usage was not verified |
+| Provider infrastructure commitments are separate from application SLIs | They do not measure WordPress, MySQL, TLS, release correctness or business-flow availability |
 | Ephemeral IP behind the sslip.io hostname | Stopping the VM changes the backend address. It must not be stopped |
 | No automated off-server backup today (see below) | A disk loss would mean data loss back to the last manual backup |
 | Pre-rendered frontend HTML | The storefront shell and editorial snapshots can still load while the backend is down; live catalogue, login and checkout cannot |
 
-**Honest assessment:** 99% (7 h 12 min per month) is realistic on this
-topology **only with** external monitoring, alerting and a practised restore.
-99.9% is **not** realistic without redundancy. Phase 3 of the
-[roadmap](ROADMAP.md) adds it.
+The initial 99% objective requires external monitoring, alert ownership and
+verified restore procedures. Independent origins and multi-zone stateful
+services are engineering requirements for the later 99.9% stage in the
+[roadmap](ROADMAP.md). Neither objective has a continuous reporting window yet.
 
 ## Monitoring
 
@@ -83,7 +83,7 @@ Steps for every incident:
 
 1. **Detect** (probe alert, user report, security report).
 2. **Stabilise**: roll back to the previous release, fail over, or put the
-   affected feature into preview mode (`VITE_STOREFRONT_MODE=preview` stops
+   affected feature into offline mode (`VITE_STOREFRONT_MODE=preview` stops
    all external mutations).
 3. **Preserve evidence** privately: logs, before-state, timestamps.
 4. **Fix locally**, run the gates, deploy with parity proof
@@ -145,3 +145,13 @@ A backup that has never been restored is not a backup.
 | Stripe outage | Checkout unavailable | Checkout reports unavailable; nothing is charged; no order is marked paid without verification |
 | Credential leak | — | Rotate the secret, review access logs, assess notification duties, record the incident |
 | Region outage | Full outage | Phase 3: warm DR region with replica and backups |
+
+## Business-flow SLIs and budget decisions
+
+Report frontend delivery, anonymous CMS reads, sign-in, persisted contact submission and test checkout separately. A cached homepage cannot establish API or checkout availability. Monitor payment reconciliation exceptions and webhook backlog as correctness/freshness signals. Automation reports should include source-sync success, pending batch age, oldest queue item and uncertain advertising proposals; they are separate from the visitor SLO.
+
+The proposed measurement policy includes planned maintenance, distinguishes user-visible failures from expected validation/client errors, and publishes unknown probe intervals and coverage. Version any change to success predicates, regions, thresholds or exclusions. Use both short-window and long-window burn alerts to detect rapid outages and gradual budget loss; threshold selection follows a measured baseline and operator coverage. The current script is a single-observation tool, not an alert-routing service.
+
+If the error budget is exhausted, the operator freezes ordinary feature releases and permits only reliability/security repairs after review. Resume normal changes after the budget and incident actions are reviewed. An SLA is a separate commercial commitment requiring measurement, staffing, dependencies and contractual remedies; it is not supplied by this repository.
+
+Sources: [Google SRE error-budget policy](https://sre.google/workbook/error-budget-policy/), [SLO implementation](https://sre.google/workbook/implementing-slos/). Operational ownership and restore acceptance: [OPERATIONS.md](OPERATIONS.md).

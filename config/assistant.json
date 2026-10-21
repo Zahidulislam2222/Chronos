@@ -1,0 +1,55 @@
+{
+  "bindHost": "127.0.0.1",
+  "port": 18784,
+  "ollamaOrigin": "http://127.0.0.1:11434",
+  "model": "qwen3:1.7b",
+  "allowedOrigins": [
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:4173",
+    "http://127.0.0.1:4175",
+    "https://chronos.zahidul-islam.com"
+  ],
+  "enabled": true,
+  "localEnabled": false,
+  "bodyBytes": 2048,
+  "questionCharacters": 500,
+  "maxTurns": 8,
+  "upstreamBytes": 8192,
+  "timeoutMs": 30000,
+  "shutdownGraceSeconds": 40,
+  "bodyTimeoutMs": 5000,
+  "headersTimeoutMs": 5000,
+  "keepAliveTimeoutMs": 1000,
+  "maxConnections": 16,
+  "maxConcurrent": 1,
+  "requestsPerWindow": 12,
+  "perClientRequestsPerWindow": 4,
+  "maxClientBuckets": 1024,
+  "trustProxyHeaders": false,
+  "windowMs": 60000,
+  "maxRequestsPerProcess": 10000,
+  "maxOutputTokens": 64,
+  "contextTokens": 4096,
+  "localTimeoutMs": 12000,
+  "temperature": 0,
+  "keepAlive": "2m",
+  "openrouter": {
+    "enabled": true,
+    "origin": "https://openrouter.ai",
+    "model": "qwen/qwen3-30b-a3b-instruct-2507",
+    "providers": [
+      "siliconflow/fp8"
+    ],
+    "maxOutputTokens": 128,
+    "contextTokens": 262144,
+    "maxInputBytes": 16384,
+    "maxPrice": {
+      "prompt": 0.09,
+      "completion": 0.3,
+      "request": 0
+    },
+    "budgetUsd": 0.1,
+    "dataCollection": "deny",
+    "zeroDataRetention": true
+  }
+}

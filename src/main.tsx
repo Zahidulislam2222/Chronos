@@ -4,6 +4,7 @@ import { preloadRoute } from "./routes";
 import "./lib/head";
 import "./index.css";
 import "./cinema.css";
+import "./navigation.css";
 
 // Render once the current page's code is loaded so React does not suspend and
 // replace the prerendered page with the loader. If that code cannot load, keep

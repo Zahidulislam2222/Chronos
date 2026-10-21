@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import Layout from "@/components/Layout";
 import { content } from "@/content";
+import { assistantContent } from "@/config/assistant";
 export default function Privacy() {
   const c = content.legal.privacy;
   const { clearCart } = useCart();
@@ -15,6 +16,8 @@ export default function Privacy() {
         {c.body.map((p) => (
           <p key={p}>{p}</p>
         ))}
+        <h2>{assistantContent.privacyPolicyTitle}</h2>
+        <p>{assistantContent.privacyPolicy}</p>
       <button className="button button-dark" onClick={() => { clearCart(); setCleared(true); }}>{c.clear}</button>
         <p role="status">{cleared ? c.cleared : ""}</p>
         <p><a href={c.contactUrl} rel="noreferrer">{c.contactLabel}</a></p>

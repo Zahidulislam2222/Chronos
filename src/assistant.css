@@ -1,0 +1,18 @@
+.assistant-launcher { position: fixed; right: 1rem; bottom: 1rem; z-index: 40; display: flex; align-items: center; gap: .5rem; padding: .8rem 1rem; border: 1px solid #c5a56a; border-radius: 2rem; background: #161510; color: #f9f3e6; font-size: .85rem; box-shadow: 0 4px 20px #0005; }
+.assistant-launcher:focus-visible, .assistant-dialog :is(button, input, a):focus-visible { outline: 2px solid #c5a56a; outline-offset: 4px; }
+.assistant-dialog { width: min(36rem, calc(100vw - 2rem)); max-width: 36rem; max-height: calc(100dvh - 2rem); overflow: hidden; display: flex; flex-direction: column; gap: .8rem; color: #f9f3e6; background: #161510; border-color: #c5a56a; font-size: .9rem; }
+.assistant-dialog > h2 { padding-right: 1.5rem; }
+.assistant-dialog > p { color: #d7d0c2; line-height: 1.55; }
+.assistant-scroll { overflow-y: auto; min-height: 0; padding: .25rem; overscroll-behavior: contain; }
+.assistant-privacy { font-size: .78rem; line-height: 1.5; color: #d7d0c2; }
+.assistant-suggestions, .assistant-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: .6rem; }
+.assistant-dialog button:not([data-state]), .assistant-dialog input { border: 1px solid #81745d; border-radius: .35rem; padding: .55rem .7rem; background: #242119; color: #f9f3e6; min-height: 44px; }
+.assistant-dialog button:disabled { opacity: .55; cursor: default; }
+.assistant-dialog a { color: #e8ca90; text-decoration: underline; text-underline-offset: 3px; }
+.assistant-turn { border-top: 1px solid #81745d; padding-block: .7rem; overflow-wrap: anywhere; line-height: 1.6; }
+.assistant-turn p + p { margin-top: .5rem; }
+.assistant-topics { display: flex; flex-wrap: wrap; gap: .6rem 1rem; margin-block: 1rem; }
+.assistant-form { flex-shrink: 0; display: grid; gap: .4rem; }
+.assistant-form input { width: 100%; min-width: 0; font-size: 1rem; }
+.assistant-dialog [role="status"] { margin-block: .5rem; line-height: 1.5; }
+@media (prefers-reduced-motion: reduce) { .assistant-dialog, .assistant-dialog ~ * { animation: none !important; transition: none !important; } }

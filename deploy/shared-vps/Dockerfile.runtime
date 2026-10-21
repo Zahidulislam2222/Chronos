@@ -1,0 +1,11 @@
+ARG WEB_IMAGE
+FROM ${WEB_IMAGE}
+ARG APK_PINS
+ARG HEALTH_URL
+# The builder validates each package=version argument against the maintained policy.
+RUN set -f; apk add --no-cache --upgrade $APK_PINS \
+    && printf '%s\n' "$HEALTH_URL" > /etc/chronos-health-url
+USER 101:101
+HEALTHCHECK CMD wget -q -O /dev/null "$(cat /etc/chronos-health-url)"
+LABEL org.opencontainers.image.title="Chronos web runtime" \
+      org.opencontainers.image.source="https://github.com/Zahidulislam2222/Chronos"

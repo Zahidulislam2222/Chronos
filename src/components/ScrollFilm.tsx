@@ -5,22 +5,20 @@ import {
 } from "framer-motion";
 import { useMotionPreference } from "@/hooks/use-motion-preference";
 import { cinema } from "@/config/cinema";
-export default function ScrollFilm({
-  scene,
-  children,
-  className = "",
-}: {
-  scene: "hero" | "study";
-  children: React.ReactNode;
-  className?: string;
-}) {
+type ScrollFilmProps = {scene: "hero" | "study"; children: React.ReactNode; className?: string};
+export default function ScrollFilm({scene, children, className = ""}: ScrollFilmProps) {
   const root = useRef<HTMLElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const desired = useRef(0);
   const reduced = useMotionPreference();
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
-  useEffect(() => { setReady(false); }, [reduced]);
+  const [previousReduced, setPreviousReduced] = useState(reduced);
+  // Reset this component's media state before render without remounting focused content.
+  if (previousReduced !== reduced) {
+    setPreviousReduced(reduced);
+    setReady(false);
+  }
   const [visible, setVisible] = useState(scene === "hero");
   useEffect(() => {
     const element = root.current;

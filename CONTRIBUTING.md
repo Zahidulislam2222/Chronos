@@ -1,6 +1,6 @@
 # Contributing to Chronos
 
-Thanks for your interest. Chronos is a portfolio project maintained by one
+Thanks for your interest. Chronos is an open-source project maintained by one
 person, so reviews can take a few days. Bug reports, documentation fixes and
 focused pull requests are welcome.
 
@@ -91,7 +91,7 @@ Use `git config core.autocrlf input`, or run the checks in WSL or Docker.
 
 Use the issue templates. Include steps to reproduce, expected vs actual
 behaviour, and the environment (browser, Node/PHP version, local or public
-demo).
+website).
 
 ## License of contributions
 

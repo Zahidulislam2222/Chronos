@@ -1,6 +1,7 @@
 :root { --readable-muted: #5e6359; }
 /* Campaign art direction: lacquer, silver, warm stone. */
 :root {
+  --site-header-height: 94px;
   --ink: #242321;
   --paper: #f3f0e9;
   --forest: #1c1c1a;
@@ -12,12 +13,7 @@
   --card-foreground: 40 5% 14%;
   --popover-foreground: 40 5% 14%;
 }
-.site-header {
-  height: 94px;
-}
 .site-header.on-dark {
-  position: absolute;
-  inset: 0 0 auto;
   background: transparent;
   border-color: #ffffff2b;
   color: #f8f5ed;
@@ -530,7 +526,7 @@
 }
 @media (max-width: 640px) {
   .site-header {
-    height: 78px;
+    --site-header-height: 78px;
   }
   .wordmark {
     font-size: 20px;

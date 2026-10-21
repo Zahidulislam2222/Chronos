@@ -37,7 +37,7 @@ body:
     id: environment
     attributes:
       label: Environment
-      placeholder: "Local Docker / public demo, browser, Node and PHP versions, commit"
+      placeholder: "Local Docker / public website, browser, Node and PHP versions, commit"
     validations:
       required: true
   - type: textarea

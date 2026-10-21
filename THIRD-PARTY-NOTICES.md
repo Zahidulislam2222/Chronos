@@ -37,7 +37,7 @@ Use `npx license-checker --summary` in the root and in
 - Campaign images and films are AI-generated illustrations of fictional
   products, created for this project. See the AI-media notes in
   [docs/COMPLIANCE.md](docs/COMPLIANCE.md).
-- "Chronos" is used as a demo project name. No affiliation with any real
+- "Chronos" is used as a website project name. No affiliation with any real
   watch brand is implied. Product names, prices and specifications are
   fictional.
 - Third-party names (WordPress, WooCommerce, Stripe, Cloudflare, Google

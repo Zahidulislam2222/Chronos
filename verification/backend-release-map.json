@@ -1,0 +1,210 @@
+{
+  "release": "2026-10-21",
+  "scope": "First-party source to packaged PHP/dependency-metadata bytes; canonical LF normalization and explicit target EOL only. Deployment-specific runtime selector and Composer-generated vendor cohort are separately verified release artifacts. This map is not a whole-build reproducibility claim.",
+  "files": [
+    {
+      "path": "chronos-bridge.php",
+      "canonicalSourceSha256": "6f53359b343c7d3588661d5e14732f17418f00339ea602b0a9691b93a68c7cee",
+      "artifactLineEndings": "CRLF",
+      "artifactSha256": "2e23ea9910fd47b03860f9453e7eeb9093cedea25d98a9d7cf025c30cca0b460"
+    },
+    {
+      "path": "composer.json",
+      "canonicalSourceSha256": "3e1a6667eb62abb5e799da117f195b37c9b3210808ebf2a462f9a89625735b75",
+      "artifactLineEndings": "CRLF",
+      "artifactSha256": "10d7970e92020757410f61c1b2533c09f92d44f219363374f8726d16c56630f9"
+    },
+    {
+      "path": "composer.lock",
+      "canonicalSourceSha256": "13e8b5cb25aae6b8ecbe800fa9fe98a077c43b7b253e319445e0d40352e88a31",
+      "artifactLineEndings": "CRLF",
+      "artifactSha256": "193db39df7131d6953fdc9ced97b031c9bfcc3ce10e589892f368f492ab270f9"
+    },
+    {
+      "path": "content/privacy.json",
+      "canonicalSourceSha256": "f04582ed9918f98c0777e15794550d933577bd4a5ba61e442d9bef9ccf0cb574",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "f04582ed9918f98c0777e15794550d933577bd4a5ba61e442d9bef9ccf0cb574"
+    },
+    {
+      "path": "src/AI/ContactResponder.php",
+      "canonicalSourceSha256": "bbafe2aa54bb5b915860b4501f4122185751bb1e0f04fdb32ec54ae5d90af285",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "bbafe2aa54bb5b915860b4501f4122185751bb1e0f04fdb32ec54ae5d90af285"
+    },
+    {
+      "path": "src/AI/DescriptionGenerator.php",
+      "canonicalSourceSha256": "74fbe886ffdb49927cd6880561287100adb31a4808a391e5f0a35ff541109254",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "74fbe886ffdb49927cd6880561287100adb31a4808a391e5f0a35ff541109254"
+    },
+    {
+      "path": "src/Admin/AdminMenu.php",
+      "canonicalSourceSha256": "5bdd86b8c902e5cb637ddbe72d95ba310e084d2d3e7107190d75c9dad1764e0f",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "5bdd86b8c902e5cb637ddbe72d95ba310e084d2d3e7107190d75c9dad1764e0f"
+    },
+    {
+      "path": "src/Admin/DashboardWidget.php",
+      "canonicalSourceSha256": "65a7baef3c6d47a40d978fd3d927325194297d7d06f0035e88401a9d7b9489b8",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "65a7baef3c6d47a40d978fd3d927325194297d7d06f0035e88401a9d7b9489b8"
+    },
+    {
+      "path": "src/Admin/Settings.php",
+      "canonicalSourceSha256": "26209ca98bbf5dd3e298593708b668794fe09005d87bb5dc8cca8ba94cf7eba8",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "26209ca98bbf5dd3e298593708b668794fe09005d87bb5dc8cca8ba94cf7eba8"
+    },
+    {
+      "path": "src/Analytics/Tracker.php",
+      "canonicalSourceSha256": "6ae480064ea4dd28aed86d820091be20d4164dfed8fee25b0dbfe6efb89559d9",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "6ae480064ea4dd28aed86d820091be20d4164dfed8fee25b0dbfe6efb89559d9"
+    },
+    {
+      "path": "src/Api/ContactEndpoint.php",
+      "canonicalSourceSha256": "3f64b2b7157e446256e3744c4f7fd8df5ccba390a2e2d10e71c3328e69e0b546",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "3f64b2b7157e446256e3744c4f7fd8df5ccba390a2e2d10e71c3328e69e0b546"
+    },
+    {
+      "path": "src/Api/RestController.php",
+      "canonicalSourceSha256": "e3f4616920d957feed5ef8677393df4db259be6c7ffb404a0ef5db473f96cd49",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "e3f4616920d957feed5ef8677393df4db259be6c7ffb404a0ef5db473f96cd49"
+    },
+    {
+      "path": "src/Api/SiteEndpoint.php",
+      "canonicalSourceSha256": "7f948b181a6aa70aa200f6f9a92c5eced9509de2dadaec7dd18bdbca9182354e",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "7f948b181a6aa70aa200f6f9a92c5eced9509de2dadaec7dd18bdbca9182354e"
+    },
+    {
+      "path": "src/Api/WatchEndpoint.php",
+      "canonicalSourceSha256": "e801a15accb6362e791db7089ad4ee0fabc4a3abc807d77b8635f27444b0d4b1",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "e801a15accb6362e791db7089ad4ee0fabc4a3abc807d77b8635f27444b0d4b1"
+    },
+    {
+      "path": "src/Cache/ObjectCacheCompat.php",
+      "canonicalSourceSha256": "fdf6d203f5927011f878829d7dbc936d3adc0ee4fa5fed9df5e9c7e7ac0bffd8",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "fdf6d203f5927011f878829d7dbc936d3adc0ee4fa5fed9df5e9c7e7ac0bffd8"
+    },
+    {
+      "path": "src/Cache/TransientCache.php",
+      "canonicalSourceSha256": "f7920827293843103d9a435231184d904d28d2f61f4c018c62ab1afc3ee35ed8",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "f7920827293843103d9a435231184d904d28d2f61f4c018c62ab1afc3ee35ed8"
+    },
+    {
+      "path": "src/Configuration/Runtime.php",
+      "canonicalSourceSha256": "381705373a5396768c2d9d61a2f6f03474a0cfcf774065505d25e43c026062b7",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "381705373a5396768c2d9d61a2f6f03474a0cfcf774065505d25e43c026062b7"
+    },
+    {
+      "path": "src/Cron/CleanupJob.php",
+      "canonicalSourceSha256": "2d7f47cb7f1cee7080198c70997ed587c8f2c8c71c98a7519203a8811b163b3f",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "2d7f47cb7f1cee7080198c70997ed587c8f2c8c71c98a7519203a8811b163b3f"
+    },
+    {
+      "path": "src/Database/ContactStatus.php",
+      "canonicalSourceSha256": "1163b15a631af453271111b65a446a44d8d84491a2a5a6e2e2ace05de69163bf",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "1163b15a631af453271111b65a446a44d8d84491a2a5a6e2e2ace05de69163bf"
+    },
+    {
+      "path": "src/Database/ContactTable.php",
+      "canonicalSourceSha256": "467daab10cfc66bc3553696c3c2934d2b796f5d1088628c10216423a04785f36",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "467daab10cfc66bc3553696c3c2934d2b796f5d1088628c10216423a04785f36"
+    },
+    {
+      "path": "src/Database/Migrator.php",
+      "canonicalSourceSha256": "c27cc4416ce1204bd9c371c5a00e00c38a5627a293b19a0c1e971d9f52a7269f",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "c27cc4416ce1204bd9c371c5a00e00c38a5627a293b19a0c1e971d9f52a7269f"
+    },
+    {
+      "path": "src/GraphQL/ContactMutation.php",
+      "canonicalSourceSha256": "70d6979df7cb49ef62405127443a81fc66ddc4f5b8cebf8dcb12dfe7032fcb73",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "70d6979df7cb49ef62405127443a81fc66ddc4f5b8cebf8dcb12dfe7032fcb73"
+    },
+    {
+      "path": "src/I18n/Loader.php",
+      "canonicalSourceSha256": "c9f7ecb69892cd0ffca36e4c26bb31bcfa6afa7638dcc0cc65467e5036a021b2",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "c9f7ecb69892cd0ffca36e4c26bb31bcfa6afa7638dcc0cc65467e5036a021b2"
+    },
+    {
+      "path": "src/Payment/CheckoutEndpoint.php",
+      "canonicalSourceSha256": "07bfc366f87cb32d71b7d817f364c5e9608f04b0ff012b28c8ed26660c1ab34c",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "07bfc366f87cb32d71b7d817f364c5e9608f04b0ff012b28c8ed26660c1ab34c"
+    },
+    {
+      "path": "src/Payment/CheckoutSettings.php",
+      "canonicalSourceSha256": "4759d307b4b53afda9571ed66f941bcbbf382b11bf2b34522432cc94ebe2019f",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "4759d307b4b53afda9571ed66f941bcbbf382b11bf2b34522432cc94ebe2019f"
+    },
+    {
+      "path": "src/Payment/StripeClient.php",
+      "canonicalSourceSha256": "41a35a1b61e2113c1f3927a999939ec61217314d300313a5f956dbd065e01fbb",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "41a35a1b61e2113c1f3927a999939ec61217314d300313a5f956dbd065e01fbb"
+    },
+    {
+      "path": "src/Payment/WebhookHandler.php",
+      "canonicalSourceSha256": "5e595a22f4267e864c1d41575e67b9c39cef46be9387cb69802988a80a39b9e9",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "5e595a22f4267e864c1d41575e67b9c39cef46be9387cb69802988a80a39b9e9"
+    },
+    {
+      "path": "src/Plugin.php",
+      "canonicalSourceSha256": "196b04c215c2fa954fbfef3c3bf141ce28c3c621e645750eaee7dd24d8046f1e",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "196b04c215c2fa954fbfef3c3bf141ce28c3c621e645750eaee7dd24d8046f1e"
+    },
+    {
+      "path": "src/PostTypes/Taxonomy.php",
+      "canonicalSourceSha256": "1d0589a89a3521d5b2dc304d39eb57355a6ed7c9395df5cc189c78d87e88dc0a",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "1d0589a89a3521d5b2dc304d39eb57355a6ed7c9395df5cc189c78d87e88dc0a"
+    },
+    {
+      "path": "src/PostTypes/WatchCollection.php",
+      "canonicalSourceSha256": "e721c52b60df4bab470d3ad0cd037179b05c1d23c596ec89f101ec6a31d3ccce",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "e721c52b60df4bab470d3ad0cd037179b05c1d23c596ec89f101ec6a31d3ccce"
+    },
+    {
+      "path": "src/Privacy/DataHandler.php",
+      "canonicalSourceSha256": "f8d164968b85c067c50231e5cbf238ff67feeae7de4d4f6a4060c1366cf54e7d",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "f8d164968b85c067c50231e5cbf238ff67feeae7de4d4f6a4060c1366cf54e7d"
+    },
+    {
+      "path": "src/SEO/StructuredData.php",
+      "canonicalSourceSha256": "acb1cc3ef22b80fae296fa28b68d7309ec0c16047e9b4c1c84e0d702d31dd9d8",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "acb1cc3ef22b80fae296fa28b68d7309ec0c16047e9b4c1c84e0d702d31dd9d8"
+    },
+    {
+      "path": "src/Security/Sanitizer.php",
+      "canonicalSourceSha256": "ecc247c00b963d83ad924dce82621878bb2f0d5c302d22fc6b5cc005dc8335f3",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "ecc247c00b963d83ad924dce82621878bb2f0d5c302d22fc6b5cc005dc8335f3"
+    },
+    {
+      "path": "src/WooCommerce/CheckoutFields.php",
+      "canonicalSourceSha256": "2c2a052e48ee0f75a1e83804272f52a76495cdfdfd474b4693b53d4a39485aa3",
+      "artifactLineEndings": "LF",
+      "artifactSha256": "2c2a052e48ee0f75a1e83804272f52a76495cdfdfd474b4693b53d4a39485aa3"
+    }
+  ]
+}

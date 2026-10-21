@@ -1,5 +1,10 @@
 # Frontend release on a shared VPS
 
+<!-- release-current:start -->
+**Release documentation — 21 October 2026:** See the [current release, before/after comparison and engineering roadmap](../../docs/RELEASE.md) for deployed scope, verification, security/legal requirements, operations, the path toward 1M+ simultaneous sessions and availability objectives. Component-specific instructions below remain authoritative for setup.
+<!-- release-current:end -->
+
+
 This folder holds the public, non-secret templates for the frontend that is
 live at **https://chronos.zahidul-islam.com**. The static, pre-rendered React
 build is served by a hardened Nginx container. Caddy terminates HTTPS on the
@@ -10,7 +15,7 @@ VPS, and Cloudflare sits in front. The WordPress backend runs separately (see
 |---|---|
 | `compose.yaml` | Container definition and hardening |
 | `nginx.connected.template` | **Current production config** (connected mode): routing, security headers, request budget, sitemap proxy, and route validation against WordPress. `__WORDPRESS_ORIGIN__` and `__WORDPRESS_HOST__` are filled in at release time |
-| `nginx.conf` | Config for a fully static preview-mode build (`VITE_STOREFRONT_MODE=preview`), which needs no backend |
+| `nginx.conf` | Config for a fully static offline build (`VITE_STOREFRONT_MODE=preview`), which needs no backend |
 | `site.caddy.template` | Caddy site block for HTTPS and the reverse proxy to the loopback port |
 | `runtime.env.example` | Runtime settings: pinned image digest and loopback port |
 
@@ -67,7 +72,19 @@ operations record and are not part of this public repository.
 
 ## CI note
 
-The CI frontend job builds with the typed preview environment and a reserved
+The CI frontend job builds with the typed offline environment and a reserved
 example origin (`https://chronos.example`) unless the repository variable
 `CHRONOS_SITE_URL` is set. That example origin
 must never be promoted as the public canonical URL.
+
+## Current release and next steps
+
+The 12 October 2026 storefront release renders 21 HTML documents with 16 indexable URLs and includes direction-aware navigation, five products with illustrative imagery and three complete journal articles. Packaged frontend deployment parity was 99/99 files; [verification](../../docs/VERIFICATION.md) records the full browser, HTTP and test-checkout scope. A repository publication does not redeploy that artifact.
+
+Before uploading any future release, compare touched live files with local source, reconcile drift, validate privately configured canonical/API origins and preserve the previous release. Review [configuration ownership](../../docs/CONFIGURATION.md), [operations](../../docs/OPERATIONS.md) and [testing](../../docs/TESTING.md). Monitoring and backups are distinct operating tasks; the container health check is not an end-to-end uptime record. Independent origins, anonymous caching and funded load/restore tests form the [1M+ growth plan](../../docs/SCALABILITY.md).
+
+## Current runtime maintenance
+
+The 21 October frontend uses a derived patched Nginx 1.30.4 image. Maintain pins in `config/frontend-runtime.json` and build with `node scripts/build-web-runtime.mjs docker`. The existing runtime example’s base image is an installation template; do not substitute it for the scanned derived release identity. Keep complete image scan results, package inventory, immutable archive digest and generated build provenance. The retained upstream DS-0013 build-history style finding is documented in [verification](../../docs/VERIFICATION.md).
+
+For rollback, use previous site files with the accepted patched runtime and retain the union of old/new immutable assets in both release directories. Recheck selected image identity, mounted artifact hashes, current pointer and real user flows. Shared proxy configuration must remain byte-identical unless that change was independently reviewed and explicitly included. A container health response alone does not establish commerce or AI availability.

@@ -1,8 +1,23 @@
 # Chronos documentation
 
+<!-- release-current:start -->
+**Release documentation — 21 October 2026:** See the [current release, before/after comparison and engineering roadmap](RELEASE.md) for deployed scope, verification, security/legal requirements, operations, the path toward 1M+ simultaneous sessions and availability objectives. Component-specific instructions below remain authoritative for setup.
+<!-- release-current:end -->
+
+
+The [n8n inventory runbook](../integrations/inventory/README.md) covers the existing WooCommerce source, sequential workflow, gallery mapping, private review queue and recovery.
+
+The [Claude–Meta advertising runbook](../integrations/meta-ads/README.md) covers the separate
+local MCP component, its limited mutation scope, owner approvals and interruption recovery.
+Actual account and Claude Desktop connection verification remain owner setup gates.
+
 Public documentation for the Chronos headless WordPress + WooCommerce
 storefront. Each document separates what is **implemented and measured**
 from what is a **target**; targets are always labelled.
+
+## Current release
+
+[Release record and before/after comparison](RELEASE.md) connects current behavior, verification, future capacity, reliability and operational acceptance.
 
 ## Start here
 
@@ -17,7 +32,7 @@ from what is a **target**; targets are always labelled.
 | Document | Read it for |
 |---|---|
 | [Scalability](SCALABILITY.md) | Workload model, today vs target, and the target architecture for 1M+ concurrent users with capacity math |
-| [Availability and DR](AVAILABILITY-AND-DR.md) | SLOs (99% now, 99.9% target), error budgets, monitoring, incident response, backups, RPO/RTO |
+| [Availability and DR](AVAILABILITY-AND-DR.md) | 99% objective, later 99.9% objective, error budgets, monitoring, incident response, backups, RPO/RTO |
 | [Roadmap](ROADMAP.md) | Phased plan with exit criteria and the real-commerce launch track |
 
 ## Security and compliance
@@ -43,3 +58,13 @@ from what is a **target**; targets are always labelled.
 - Backend setup: [wordpress/README.md](../wordpress/README.md)
 - Plugins: [chronos-bridge](../wordpress/wp-content/plugins/chronos-bridge/README.md) · [chronos-blocks](../wordpress/wp-content/plugins/chronos-blocks/README.md)
 - Frontend hosting templates: [deploy/shared-vps](../deploy/shared-vps/README.md)
+
+## Operating the complete project
+
+| Document | Read it for |
+|---|---|
+| [Configuration](CONFIGURATION.md) | Typed settings, maintained content, safe templates and secret ownership |
+| [Testing](TESTING.md) | Reproducible frontend, PHP, Gutenberg and Python gates; real-flow verification |
+| [Operations](OPERATIONS.md) | Ownership, maintenance, releases, interrupted workflows, backups and handoff |
+
+Current scope: connected storefront with test payments; local advertising integration awaiting actual account/Claude setup; privately installed n8n workflow with manual inventory execution and internal listing drafts. Source publication does not activate integrations or deploy every pending dependency upgrade. The scale and availability documents describe proposed implementation stages toward 1M+ simultaneous sessions and measured service objectives.

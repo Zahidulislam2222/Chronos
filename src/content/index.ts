@@ -72,4 +72,6 @@ export const content = isPreview ? copy : {
   craft: {...copy.craft,...connected.craft},
   ui: {...copy.ui,...connected.ui},
   contact: {...copy.contact,...connected.contact},
+  footer: {...copy.footer,...connected.footer},
+  preview: {...copy.preview,...connected.preview},
 };

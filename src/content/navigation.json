@@ -1,0 +1,40 @@
+{
+  "header": {
+    "topThresholdPx": 16,
+    "directionThresholdPx": 12
+  },
+  "supplementalLinks": [
+    { "label": "Contact", "href": "/contact" }
+  ],
+  "footerGroups": [
+    {
+      "title": "Explore",
+      "usePrimaryNavigation": true,
+      "links": []
+    },
+    {
+      "title": "Client services",
+      "usePrimaryNavigation": false,
+      "links": [
+        { "label": "Contact us", "href": "/contact" },
+        { "label": "Your account", "href": "/account" },
+        { "label": "Shopping bag", "href": "/cart" }
+      ]
+    },
+    {
+      "title": "Information",
+      "usePrimaryNavigation": false,
+      "links": [
+        { "label": "Privacy", "href": "/privacy" },
+        { "label": "Terms of use", "href": "/terms" },
+        { "label": "Accessibility", "href": "/accessibility" }
+      ]
+    }
+  ],
+  "pages": {
+    "homeLabel": "Home",
+    "eyebrow": "The world of Chronos",
+    "collectionLabel": "Explore the collection",
+    "collectionHref": "/shop"
+  }
+}
