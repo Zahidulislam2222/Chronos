@@ -5,7 +5,7 @@
 | Part | Host | Address |
 |---|---|---|
 | Frontend | Existing VPS: Docker Nginx container (read-only, non-root) behind Caddy HTTPS and Cloudflare | https://chronos.zahidul-islam.com |
-| Backend | Google Cloud e2-micro VM (always-free tier): Nginx, PHP-FPM 8.1, WordPress, WooCommerce, MySQL/MariaDB, Let's Encrypt | https://chronosbackend.35-222-94-93.sslip.io |
+| Backend | Existing Google Cloud e2-micro VM (account-specific allowance/cost verification required): Nginx, PHP-FPM 8.1, WordPress, WooCommerce, MySQL/MariaDB, Let's Encrypt | https://chronosbackend.35-222-94-93.sslip.io |
 
 ### Release rule: local first, then live
 
@@ -54,7 +54,7 @@ installed on the server; dev tools are not needed there.
 
 | Workflow | Trigger | What it does | State |
 |---|---|---|---|
-| **CI Pipeline** (`ci.yml`) | push to `main`, every pull request, manual | PHP (PHPCS + PHPUnit on PHP 8.1), Gutenberg blocks (lint, build, Jest; audited in Security), frontend (audit, typecheck, lint, pre-render build, release check) | **Active** |
+| **CI Pipeline** (`ci.yml`) | push to `main`, every pull request, manual | PHP (PHPCS + PHPUnit on PHP 8.2), Gutenberg blocks (lint, build, Jest; audited in Security), frontend (audit, typecheck, lint, pre-render build, release check) | **Active** |
 | **Security** (`security.yml`) | push to `main`, pull requests, weekly Monday 06:00 UTC, manual | `npm audit` (frontend + blocks), `composer audit`, gitleaks (new commits; full history weekly/manual), Semgrep `p/security-audit`, bandit | **Active** |
 | **CodeQL** (`codeql.yml`) | push to `main`, pull requests, weekly, manual | Static analysis of TypeScript/JavaScript and workflow files | **Active** |
 | CI → `deploy-gcp` + `verify` | manual on `main`, only if repo variable `CHRONOS_ACTIONS_ENABLED=true`; `verify` also needs `CHRONOS_BACKEND_URL` and `CHRONOS_SITE_URL` | rsync custom plugins to the backend VM over SSH, then health-check | Opt-in, **off by default** |
@@ -100,3 +100,11 @@ replacement design (encrypted backups to private object storage) is in
 | `CPANEL_URL`, `CPANEL_USERNAME`, `CPANEL_API_TOKEN` | retired cPanel jobs (removed from the repo 2026-10-03; re-create to re-enable) |
 
 No secret is needed to build, test or contribute.
+
+## Integration CI and rollout scope
+
+`meta-ads.yml` and `inventory.yml` validate their Python packages on relevant PRs/pushes using Python 3.12 and hash-locked tools. Both run pytest, mypy, Ruff, Bandit, dependency auditing and distributable builds. They need no Meta, Claude, n8n or production credentials and perform no external mutation. Standard public-repository GitHub-hosted runners are used.
+
+Source publication includes both integrations and public runbooks; it does not attach Claude, activate campaigns, publish n8n, provision capacity or upgrade the installed inventory service. The latter requires drift comparison, private state backup, scoped deploy/restart, manual workflow verification and hash parity. A new empty/latest-batch marker supersedes old unfinished work; run a fresh complete source sync after upgrading. Stripe SDK 20.3.1 is now deployed through an immutable cohort with actual native rollback and test reconciliation; see [verification](VERIFICATION.md). Never restart a shared PHP master for an application-only dependency rollout.
+
+Use [OPERATIONS.md](OPERATIONS.md) for release/restore ownership and [TESTING.md](TESTING.md) for commands. Future multi-zone hosting and paid distributed load are specified in [SCALABILITY.md](SCALABILITY.md), with costs approved before execution.

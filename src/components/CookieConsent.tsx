@@ -1,38 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
-const CONSENT_KEY = 'chronos_cookie_consent';
+import { storageKeys } from "@/config/settings";
 
 /**
  * Returns the user's cookie consent status.
  * Other components can import this to check before loading analytics/tracking.
  */
 export function getCookieConsent(): 'accepted' | 'declined' | null {
-  const value = localStorage.getItem(CONSENT_KEY);
+  let value: string | null = null;
+  try { value = typeof window === 'undefined' ? null : localStorage.getItem(storageKeys.cookieConsent); } catch { /* Storage can be disabled. */ }
   if (value === 'accepted' || value === 'declined') return value;
   return null;
 }
 
 export default function CookieConsent() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const consent = localStorage.getItem(CONSENT_KEY);
-    if (!consent) {
-      setVisible(true);
-    }
-  }, []);
+  const [visible, setVisible] = useState(() => getCookieConsent() === null);
 
   const accept = () => {
-    localStorage.setItem(CONSENT_KEY, 'accepted');
+    try { localStorage.setItem(storageKeys.cookieConsent, 'accepted'); } catch { /* Dismiss for this page only. */ }
     setVisible(false);
     // If analytics scripts need to load after consent, trigger them here:
     // window.dispatchEvent(new Event('cookie-consent-granted'));
   };
 
   const decline = () => {
-    localStorage.setItem(CONSENT_KEY, 'declined');
+    try { localStorage.setItem(storageKeys.cookieConsent, 'declined'); } catch { /* Dismiss for this page only. */ }
     setVisible(false);
   };
 

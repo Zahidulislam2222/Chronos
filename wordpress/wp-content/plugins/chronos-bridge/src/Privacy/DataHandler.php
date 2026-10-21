@@ -61,10 +61,13 @@ final class DataHandler {
 	 *
 	 * @param string $email The user's email address.
 	 * @param int    $page  Page number for pagination.
-	 * @return array{data: array<array<string, mixed>>, done: bool}
+	 * @return array{data: array<array<string, mixed>>, done: bool}|\WP_Error
 	 */
-	public static function export_data( string $email, int $page = 1 ): array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WordPress Privacy API.
-		$submissions  = ContactTable::find_by_email( $email );
+	public static function export_data( string $email, int $page = 1 ): array|\WP_Error { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WordPress Privacy API.
+		$submissions = self::read_submissions( $email );
+		if ( $submissions instanceof \WP_Error ) {
+			return $submissions;
+		}
 		$export_items = array();
 
 		foreach ( $submissions as $submission ) {
@@ -113,24 +116,47 @@ final class DataHandler {
 	 *
 	 * @param string $email The user's email address.
 	 * @param int    $page  Page number for pagination.
-	 * @return array{items_removed: int, items_retained: int, messages: array<string>, done: bool}
+	 * @return array{items_removed: int, items_retained: int, messages: array<string>, done: bool}|\WP_Error
 	 */
-	public static function erase_data( string $email, int $page = 1 ): array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WordPress Privacy API.
-		$submissions = ContactTable::find_by_email( $email );
+	public static function erase_data( string $email, int $page = 1 ): array|\WP_Error { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WordPress Privacy API.
+		$submissions = self::read_submissions( $email );
+		if ( $submissions instanceof \WP_Error ) {
+			return $submissions;
+		}
 		$removed     = 0;
 
 		foreach ( $submissions as $submission ) {
-			if ( ContactTable::delete( $submission->id ) ) {
+			$id = filter_var( $submission->id, FILTER_VALIDATE_INT, array( 'options' => array( 'min_range' => 1 ) ) );
+			if ( false !== $id && ContactTable::delete( $id ) ) {
 				++$removed;
 			}
 		}
 
 		return array(
 			'items_removed'  => $removed,
-			'items_retained' => 0,
+			'items_retained' => count( $submissions ) - $removed,
 			'messages'       => array(),
 			'done'           => true,
 		);
+	}
+
+	/**
+	 * Distinguish a successful empty lookup from an unknown database outcome.
+	 *
+	 * @param string $email Requested privacy identity.
+	 * @return array<object>|\WP_Error
+	 */
+	private static function read_submissions( string $email ): array|\WP_Error {
+		global $wpdb;
+		$submissions = ContactTable::find_by_email( $email );
+		if ( ! isset( $wpdb->last_error ) || '' !== $wpdb->last_error ) {
+			$source  = dirname( __DIR__, 2 ) . '/content/privacy.json';
+			$copy    = is_readable( $source ) ? json_decode( (string) file_get_contents( $source ), true ) : null;
+			$message = is_array( $copy ) && isset( $copy['readFailed'] ) && is_string( $copy['readFailed'] ) && '' !== trim( $copy['readFailed'] )
+				? $copy['readFailed'] : 'chronos_privacy_read_failed';
+			return new \WP_Error( 'chronos_privacy_read_failed', $message, array( 'status' => 503 ) );
+		}
+		return $submissions;
 	}
 
 	/**

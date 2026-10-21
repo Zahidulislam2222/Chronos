@@ -25,26 +25,25 @@ flowchart LR
 | Component | Where it runs today | Responsibility |
 |---|---|---|
 | Frontend release | Existing VPS, Docker Nginx container behind Caddy HTTPS and Cloudflare — https://chronos.zahidul-islam.com | Serves pre-rendered HTML, hashed JS/CSS, images, fonts and films; validates dynamic routes |
-| WordPress backend | Google Cloud e2-micro VM (always-free tier), Nginx + PHP-FPM 8.1, Let's Encrypt | Products, prices, stock, orders (WooCommerce); posts, pages, menus, media; accounts; contact inbox |
+| WordPress backend | Existing Google Cloud e2-micro VM, Nginx + PHP-FPM 8.1, Let's Encrypt; free-allowance eligibility and IP/storage/egress costs require account-specific verification | Products, prices, stock, orders (WooCommerce); posts, pages, menus, media; accounts; contact inbox |
 | Database | MySQL/MariaDB on the same backend VM | All WordPress/WooCommerce data plus the custom contact table |
 | Payments | Stripe Checkout (hosted page), **test mode only** | Card entry and payment; Chronos never receives card data |
 | CI | GitHub Actions | Tests, lint, build, dependency audits and CodeQL on pushes to `main` and every pull request |
 
-The backend hostname is `chronosbackend.35-222-94-93.sslip.io`. sslip.io maps
-the hostname to the VM's current public IP. That IP is ephemeral, so stopping
-the VM changes the hostname. Replacing it with a static IP and an owned domain
-is on the [roadmap](ROADMAP.md).
+The backend currently uses address-derived DNS. A VM address change requires
+reconciliation of backend DNS, frontend settings and proxy configuration. An owned
+backend domain and stable endpoint are on the [roadmap](ROADMAP.md).
 
 ## Frontend
 
 - **Stack:** React 19, TypeScript 5, Vite 8, React Router 7, TanStack Query,
-  Tailwind CSS, Framer Motion, Zod.
+  Tailwind CSS 4, Framer Motion, Zod.
 - **Rendering:** `npm run build` runs `vite build`, then
   `scripts/prerender.mjs` uses a headless Chromium to write a real HTML
   document for every maintained route (title, description, canonical, social
   and JSON-LD metadata). Crawlers and no-JavaScript browsers get meaningful
   content; React then takes over in the browser.
-- **Modes:** `VITE_STOREFRONT_MODE=preview` uses bundled demo content and
+- **Modes:** `VITE_STOREFRONT_MODE=preview` uses bundled catalogue content and
   blocks every external mutation. `connected` reads live WordPress data and
   enables login, contact and test checkout. The payment and authentication
   modules are lazy-loaded only in connected mode.
@@ -52,8 +51,11 @@ is on the [roadmap](ROADMAP.md).
   `src/config/settings.ts` and documented in `.env.example`. Nothing secret
   can be placed in the bundle; every `VITE_*` value is public by design.
 - **Content ownership:** WordPress owns products, posts, pages and navigation.
-  `src/content/*.json` owns only cinematic campaign copy, UI messages and
-  fictional media references.
+  `src/content/*.json` owns campaign/UI copy, local catalogue and editorial
+  source manifests. Maintained editorial files seed reviewed CMS changes;
+  connected runtime publication remains authoritative in WordPress.
+  `config/catalogue.json` owns exclusions and reading-time policy; validated
+  navigation data owns header thresholds and maintained page links.
 - **Safety:** CMS HTML is sanitised with DOMPurify. Media and link URLs are
   checked against allowed origins and schemes. Checkout redirects only to the
   fixed Stripe Checkout origin.
@@ -77,7 +79,7 @@ so drafts and missing records are never served as `200`.
 
 ### chronos-bridge (custom plugin, v2.1.0, GPL-2.0-or-later)
 
-An object-oriented PHP 8.1+ plugin with PSR-4 autoloading (`src/`):
+An object-oriented PHP 8.2+ plugin with PSR-4 autoloading (`src/`):
 
 | Module | Responsibility |
 |---|---|
@@ -125,7 +127,7 @@ sequenceDiagram
 ```
 
 The browser never sends prices. Checkout only runs with `sk_test`/`pk_test` keys (live keys can be saved in settings, but checkout then reports itself unavailable),
-demo payments do not reduce stock, and no order emails are sent.
+test payments do not reduce stock, and no order emails are sent.
 
 ### Authentication
 
@@ -153,10 +155,36 @@ customer. Browser-stored tokens remain an XSS-sensitive boundary, mitigated
 - **Single points of failure:** one frontend origin, one backend VM, one
   database on that VM. There is no failover.
 - **Small backend:** e2-micro has 2 shared vCPUs and 1 GB RAM (plus 2 GB
-  swap). It is suitable for a demo, not for sustained real traffic.
+  swap). It is suitable for a website, not for sustained real traffic.
 - **Ephemeral backend IP**, tied to the sslip.io hostname.
 - **No automated off-server backups today** (see
   [AVAILABILITY-AND-DR.md](AVAILABILITY-AND-DR.md)).
 
 These limits are stated deliberately. The path beyond them is in
 [SCALABILITY.md](SCALABILITY.md).
+
+## Business automation boundaries
+
+The [advertising MCP component](../integrations/meta-ads/README.md) runs locally under the owner's OS account. Claude supplies conversation; the server supplies account-scoped tools, durable proposals and a separate interactive approval CLI. It makes no inference API call. Allowed writes create paused awareness campaigns or pause campaigns; budgets, activation, ad sets and creative publication are outside its scope. Actual account connectivity/Claude attachment remains unverified.
+
+The [inventory component](../integrations/inventory/README.md) reads published WooCommerce Store API products, maps ordered galleries, preserves configured-currency prices and persists a private review queue. n8n processes item references sequentially. The installed workflow is manual and unpublished. It neither duplicates WooCommerce products nor writes social listings. The repository's freshness and container fixes require a separate drift-checked rollout to the installed service.
+
+Both components hold local SQLite state and private credentials. They are single-owner tools, separate from the public visitor authentication boundary. Their local state is a future horizontal-scaling constraint: a hosted multi-tenant service would require tenant isolation, durable shared queues/storage, scoped OAuth, concurrency and audit design. The storefront's million-session target does not imply a million concurrent automation executions.
+
+See [CONFIGURATION.md](CONFIGURATION.md) for ownership and [OPERATIONS.md](OPERATIONS.md) for restart/recovery behavior.
+
+## Public project guide
+
+The deployed guide classifies a bounded visitor question into maintained Chronos topics. The browser renders approved answer/source data. It has no customer-record or mutation tools. Conversation context stays in the page; cancellation propagates upstream.
+
+```mermaid
+flowchart LR
+    Visitor --> Proxy[Same-origin proxy and input limits]
+    Proxy --> Guide[Origin, host, policy and quota checks]
+    Guide --> Ledger[Persistent approved spend allowance]
+    Ledger --> Remote[One pinned OpenRouter endpoint]
+    Remote -->|validated topic| Answer[Maintained answer and source]
+    Remote -->|failure or exhaustion| Links[Guidance links and contact]
+```
+
+Configuration/content/policy own provider selection, prompt, knowledge, prices and limits. Remote transport has no automatic provider retry or model substitution. The append journal reserves before transport and preserves uncertain outcomes. Model data, credentials and accounting remain outside release/static artifacts. Local inference is paused by maintained policy and a separate optional Compose profile; the current guide goes directly to the approved remote classifier. The guide and optional model have explicit resource limits and loopback binds; host networking is not tenant network isolation. Current proxy-peer quotas may group users. Actual deployment/recovery and measured limits are in [verification](VERIFICATION.md).

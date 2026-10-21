@@ -26,7 +26,7 @@ Alternative: email **muhammadzahidulislam2222@gmail.com** with the subject
 - A suggested fix, if you have one
 
 Do not include other people's personal data. Do not use real payment cards;
-the demo accepts Stripe **test mode** only.
+the website accepts Stripe **test mode** only.
 
 ### Response targets
 
@@ -42,9 +42,9 @@ service. There is no paid bug bounty.
 
 ### Safe-harbour testing rules
 
-- Test against **your own local copy** (see the README), not the public demo.
+- Test against **your own local copy** (see the README), not the public website.
 - Do not run load tests, denial-of-service tests, automated mass scanning or
-  social engineering against the public demo or its hosts.
+  social engineering against the public website or its hosts.
 - Do not access, modify or delete data that is not yours; stop and report
   as soon as you see someone else's data.
 

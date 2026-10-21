@@ -1,0 +1,7 @@
+{
+  "message": "/assistant-api/message",
+  "health": "/healthz",
+  "generate": "/api/generate",
+  "chatCompletions": "/api/v1/chat/completions",
+  "tokensPerMillion": 1000000
+}

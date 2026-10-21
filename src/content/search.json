@@ -1,7 +1,7 @@
 {
   "image": "/images/hero.webp",
-  "imageAlt": "AI-created Chronos watch concept",
-  "siteDescription": "Chronos is a luxury watch website design demo by Zahidul Islam. Explore original fictional timepieces, cinematic motion and an interactive concept catalogue. Nothing is for sale.",
+  "imageAlt": "AI-created Chronos watch design",
+  "siteDescription": "Chronos is a luxury watch design website by Zahidul Islam. Explore original fictional timepieces, cinematic motion and an interactive design catalogue. Nothing is for sale.",
   "creator": {
     "name": "Zahidul Islam",
     "url": "https://github.com/Zahidulislam2222"
@@ -9,81 +9,135 @@
   "routes": [
     {
       "path": "/",
-      "title": "Luxury Watch Website Design Demo",
-      "description": "Explore Chronos, a cinematic luxury watch website design demo. Original fictional timepieces, interactive galleries and motion design by Zahidul Islam.",
+      "title": "Watches & Journal",
+      "description": "Explore Chronos, a cinematic luxury watch design website. Original fictional timepieces, interactive galleries and motion design by Zahidul Islam.",
       "index": true
     },
     {
       "path": "/shop",
-      "title": "The Concept Watch Collection",
-      "description": "Compare Nocturne, Meridian and Pelagic: three fictional watch designs in the Chronos portfolio demo. Prices and specifications are illustrative.",
+      "title": "The Watch Collection",
+      "description": "Compare Nocturne, Meridian and Pelagic: three fictional watch designs in the Chronos portfolio website. Prices and specifications are illustrative.",
       "index": true
     },
     {
       "path": "/about",
-      "title": "About the Chronos Design Project",
+      "title": "Our Perspective",
       "description": "Discover the design direction behind Chronos, an independent watch storefront portfolio project with fictional products and AI-created imagery.",
       "index": true
     },
     {
       "path": "/blog",
-      "title": "The Journal \u2014 Notes on Watch Design",
-      "description": "Read the Chronos concept journal: perspectives on watch proportions, materials and design, illustrated with fictional timepieces.",
+      "title": "The Journal",
+      "description": "Read the Chronos design journal: perspectives on watch proportions, materials and design, illustrated with fictional timepieces.",
       "index": true
     },
     {
       "path": "/contact",
-      "title": "Contact and Project Feedback",
-      "description": "Find the Chronos developer's public contact profile or draft a note on your device. This demo does not submit messages or collect contact details.",
+      "title": "Contact Chronos",
+      "description": "Find the Chronos developer's public contact profile or draft a note on your device. This website does not submit messages or collect contact details.",
       "index": true
     },
     {
       "path": "/privacy",
-      "title": "Privacy and Browser Storage",
-      "description": "How the Chronos demo uses local selection storage, hosting and security providers. Clear your saved selection and find privacy contact information.",
+      "title": "Privacy",
+      "description": "How the Chronos website uses local selection storage, hosting and security providers. Clear your saved selection and find privacy contact information.",
       "index": true
     },
     {
       "path": "/terms",
-      "title": "Demo Terms and Image Disclosures",
-      "description": "Chronos is a portfolio demonstration, not a watch retailer. Read about fictional products, illustrative prices and AI-created visual content.",
+      "title": "Terms of Use",
+      "description": "Chronos is a portfolio website, not a watch retailer. Read about fictional products, illustrative prices and AI-created visual content.",
       "index": true
     },
     {
       "path": "/accessibility",
-      "title": "Accessibility and Motion Controls",
+      "title": "Accessibility",
       "description": "Explore Chronos using keyboard navigation, reduced motion and static image fallbacks. Find accessibility feedback and known limitations.",
       "index": true
     },
     {
       "path": "/cart",
-      "title": "Your Demo Selection",
+      "title": "Shopping Bag",
       "description": "Review fictional timepieces saved on this device. No order is created.",
       "index": false
     },
     {
       "path": "/checkout",
-      "title": "Review Your Demo Selection",
-      "description": "Chronos demonstration only. Checkout and payments are disabled.",
+      "title": "Review Your Selection",
+      "description": "Chronos website only. Checkout and payments are disabled.",
       "index": false
     },
     {
       "path": "/checkout/success",
-      "title": "Demo Checkout Information",
-      "description": "No purchase or payment is processed by this demonstration.",
+      "title": "Checkout Information",
+      "description": "No purchase or payment is processed by this website.",
       "index": false
     },
     {
       "path": "/account",
-      "title": "Demo Account Information",
-      "description": "No accounts are created by this demonstration.",
+      "title": "Account Information",
+      "description": "No accounts are created by this website.",
       "index": false
     }
   ],
+  "routeAliases": {
+    "/my-account": "/account"
+  },
   "productSuffix": "Fictional Watch Design",
   "productDisclosure": "A fictional Chronos timepiece with AI-created imagery. Prices and specifications are illustrative; nothing is for sale.",
   "notFound": {
     "title": "Page Not Found",
-    "description": "This page does not exist. Explore the Chronos design demo from the home page."
+    "description": "This page does not exist. Explore the Chronos design website from the home page."
+  },
+  "connected": {
+    "siteDescription": "Chronos is a WordPress-powered watch portfolio with an illustrative catalogue, accounts, a saved contact inbox and Stripe test checkout. No goods are shipped.",
+    "customPagePaths": [
+      "/",
+      "/shop",
+      "/blog",
+      "/cart",
+      "/checkout",
+      "/checkout/success",
+      "/account",
+      "/my-account",
+      "/contact"
+    ],
+    "routes": [
+      {
+        "path": "/",
+        "description": "Explore the Chronos watch portfolio, published catalogue and journal. Accounts, saved contacts and checkout demonstrate real software workflows with test payments only."
+      },
+      {
+        "path": "/shop",
+        "description": "Browse the published WordPress watch catalogue. Images and specifications are illustrative; server-checked checkout accepts test payments only."
+      },
+      {
+        "path": "/blog",
+        "description": "Read the published Chronos journal, with perspectives on watch design, materials and craftsmanship."
+      },
+      {
+        "path": "/contact",
+        "description": "Save a message in the Chronos contact inbox or find the developer’s public contact profile. Do not include sensitive information."
+      },
+      {
+        "path": "/cart",
+        "description": "Review your saved watch selection. Prices and availability are checked by the server when starting test checkout."
+      },
+      {
+        "path": "/checkout",
+        "title": "Test Checkout",
+        "description": "Sign in to start hosted Stripe test checkout. No real charge is made and no goods are shipped."
+      },
+      {
+        "path": "/checkout/success",
+        "title": "Test Payment Verification",
+        "description": "Check the server-verified status of your Stripe test payment and return to your account or saved selection."
+      },
+      {
+        "path": "/account",
+        "title": "Your Account",
+        "description": "Create a Chronos account or sign in to view your test-order history. Do not reuse a password from another service."
+      }
+    ]
   }
 }

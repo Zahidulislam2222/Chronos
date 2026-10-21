@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { content } from "@/content";
 import { isPreview } from "@/config/settings";
 import { useSite } from "@/hooks/use-site";
+import { navigationSettings } from "@/config/navigation";
 export default function Footer() {
   const site = useSite();
   return (
@@ -14,13 +15,16 @@ export default function Footer() {
             </Link>
             <p>{content.footer.intro}</p>
           </div>
-          <nav aria-label="Footer navigation">
-            {[...(site.data?.navigation ?? content.nav), ...content.footer.links].filter((n,i,a)=>a.findIndex(x=>x.href===n.href)===i).map((n) => (
-              <Link key={n.href} to={n.href}>
-                {n.label}
-              </Link>
+          <div className="footer-navigation">
+            {navigationSettings.footerGroups.map(group => (
+              <nav key={group.title} aria-label={group.title}>
+                <h2>{group.title}</h2>
+                {(group.usePrimaryNavigation ? site.data?.navigation ?? content.nav : group.links)
+                  .filter((link, index, links) => links.findIndex(item => item.href === link.href) === index)
+                  .map(link => <Link key={link.href} to={link.href}>{link.label}</Link>)}
+              </nav>
             ))}
-          </nav>
+          </div>
         </div>
         <div className="footer-bottom">
           <span>{content.footer.copyright}</span>

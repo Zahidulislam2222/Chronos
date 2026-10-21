@@ -1,0 +1,102 @@
+/* Shared navigation and information-page presentation. */
+.footer-navigation {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 44px;
+  width: min(100%, 590px);
+}
+.footer-top .footer-navigation nav {
+  grid-template-columns: 1fr;
+  align-content: start;
+  gap: 12px;
+  font-size: 12px;
+}
+.footer-navigation h2 {
+  color: #aaa69a;
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.footer-navigation a {
+  width: fit-content;
+  padding-block: 5px;
+}
+.page-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--readable-muted);
+  margin-bottom: 64px;
+}
+.page-breadcrumb a:hover {
+  color: var(--ink);
+}
+.information-page {
+  padding-block: 38px 110px;
+}
+.information-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(48px, 8vw, 128px);
+  border-top: 1px solid var(--line);
+  padding-top: 56px;
+}
+.information-heading h1 {
+  font-size: clamp(44px, 5vw, 76px);
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+.information-heading .text-link {
+  display: inline-block;
+  margin-top: 34px;
+}
+.information-grid .wordpress-content {
+  font-size: 15px;
+  line-height: 1.95;
+}
+.information-grid .wordpress-content > :first-child {
+  margin-top: 0;
+}
+@media (max-width: 1100px) {
+  .desktop-nav,
+  .account-link {
+    display: none;
+  }
+  .mobile-menu {
+    display: flex;
+  }
+  .footer-top {
+    flex-direction: column;
+    gap: 44px;
+  }
+  .footer-navigation {
+    width: 100%;
+  }
+}
+@media (max-width: 760px) {
+  .footer-navigation {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 24px;
+  }
+  .information-page {
+    padding-block: 26px 64px;
+  }
+  .page-breadcrumb {
+    margin-bottom: 32px;
+  }
+  .information-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding-top: 32px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    /* Override the global near-zero duration; header needs no transition callbacks. */
+    transition: none !important;
+  }
+}

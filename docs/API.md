@@ -13,9 +13,9 @@ Base URLs:
 | Environment | GraphQL | REST |
 |---|---|---|
 | Local Docker | `http://localhost:8888/graphql` | `http://localhost:8888/wp-json/chronos/v1/` |
-| Public demo backend | `https://chronosbackend.35-222-94-93.sslip.io/graphql` | `https://chronosbackend.35-222-94-93.sslip.io/wp-json/chronos/v1/` |
+| Public website backend | `https://chronosbackend.35-222-94-93.sslip.io/graphql` | `https://chronosbackend.35-222-94-93.sslip.io/wp-json/chronos/v1/` |
 
-The public demo backend is a portfolio system on a single free-tier VM. Do not
+The public website backend is a storefront system on a single existing VM. Do not
 load-test it, scan it aggressively or use it as a dependency. Run the stack
 locally instead (see the [README](../README.md#getting-started)).
 
@@ -95,7 +95,7 @@ configured.
 
 ## Stability
 
-This is a portfolio project. Endpoints may change between releases; breaking
+This is an open-source project. Endpoints may change between releases; breaking
 changes are recorded in [CHANGELOG.md](../CHANGELOG.md). There is no
 versioned public API contract or deprecation window yet. A versioned contract
 is part of the [roadmap](ROADMAP.md).

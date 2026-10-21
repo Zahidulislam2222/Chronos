@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+.venv
+ci_tests
+__pycache__
+build
+dist
+*.egg-info
+deploy
+state

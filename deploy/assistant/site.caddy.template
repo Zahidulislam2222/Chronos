@@ -1,0 +1,14 @@
+{{PUBLIC_HOST}} {
+    handle {{MESSAGE_PATH}} {
+        request_body {
+            max_size {{BODY_BYTES}}
+        }
+        reverse_proxy {{GUIDE_ADDRESS}} {
+            header_up Host {{GUIDE_ADDRESS}}
+            header_up X-Chronos-Client-IP {remote_host}
+        }
+    }
+    handle {
+        reverse_proxy {{STOREFRONT_ADDRESS}}
+    }
+}

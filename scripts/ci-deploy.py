@@ -94,7 +94,7 @@ def deploy_backend():
                 for line in log_result["data"]["content"].strip().split("\n"):
                     print(f"   {line}")
         except Exception:
-            pass
+            print("   Deploy log unavailable; inspect private server logs.")
 
     return True
 

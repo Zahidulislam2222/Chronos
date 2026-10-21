@@ -5,7 +5,6 @@ import React, {
   useContext,
   useReducer,
   useEffect,
-  useState,
   useCallback,
   ReactNode,
 } from "react";
@@ -98,28 +97,10 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   }
 };
 
-export const CartProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
-  const [state, dispatch] = useReducer(cartReducer, {
-    items: [],
-    isOpen: false,
-  });
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // Connected selections survive sign-in; logout explicitly clears storage.
-  const getStorageKey = useCallback(() => {
-    if (isPreview) return storageKeys.previewCart;
-    return storageKeys.guestCart; // Default cart for guests
-  }, []);
-
-  // Restore only validated selections from browser storage.
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Do not save until restoration finishes.
-      setIsInitialized(false);
-
-      const storageKey = getStorageKey();
+const cartStorageKey = isPreview ? storageKeys.previewCart : storageKeys.guestCart;
+function restoreCart(): CartState {
+  if (typeof window !== "undefined") {
+      const storageKey = cartStorageKey;
       let storedCart: string | null = null;
       try { storedCart = localStorage.getItem(storageKey); } catch { /* Browsing remains available without storage. */ }
 
@@ -144,29 +125,29 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
                     ? [{product:checked.data as Product,quantity:item.quantity}]
                     : [];
                 });
-            dispatch({ type: "SET_CART", payload: items });
+            return {items, isOpen: false};
           }
-        } catch (error) {
-          console.error("Cart corrupted", error);
+        } catch {
+          console.error("Stored cart could not be restored");
         }
-      } else {
-        dispatch({ type: "CLEAR_CART" });
       }
 
-      setIsInitialized(true);
-    }
-  }, [getStorageKey]);
+  }
+  return {items: [], isOpen: false};
+}
 
-  // 2. SAVE DATA (Runs whenever ITEMS change)
+export const CartProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [state, dispatch] = useReducer(cartReducer, undefined, restoreCart);
+
+  // Restoration finishes in the reducer initializer before the first persistence effect.
   useEffect(() => {
-    if (isInitialized) {
-      const storageKey = getStorageKey();
-      try {
-        if (state.items.length) localStorage.setItem(storageKey, JSON.stringify(state.items));
-        else localStorage.removeItem(storageKey);
-      } catch { /* Keep an in-memory selection when storage is unavailable. */ }
-    }
-  }, [state.items, isInitialized, getStorageKey]);
+    try {
+      if (state.items.length) localStorage.setItem(cartStorageKey, JSON.stringify(state.items));
+      else localStorage.removeItem(cartStorageKey);
+    } catch { /* Keep an in-memory selection when storage is unavailable. */ }
+  }, [state.items]);
 
   // Actions...
   const addToCart = (product: Product) =>
@@ -212,7 +193,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
         closeCart,
         totalItems,
         totalPrice,
-        isLoading: !isInitialized,
+        isLoading: false,
       }}
     >
       {children}

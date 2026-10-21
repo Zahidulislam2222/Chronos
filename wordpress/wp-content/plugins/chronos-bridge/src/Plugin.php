@@ -106,7 +106,7 @@ final class Plugin {
 			10,
 			2
 		);
-		// Demo orders never send transactional email to real recipients.
+		// Test orders never send transactional email to real recipients.
 		foreach ( array( 'new_order', 'cancelled_order', 'failed_order', 'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order', 'customer_refunded_order', 'customer_invoice', 'customer_note' ) as $email ) {
 			add_filter(
 				'woocommerce_email_enabled_' . $email,

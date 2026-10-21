@@ -1,3 +1,4 @@
+import { interfaceSettings } from "@/config/interface";
 import { z } from "zod";
 
 const environment = z.object({
@@ -32,9 +33,4 @@ export const motionTokens = {
   heroScale: 0.88,
 };
 
-export const storageKeys = {
-  checkoutAttemptPrefix: "chronos_checkout_attempt_",
-  previewCart: "chronos_preview_selection",
-  guestCart: "chronos_cart_guest",
-  userCartPrefix: "chronos_cart_",
-};
+export const storageKeys = interfaceSettings.storageKeys;

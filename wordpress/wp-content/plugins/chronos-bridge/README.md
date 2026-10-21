@@ -1,5 +1,10 @@
 # Chronos Bridge
 
+<!-- release-current:start -->
+**Release documentation — 21 October 2026:** See the [current release, before/after comparison and engineering roadmap](../../../../docs/RELEASE.md) for deployed scope, verification, security/legal requirements, operations, the path toward 1M+ simultaneous sessions and availability objectives. Component-specific instructions below remain authoritative for setup.
+<!-- release-current:end -->
+
+
 Version 2.1.0 · GPL-2.0-or-later · PHP 8.1+
 
 The main plugin behind the Chronos headless storefront. It is written in
@@ -96,3 +101,11 @@ their own licenses (for example `stripe/stripe-php`, MIT); see
 ## Author
 
 **Zahidul Islam** — [GitHub](https://github.com/Zahidulislam2222)
+
+## Operating contract
+
+WooCommerce is authoritative for checkout products, quantities, prices and payment state. The plugin's `chronos_watch` content type serves editorial/block uses. Preserve test-payment safeguards, ownership checks, request fingerprints, signature verification and receipt reconciliation when modifying the payment path. The retained legacy order marker is a compatibility field; changing it requires a migration plan.
+
+The Composer lock and deployed runtime use Stripe SDK 20.3.1; exact scope and rollback evidence are in [verification](../../../../docs/VERIFICATION.md). `content/runtime.php` is the trusted typed deployment selector and defaults to `vendor`; it contains no provider credential. Keep alternate dependency cohorts immutable while requests may still use them. Do not treat a GitHub merge as a runtime dependency upgrade. Back up state, compare touched remote files, deploy locally verified source/dependencies and prove hash parity. A future HPOS rollout requires real read/write compatibility tests, and a future Redis deployment requires invalidation/failover verification.
+
+[Testing](../../../../docs/TESTING.md) · [Configuration](../../../../docs/CONFIGURATION.md) · [Operations](../../../../docs/OPERATIONS.md) · [API](../../../../docs/API.md). Provider/admin secrets stay private; optional AI helpers require separate provider setup and approval before paid usage.

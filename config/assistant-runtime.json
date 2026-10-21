@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-10-21",
+  "platform": "linux/amd64",
+  "dockerCommand": "docker",
+  "node": {
+    "baseImage": "node@sha256:2c752226d477b4a886378baa95b9af252be59301b725fdb0b7e15208131505a8",
+    "expectedVersion": "v22.23.3",
+    "expectedOpenSslVersion": "3.5.8",
+    "expectedUndiciVersion": "6.28.1",
+    "cryptoPackageVersion": "3.5.9-r0",
+    "sslPackageVersion": "3.5.9-r0",
+    "zlibPackageVersion": "1.3.2-r1",
+    "candidateTag": "chronos-guide-node:20261021-03"
+  },
+  "ollama": {
+    "candidateImage": "ollama/ollama@sha256:8babfca46f115f01978ebe6a954f300e999d9f80d62b0560590d33cfbb422358",
+    "releaseVersion": "0.40.7",
+    "status": "Blocked: local inference paused by owner; patched engine and acceptance required before reactivation"
+  }
+}

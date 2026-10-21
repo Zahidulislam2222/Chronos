@@ -1,6 +1,6 @@
 {
   "brand": {
-    "description": "A WordPress-powered watch demonstration. Browse the live catalogue and journal; checkout uses test payments only."
+    "description": "A WordPress-powered watch website. Browse the live catalogue and journal; checkout uses test payments only."
   },
   "collection": {
     "title": "Find the timepiece that speaks to you."
@@ -13,9 +13,9 @@
     "cta": "Explore the collection"
   },
   "ui": {
-    "shopIntro": "Explore the catalogue, maintained in WordPress.",
+    "shopIntro": "Distinctive timepieces. Considered details. Find your own perspective.",
     "searchPlaceholder": "Search by name, category or movement",
-    "productNote": "Demonstration catalogue. Checkout accepts test payments only; no goods are shipped.",
+    "productNote": "Catalogue imagery and specifications are illustrative. Checkout accepts test payments only; no goods are shipped.",
     "available": "In stock",
     "checkout": "Continue to test checkout"
   },
@@ -27,19 +27,19 @@
   },
   "checkout": {
     "title": "Test checkout",
-    "notice": "Demonstration only. Use Stripe test details; no real money is charged and no goods are shipped. Prices and availability are checked by the server.",
+    "notice": "Test checkout only. Use Stripe test details; no real money is charged and no goods are shipped. Prices and availability are checked by the server.",
     "signIn": "Sign in to continue",
     "submit": "Continue to Stripe test checkout",
-    "pending": "Opening test checkout\u2026",
+    "pending": "Opening test checkout…",
     "unavailable": "Test checkout is currently unavailable. Your bag has been kept.",
     "gift": "Gift wrapping",
     "instructions": "Delivery instructions",
     "retry": "Start a new checkout",
-    "confirming": "Verifying test payment\u2026",
+    "confirming": "Verifying test payment…",
     "paid": "Test payment verified",
     "unpaid": "Payment has not been confirmed. Your bag has been kept.",
     "account": "View your orders",
-    "noEmail": "This demonstration does not send order emails."
+    "noEmail": "This website does not send order emails."
   },
   "account": {
     "title": "Your account",
@@ -59,10 +59,17 @@
     "login": "Sign in",
     "register": "Create account",
     "password": "Password",
-    "notice": "This is a demonstration account. Do not reuse a password from another service.",
-    "pending": "Please wait\u2026",
+    "notice": "This is a Chronos account. Do not reuse a password from another service.",
+    "pending": "Please wait…",
     "failure": "Sign-in or registration failed. Check your details and try again.",
     "name": "Name",
     "email": "Email"
+  },
+  "footer": {
+    "note": "Considered design. A personal perspective.",
+    "copyright": "Chronos — Watches & Journal."
+  },
+  "preview": {
+    "notice": "Catalogue prices and availability come from the store. Checkout uses test payments only; no goods are shipped."
   }
 }

@@ -2,6 +2,7 @@ import { settings, isPreview } from "@/config/settings";
 import { previewCatalogue, content } from "@/content";
 import { Product, BlogPost } from "@/lib/mockData";
 import { wordpressMedia, wordpressText } from "@/lib/wordpress";
+import { catalogueSettings } from "@/config/catalogue";
 
 interface WPProduct {
   databaseId: number;
@@ -323,7 +324,7 @@ function transformProduct(node: WPProduct): Product & { databaseId: number } {
     description: node.description || "",
     shortDescription,
     image: imageUrl,
-    gallery: galleryImages.length > 0 ? galleryImages : [imageUrl],
+    gallery: [...new Set([imageUrl, ...galleryImages])],
     category: node.productCategories?.nodes?.[0]?.name || "Watch",
     brand: content.brand.name,
     inStock: node.stockStatus === "IN_STOCK" && Number.isFinite(price) && price > 0,
@@ -349,7 +350,7 @@ function transformPost(
     },
     date: new Date(node.date).toLocaleDateString(),
     category: node.categories?.nodes?.[0]?.name || "Journal",
-    readTime: "5 min read",
+    readTime: catalogueSettings.readingTimeLabel.replace("{minutes}", String(Math.max(1, Math.ceil(stripHtml(node.content).trim().split(/\s+/).length / catalogueSettings.readingWordsPerMinute)))),
     comments: node.comments?.nodes || [],
   };
 }
@@ -425,7 +426,9 @@ export async function updateUserName(userId: string, name: string) {
 
 export async function fetchProducts(): Promise<Product[]> {
   if (isPreview) return previewCatalogue.products;
-  return (await fetchConnection<WPProduct>(PRODUCTS_QUERY, "products")).map(transformProduct);
+  return (await fetchConnection<WPProduct>(PRODUCTS_QUERY, "products"))
+    .filter(product => !catalogueSettings.excludedProductIds.includes(product.databaseId))
+    .map(transformProduct);
 }
 
 export async function fetchProductBySlug(
@@ -436,13 +439,15 @@ export async function fetchProductBySlug(
       previewCatalogue.products.find((product) => product.slug === slug) || null
     );
   const data = await fetchGraphQL(SINGLE_PRODUCT_QUERY, { slug });
-  if (!data?.product) return null;
+  if (!data?.product || catalogueSettings.excludedProductIds.includes(data.product.databaseId)) return null;
   return transformProduct(data.product);
 }
 
 export async function fetchPosts(): Promise<BlogPost[]> {
   if (isPreview) return previewCatalogue.posts;
-  return (await fetchConnection<WPPost>(POSTS_QUERY, "posts")).map(transformPost);
+  return (await fetchConnection<WPPost>(POSTS_QUERY, "posts"))
+    .filter(post => !catalogueSettings.excludedPostIds.includes(post.databaseId))
+    .map(transformPost);
 }
 
 async function fetchConnection<T>(query: string, field: string): Promise<T[]> {
@@ -467,7 +472,7 @@ export async function fetchPostBySlug(slug: string): Promise<BlogPost | null> {
   if (isPreview)
     return previewCatalogue.posts.find((post) => post.slug === slug) || null;
   const data = await fetchGraphQL(SINGLE_POST_QUERY, { slug });
-  if (!data?.post) return null;
+  if (!data?.post || catalogueSettings.excludedPostIds.includes(data.post.databaseId)) return null;
   return transformPost(data.post);
 }
 

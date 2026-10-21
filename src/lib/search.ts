@@ -3,20 +3,28 @@ import raw from "@/content/search.json";
 import { previewCatalogue, content } from "@/content";
 import { settings, isPreview } from "@/config/settings";
 
+const connectedSearch = z.object({
+  siteDescription: z.string().min(1), customPagePaths: z.array(z.string().startsWith("/")),
+  routes: z.array(z.object({path:z.string().startsWith("/"),title:z.string().min(1).optional(),description:z.string().min(1)}).strict()),
+}).strict().parse(raw.connected);
 export const searchContent = z.object({
   image: z.string().startsWith("/images/"), imageAlt: z.string().min(1),
   siteDescription: z.string().min(1),
   creator: z.object({ name: z.string().min(1), url: z.string().url() }),
   routes: z.array(z.object({ path: z.string().startsWith("/"), title: z.string().min(1), description: z.string().min(1), index: z.boolean() })),
+  routeAliases: z.record(z.string().startsWith("/"), z.string().startsWith("/")),
   productSuffix: z.string(), productDisclosure: z.string(),
   notFound: z.object({ title: z.string(), description: z.string() }),
-}).parse(raw);
+}).parse(isPreview ? raw : {...raw,siteDescription:connectedSearch.siteDescription,
+  routes:raw.routes.map(route=>({...route,...connectedSearch.routes.find(override=>override.path===route.path)}))});
+
+export const cmsOwnsPage = (pathname: string) => !connectedSearch.customPagePaths.includes(pathname);
 
 export function pageSearch(pathname: string, remote?: {title:string;description:string;image?:string;kind?:string}) {
   const path = pathname.replace(/\/index\.html$/, "").replace(/\/+$/, "") || "/";
   const product = isPreview ? previewCatalogue.products.find(p => path === `/product/${p.slug}`) : undefined;
   const post = isPreview ? previewCatalogue.posts.find(p => path === `/blog/${p.slug}`) : undefined;
-  const entry = searchContent.routes.find(p => p.path === path);
+  const entry = searchContent.routes.find(p => p.path === (searchContent.routeAliases[path] ?? path));
   const title = remote?.title || (product ? `${product.name} — ${searchContent.productSuffix}` : post ? post.title : entry?.title || searchContent.notFound.title);
   const description = remote?.description || (product ? `${product.shortDescription} ${searchContent.productDisclosure}` : post ? post.excerpt : entry?.description || searchContent.notFound.description);
   const canonical = settings.siteUrl ? new URL(path, settings.siteUrl).href : "";

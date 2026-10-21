@@ -1,11 +1,39 @@
 # Changelog
 
+## 2026-10-21 — final runtime and public handover
+
+- Deploy patched frontend and remote AI runtime; pause vulnerable local inference with model data retained. Preserve the existing total inference cap and uncertain reservations.
+- Upgrade deployed Stripe PHP SDK 20.3.1 through an immutable cohort, native rollback/compatibility checks and hosted test-payment reconciliation without shared PHP restarts.
+- Verify frontend rollback/resume, guide journal-preserving recovery, exact artifact parity, real remote tasks and public commerce/browser journeys.
+- Publish all first-party components, nine READMEs, source/dependency security gates and comprehensive architecture/legal/security/operations/capacity/availability roadmap.1M+ simultaneous sessions and99%/99.9% remain staged objectives.
+
+
+## 12 October 2026 — Complete source publication and operating documentation
+
+- Publish the storefront navigation/content update, advertising MCP component and private n8n inventory workflow source.
+- Update all maintained READMEs and add configuration, testing and operations guides. Expand the 1M+ concurrent-session architecture, 99% availability objective, roadmap, privacy/legal and security runbooks.
+- Fix inventory container paths/listening, stale batch processing and unbounded validation errors; add regression coverage. Installed-service rollout remains separate.
+
+
 Notable changes to Chronos. Format based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Dates are UTC.
+
+## 2026-10-12 — Storefront completion and deployment
+
+- Deployed direction-aware sticky navigation, grouped footer and responsive CMS pages.
+- Retained five products with illustrative imagery and completed three journal articles; preserved four unfinished records as drafts.
+- Added one runtime/build publication policy, deduplicated ordered product galleries and calculated article reading time.
+- Replaced the older CSS dependency chain with Tailwind 4 and patched source-map tooling; fresh frontend npm audit has zero advisories.
+- Restored visible article source links and scoped content typography; corrected checkout wording while retaining internal order compatibility.
+- Verified 222 live browser checks, 107 navigation checks, a completed Stripe test payment, native persistence/unchanged stock, public HTTP statuses and exact deployment hashes.
+- Independent source and release reviews passed after fixes. Checkout remains test-only; no goods are shipped. Browser minimums are Safari 16.4+, Chrome/Edge 111+, Firefox 128+.
 
 ## [Unreleased] — open-source release
 
 ### Added
+- Direction-aware sticky navigation with keyboard/drawer access and reduced-motion support.
+- Grouped footer links, primary Contact link, breadcrumbs and responsive CMS information pages.
+- Shared public catalogue exclusion policy for runtime reads and generated routes.
 - Public documentation set in `docs/`: architecture, API reference,
   deployment and CI/CD, 1M+ user target architecture, availability and
   disaster recovery, roadmap, threat model and legal/compliance readiness.
@@ -44,7 +72,7 @@ Notable changes to Chronos. Format based on
   full sequence was run from a clean checkout.
 - `.gitignore` now covers the add-on folder names created by the release-zip
   installs, so third-party plugins cannot be committed by accident.
-- Missing spaces in older docs (for example "actual404", "PHP38tests").
+- Missing spaces in older docs (for example "actual404", "PHP38 tests").
 
 ### Security
 - The backup workflow no longer uploads database dumps as GitHub Actions

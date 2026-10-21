@@ -1,0 +1,9 @@
+# Add only after authorization: -f compose.yaml -f compose.remote.yaml
+services:
+  guide:
+    environment:
+      CHRONOS_ASSISTANT_OPENROUTER_KEY_FILE: /run/secrets/openrouter
+      CHRONOS_ASSISTANT_BUDGET_FILE: /state/budget.jsonl
+    volumes:
+      - ${CHRONOS_GUIDE_STATE_DIRECTORY:?Set private persistent state directory}:/state:rw
+      - ${CHRONOS_GUIDE_KEY_FILE:?Set private key file}:/run/secrets/openrouter:ro

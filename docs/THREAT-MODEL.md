@@ -3,7 +3,7 @@
 Scope: the public storefront, the WordPress backend (`chronos-bridge`,
 `chronos-blocks`, bundled `wp-graphql-cors`), Stripe test checkout, the CI
 pipeline and the release process. Method: assets → trust boundaries → STRIDE
-threats → controls → residual risk. Reviewed September 2026; review again
+threats → controls → residual risk. Reviewed 12 October 2026; review again
 after any change to authentication, payments or hosting.
 
 ## Assets
@@ -63,7 +63,7 @@ flowchart LR
 | T5 | Tampered release or drift on the server | Deploys | Local-first releases, SHA-256 parity, immutable release directories | Manual process; relies on operator discipline |
 | T6 | Malicious pull request steals CI secrets | GitHub Actions | Quality jobs need no secrets; deploy jobs run only on manual dispatch from `main` with an opt-in variable; `permissions: contents: read` | Workflow changes need careful review |
 | R1 | **Repudiation**: disputes over orders or messages | Orders, contact | Records persisted with timestamps; Stripe keeps its own event log | No central audit log; phase 2 adds structured logs |
-| I1 | **Information disclosure**: secrets in source or history | Repository | Secrets only in server config/env; `detect-private-key` + gitleaks + bandit pre-commit hooks, gitleaks in the Security workflow (allow-list in `.gitleaksignore` for the two sample keys), GitHub secret scanning with push protection; `.gitignore` covers env, wp-config, SQL, credentials | Full-history scan flags two **public sample keys** inside third-party `php-jwt` README files in an old commit (upstream documentation examples, not project credentials) |
+| I1 | **Information disclosure**: secrets in source or history | Repository | Secrets only in server config/env; `detect-private-key`, gitleaks and Bandit hooks; gitleaks CI; `.gitignore` covers private environment/recovery files. Verify GitHub secret-scanning and push-protection settings separately | Full-history scans identify two public example keys in historical third-party JWT documentation; exact upstream provenance is recorded in `.gitleaksignore` |
 | I2 | Backups exposed | CI artifacts | Artifact upload disabled for this public repository | No off-server backups until phase 1 |
 | I3 | Error details leak internals | REST responses | Standard WP error objects; no stack traces returned | Keep `WP_DEBUG_DISPLAY` off in production |
 | I4 | Direct-to-origin bypass of CDN protections | Frontend and backend origins | Loopback-bound container; Caddy only serves the configured hostname | Origin reachable with the right Host header; phase 2: origin allow-listing, authenticated origin pulls or tunnel |
@@ -86,3 +86,17 @@ That is required before real commerce.
 ## Reporting
 
 See [SECURITY.md](../SECURITY.md).
+
+## Owner automation trust boundaries
+
+| Threat | Implemented control | Residual risk / rollout gate |
+|---|---|---|
+| Prompt injection from reports or conversation causes an advertising write | Durable proposals, separate interactive owner approval, account/config/before-state binding, paused-only operation policy | Owner must inspect intent; trusted local OS access remains privileged; actual account setup unverified |
+| Replayed or uncertain provider request duplicates a change | Durable claim and uncertain status; explicit reconciliation before retry | Provider behavior and account permissions require live verification |
+| Workflow intake or queue read by an unauthorized caller | Constant-time service token check, separate intake credentials, host loopback binding, private volumes | Secure tunnel/owner access and rotation required; no public multi-tenant authorization |
+| Hostile gallery URL or source response | Exact HTTPS image-host/port policy, bounded complete pagination, redirects disabled, no image downloading | Public source can change during pagination; source schema/data remain untrusted |
+| Old batch restores removed products or old prices | Persistent latest-batch marker, stale pending-item rejection and atomic reconciliation | Repository upgrade must be deployed and reverified on the installed service |
+| Settings or parser exception exposes credentials/raw source | Hidden validation inputs, bounded startup and image-validation errors | Keep debug/structured exceptions and execution payloads private |
+| Stolen n8n state or execution logs | Private volumes, encryption key, execution pruning, restricted nodes | Backup both data and encryption key securely; credential encryption does not protect all execution payloads |
+
+Review this model when adding supplier fetchers, marketplace writes, broader campaign mutations, remote MCP hosting or multiple tenants. None of those extensions inherits sufficient authorization from a trusted single-owner tool. See [OWASP ASVS](https://owasp.org/projects/asvs/) for control requirements and [OPERATIONS.md](OPERATIONS.md) for recovery.

@@ -1,7 +1,7 @@
 # Roadmap
 
-Chronos is a working portfolio demo today. This roadmap takes it from a
-single free-tier VM to a system designed for 1M+ concurrent users with
+Chronos is a working storefront website today. This roadmap takes it from a
+single existing VM to a system designed for 1M+ concurrent users with
 99.9% availability. It also covers what a real business would need before
 selling real watches.
 
@@ -9,7 +9,7 @@ selling real watches.
 phase that costs money must be priced with current provider calculators and
 approved before anything is provisioned.
 
-## Phase 0: Done (September 2026)
+## Phase 0: Delivered foundations (September–October 2026)
 
 - [x] Headless WordPress/WooCommerce backend with custom `chronos-bridge` and
       `chronos-blocks` plugins
@@ -25,7 +25,7 @@ approved before anything is provisioned.
 - [x] Public documentation: architecture, API, deployment, security, threat
       model, compliance, scalability, availability
 
-## Phase 1: Operate the demo reliably (target: 99% measured)
+## Phase 1: Operate the website reliably (target: 99% measured)
 
 Cost: small (some items may fit free tiers; verify before use).
 
@@ -93,17 +93,38 @@ Required before selling real products to real customers. See
 
 ## Engineering backlog (smaller items)
 
+- Dependency parser replacements and regression guards were merged through the
+  reviewed security release. Keep full audits and the 19 block tests active;
+  re-run them against each new lockfile and generated-asset release.
+
 - Move the browser JWT out of script-readable storage (HttpOnly cookie with
   CSRF protection, or a backend-for-frontend).
 - Versioned public API contract with a deprecation policy.
 - Regenerate HTML snapshots automatically on publish (webhook → build).
 - Reduce CSP `'unsafe-inline'` for styles.
 - Resume Dependabot version-update PRs with grouped updates.
-- Deploy the stripe-php 20 upgrade to the backend VM (`composer install --no-dev`)
-  and re-run a test-mode checkout against it.
+- Maintain the deployed Stripe SDK 20 cohort; every future dependency upgrade repeats
+  native compatibility, immutable release, rollback and hosted test reconciliation.
 - Automated browser end-to-end tests in CI against a disposable stack.
 - WooCommerce product seed script for local development (from
   `src/content/catalogue.json`), so a fresh clone has a working connected
   catalogue.
 - Faster local setup: batch the WP-CLI calls in `sample-data.sh` into one
   `wp eval-file` run.
+
+## Integration rollout and maintainability track
+
+Accountable maintainer/operator: Zahidul Islam. Business and legal launch work needs the responsible business owner and qualified advisers. Phase1 is required before an uptime commitment or commercial launch; each later stage follows funded scope and its measured exit. Unverified work blocks the corresponding claim, not preservation of the existing test-payment storefront.
+
+
+| Stage | Current state / required exit |
+|---|---|
+| Storefront content/navigation | Deployed: five products with illustrative imagery, three complete articles, responsive pages, direction-aware header; browser/payment/hash evidence in VERIFICATION |
+| Advertising tools | Local MCP/CLI behavior tested; connect the owner's Meta account and Claude host, verify read-only account scope, then separately approve a paused-only mutation |
+| Inventory workflow | Private installed n8n, manually exercised complete catalogue flow; imported graph remains unpublished and queues private drafts |
+| Inventory service upgrade | Review-discovered freshness, bounded-error and container fixes are in source; drift-check/back up installed state, deploy scoped files, restart and verify hashes/real manual flow before marking rollout complete |
+| Dependency rollout | Completed SDK 20.3.1 immutable rollout, native rollback, parity and hosted test reconciliation; future SDK upgrades repeat these gates |
+| External publication | Design actual destination adapters, OAuth/scopes, media contracts, review/approval, idempotency and takedown rules before enabling social writes |
+| CI and handoff | Keep all package gates and secret scans active, use reviewed PRs and verified commit attribution; preserve project-local interruption checkpoints |
+
+The business owner prioritizes each phase; the maintainer estimates implementation/testing effort; the operator approves recurring infrastructure and traffic costs. Dates follow funded scope and measured exits. Phase 1 establishes the 99% service objective; later scale stages increase capacity and resilience toward 1M+ simultaneous sessions and 99.9%.
