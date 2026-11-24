@@ -9,7 +9,7 @@ the current failure domains, and what is required for
 
 | SLI (what is measured) | Definition | Objective |
 |---|---|---|
-| Availability | Share of 60-second external probes where `/`, `/shop` and `/healthz` return HTTP 200 with the expected text within 10 s (`config/operations.json`) | **99%** per rolling 30 days (phase 1) → **99.9%** (phase 3) |
+| Availability | Share of scheduled external probes (every 30 minutes today; 60 seconds is the target) where `/`, `/shop`, `/healthz` and the backend health endpoint return HTTP 200 with the expected text within 10 s (`config/operations.json`) | **99%** per rolling 30 days (phase 1) → **99.9%** (phase 3) |
 | Latency | p95 time to first byte of cached HTML from the probe regions | Target to be set from the first 30 days of real data |
 | Checkout correctness | Share of paid Stripe sessions reconciled to a paid WooCommerce order | 100%; any mismatch is an incident |
 
@@ -36,7 +36,7 @@ reliability fixes ship until the budget recovers.
 | One frontend origin, one backend VM, database on that VM | Any host failure is a full outage for dynamic features |
 | Provider infrastructure commitments are separate from application SLIs | They do not measure WordPress, MySQL, TLS, release correctness or business-flow availability |
 | Ephemeral IP behind the sslip.io hostname | Stopping the VM changes the backend address. It must not be stopped |
-| No automated off-server backup today (see below) | A disk loss would mean data loss back to the last manual backup |
+| Nightly encrypted off-host backup since 25 November 2026 (see below) | A disk loss loses at most about one day of data; rebuilding the VM itself is not yet measured |
 | Pre-rendered frontend HTML | The storefront shell and editorial snapshots can still load while the backend is down; live catalogue, login and checkout cannot |
 
 The initial 99% objective requires external monitoring, alert ownership and
@@ -48,6 +48,14 @@ services are engineering requirements for the later 99.9% stage in the
 
 Available now:
 
+- **Scheduled external probe** (`.github/workflows/availability.yml`, every
+  30 minutes on GitHub-hosted runners): storefront `/`, `/shop`, `/healthz`
+  and backend `/wp-json/chronos/v1/health` count toward availability;
+  `/wp-json/chronos/v1/health/backup` is an owner alert that does not count
+  as downtime. One delayed retry separates a blip from an outage. A failed
+  run notifies the repository owner through GitHub; annotations label it as
+  storefront downtime or an owner-only alert. A 30-minute interval cannot
+  measure 99% precisely; it detects sustained outages.
 - `npm run monitor:once` checks the configured paths and appends a
   timestamped JSON line. It exits non-zero on failure.
 - The frontend container has a Docker health check on `/healthz` and
@@ -102,15 +110,23 @@ There is no staffed 24/7 on-call today. That is a phase 3 requirement.
 
 ## Backups
 
-### Current state (honest)
+### Current state
 
-- The weekly backup workflow wrote a database dump and an uploads archive on
-  the server and uploaded them as GitHub Actions artifacts. Its last
-  automated run was on 6 July 2026.
-- Because this repository is **public**, workflow artifacts can be downloaded
-  by anyone with read access. The artifact upload is therefore **disabled**
-  (commented out) and the workflow is off. **No automated off-server backup
-  is running right now.** This is the most important operational gap.
+- **Nightly encrypted off-host copy** ([deploy/backup](../deploy/backup/README.md)):
+  at 03:17 UTC the frontend VPS pulls a consistent database dump, uploads,
+  `wp-config.php` and the nginx site, encrypted on the backend to an OpenPGP
+  key whose private half only the owner holds. 14 days are kept. The backend
+  accepts an acknowledgement only for the exact archive it produced, and the
+  health probe alerts when the last acknowledged copy is older than 30 hours.
+- **Restore drill, 24-25 November 2026:** the first archive (1.1 MB) was
+  decrypted on the owner workstation, every file verified against its
+  manifest, and restored into an isolated MariaDB 10.6 + WordPress with no
+  outbound network. Catalogue, pages, posts and the account guards worked and
+  record counts matched production. Data restore to a verified application
+  took about 67 seconds once a database engine existed.
+- Not yet covered: provisioning a replacement VM, TLS and the backend address
+  change, so a full-host RTO is still unmeasured. The old weekly
+  Actions-artifact workflow stays disabled because this repository is public.
 
 ### Target design
 
@@ -128,15 +144,15 @@ A backup that has never been restored is not a backup.
 
 | Objective | Today | Phase 1 target | Phase 3 target |
 |---|---|---|---|
-| **RPO** (max data loss) | Undefined (no running backups) | 24 h | ≤ 5 min (PITR) |
-| **RTO** (time to restore service) | Undefined | 4 h | ≤ 15 min (zone failover), ≤ 4 h (region loss) |
+| **RPO** (max data loss) | ≤ 24 h by design (nightly copy; alert after 30 h) | 24 h | ≤ 5 min (PITR) |
+| **RTO** (time to restore service) | Data restore ~67 s measured; full host rebuild unmeasured | 4 h | ≤ 15 min (zone failover), ≤ 4 h (region loss) |
 
 ## Disaster scenarios
 
 | Scenario | Today | Mitigation / runbook |
 |---|---|---|
 | Bad frontend release | Previous immutable release kept | Switch back to the previous release directory; verify hashes and `/healthz` |
-| Bad plugin release | Local source is the source of truth | Redeploy the previous commit's plugin files; re-hash local vs live |
+| Bad plugin release | Immutable backend release directories selected by `content/runtime.php` | `release.sh rollback` switches back atomically (drill: about 8 s, no PHP-FPM reload); re-hash local vs live |
 | Backend VM lost | Full dynamic outage; data at risk | Rebuild from `scripts/gcp-setup.sh` (with `CHRONOS_BACKEND_DOMAIN` set), restore latest DB + uploads, re-issue TLS, update the hostname if the IP changed |
 | Backend IP changes | Hostname and frontend config break | Avoid stopping the VM; target: static IP + owned domain |
 | Database corruption / bad migration | No PITR | Restore latest dump into a copy, verify, then switch |

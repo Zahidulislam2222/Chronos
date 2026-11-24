@@ -1,16 +1,16 @@
 {
-  "checkedAt": "2026-10-21",
+  "checkedAt": "2026-11-25",
   "platform": "linux/amd64",
   "dockerCommand": "docker",
   "node": {
-    "baseImage": "node@sha256:2c752226d477b4a886378baa95b9af252be59301b725fdb0b7e15208131505a8",
-    "expectedVersion": "v22.23.3",
-    "expectedOpenSslVersion": "3.5.8",
-    "expectedUndiciVersion": "6.28.1",
-    "cryptoPackageVersion": "3.5.9-r0",
-    "sslPackageVersion": "3.5.9-r0",
+    "baseImage": "node@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a",
+    "expectedVersion": "v22.23.5",
+    "expectedOpenSslVersion": "3.5.9",
+    "expectedUndiciVersion": "6.29.1",
+    "cryptoPackageVersion": "3.5.9-r1",
+    "sslPackageVersion": "3.5.9-r1",
     "zlibPackageVersion": "1.3.2-r1",
-    "candidateTag": "chronos-guide-node:20261021-03"
+    "candidateTag": "chronos-guide-node:20261125-01"
   },
   "ollama": {
     "candidateImage": "ollama/ollama@sha256:8babfca46f115f01978ebe6a954f300e999d9f80d62b0560590d33cfbb422358",

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-25 — store voice, account privacy, backups and monitoring
+
+- Present Chronos as a working store in its own voice, with one honest line wherever money is involved: checkout runs in Stripe test mode, no card is charged and orders do not ship (checkout, success, bag, cart and product pages; regression-tested). CMS pages, products and journal posts updated on the live backend through a hash-guarded, reversible sync.
+- Stop account enumeration: REST users routes (any letter case), author archives, users sitemap, oEmbed author fields, sign-in errors (including REST application passwords), the WordPress and WooCommerce lost-password forms and GraphQL `user`/`users`/`authorName` now answer identically for real and non-existent accounts. GraphQL debug output, query analyzer and public introspection are forced off, a depth limit always applies, and guest commenters' avatar hashes are hidden.
+- Add `GET /chronos/v1/health` (database, commerce, GraphQL) and a separate `/chronos/v1/health/backup`; a scheduled GitHub Actions probe checks storefront and backend every 30 minutes and alerts the owner.
+- Add nightly encrypted off-host backups with digest-bound acknowledgement, and prove a timed restore into an isolated stack.
+- Rebase the web (nginx 1.30.8) and guide (Node 22.23.5) runtimes on patched Alpine 3.24.4: 0 high or critical findings, down from 22 and 2. Update zod 4.6.7 and DOMPurify 3.4.17; both npm audits report 0.
+- Contact-form retention option and an off-by-default switch for the admin AI reply helper.
+- Track `verification/backend-exposure.sh` and `verification/backup-stream.container.sh`; add AGENTS.md and DESIGN.md.
+
 ## 2026-10-21 — final runtime and public handover
 
 - Pin all integration runtime/development locks to certifi 2026.10.19 using official distribution hashes after [PYSEC-2026-4320](https://raw.githubusercontent.com/pypa/advisory-database/main/vulns/certifi/PYSEC-2026-4320.yaml); fresh complete-lock audits report zero known vulnerabilities.

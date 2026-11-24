@@ -6,9 +6,9 @@
       "paragraphs": [
         "Chronos is a study in considered collecting. A space to slow down, look closely, and discover the details that make an object worth keeping.",
         "A watch is both useful and deeply personal. Its proportions, materials and small rituals become part of the way we move through a day.",
-        "The collection explores different approaches to watch design, from restrained dress styles to expressive mechanical and sporting studies. Catalogue imagery and specifications are illustrative.",
-        "This is an independent portfolio website, not an established watch manufacturer. The products, specifications and prices illustrate the shopping experience; no items are offered for sale on this website.",
-        "The catalogue and journal are managed in WordPress. This is a non-commercial store, not an offer to sell physical watches."
+        "The collection explores different approaches to watch design, from restrained dress styles to expressive mechanical and sporting studies.",
+        "Chronos is an independent watch studio and online store created by Zahidul Islam. The current collection is an original design series presented with AI-created imagery.",
+        "The catalogue and journal are curated and published by the Chronos studio."
       ]
     },
     {
@@ -26,8 +26,8 @@
       "slug": "terms",
       "title": "Terms of use",
       "paragraphs": [
-        "Chronos is a portfolio website powered by WordPress and WooCommerce. Catalogue records and campaign visuals are illustrative.",
-        "Test checkout does not charge real money or create an agreement to ship goods. Use only Stripe test payment details. No physical products are sold through this website.",
+        "Chronos is an independent watch studio and online store operated by Zahidul Islam, built on WordPress and WooCommerce. Product imagery is AI-created, and specifications describe the original designs.",
+        "Checkout currently runs in Stripe test mode: no card is charged, and an order does not create an agreement to ship goods. Use only Stripe test payment details.",
         "Do not submit confidential information, reuse an important password, or abuse the account, contact or checkout features.",
         "Content and features may change as this website evolves. Report problems through the Contact page."
       ]

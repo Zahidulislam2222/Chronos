@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import Reveal from "@/components/Reveal";
 import { fetchProducts } from "@/utils/api";
 import { content } from "@/content";
+import { isPreview } from "@/config/settings";
 export default function Shop() {
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";
@@ -118,7 +119,7 @@ export default function Shop() {
             </button>
           </div>
         )}
-        <p className="catalogue-note">{content.preview.notice}</p>
+        {isPreview && <p className="catalogue-note">{content.preview.notice}</p>}
       </section>
     </Layout>
   );

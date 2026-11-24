@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace ChronosBridge\Cron;
 
 use ChronosBridge\Cache\TransientCache;
+use ChronosBridge\Configuration\Policy;
 use ChronosBridge\Database\ContactTable;
 
 /**
@@ -54,6 +55,23 @@ final class CleanupJob {
 	 */
 	public static function daily_cleanup(): void {
 		TransientCache::flush();
+		self::apply_contact_retention();
+	}
+
+	/**
+	 * Delete contact submissions older than the configured retention period.
+	 *
+	 * @return int|null Rows deleted, or null when retention is off or the delete failed.
+	 */
+	public static function apply_contact_retention(): ?int {
+		$days = Policy::contact_retention_days();
+		if ( $days < 1 ) {
+			return null;
+		}
+		// submitted_at is stored in site time (current_time( 'mysql' )), so compare on the same clock.
+		$cutoff  = current_datetime()->modify( '-' . $days . ' days' )->format( 'Y-m-d H:i:s' );
+		$deleted = ContactTable::delete_submitted_before( $cutoff );
+		return false === $deleted ? null : $deleted;
 	}
 
 	/**

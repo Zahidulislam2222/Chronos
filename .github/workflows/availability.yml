@@ -1,0 +1,48 @@
+name: Availability
+
+# External probe of the storefront and the backend health endpoint every
+# 30 minutes. A failed run is GitHub's alert: the account that last changed
+# this schedule (the repository owner) receives the failed-workflow
+# notification. Targets are the public repository variables CHRONOS_SITE_URL
+# and CHRONOS_BACKEND_URL; no secrets are used. GitHub disables schedules in
+# public repositories after 60 days without repository activity, so the
+# operations runbook includes re-enabling it.
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+    inputs:
+      drill:
+        description: 'Add a path that must fail, to prove the alert reaches the owner'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: availability
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: Storefront and backend health
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Probe
+        env:
+          CHRONOS_SITE_URL: ${{ vars.CHRONOS_SITE_URL }}
+          CHRONOS_BACKEND_URL: ${{ vars.CHRONOS_BACKEND_URL }}
+          CHRONOS_PROBE_DRILL: ${{ inputs.drill == true && 'true' || 'false' }}
+        run: node scripts/check-availability.mjs

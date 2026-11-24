@@ -193,6 +193,23 @@ final class ContactTable {
 	}
 
 	/**
+	 * Delete submissions received before the cutoff.
+	 *
+	 * @param string $cutoff MySQL datetime in site time (same clock as `submitted_at`).
+	 * @return int|false Rows deleted, or false when the query failed.
+	 */
+	public static function delete_submitted_before( string $cutoff ): int|false {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$result = $wpdb->query(
+			$wpdb->prepare( 'DELETE FROM %i WHERE submitted_at < %s', self::table_name(), $cutoff )
+		);
+
+		return false === $result ? false : (int) $result;
+	}
+
+	/**
 	 * Count submissions by status.
 	 *
 	 * @return array<string, int>
