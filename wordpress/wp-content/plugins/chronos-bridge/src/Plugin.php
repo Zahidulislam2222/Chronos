@@ -13,6 +13,9 @@ use ChronosBridge\Admin\AdminMenu;
 use ChronosBridge\Admin\DashboardWidget;
 use ChronosBridge\Admin\Settings;
 use ChronosBridge\Api\ContactEndpoint;
+use ChronosBridge\Api\HealthEndpoint;
+use ChronosBridge\GraphQL\Hardening as GraphQLHardening;
+use ChronosBridge\Security\PublicExposure;
 use ChronosBridge\Api\WatchEndpoint;
 use ChronosBridge\Api\SiteEndpoint;
 use ChronosBridge\Cache\TransientCache;
@@ -79,6 +82,8 @@ final class Plugin {
 	private function boot(): void {
 		// i18n — load text domain.
 		I18nLoader::register();
+		PublicExposure::register();
+		GraphQLHardening::register();
 		SiteEndpoint::register();
 		add_filter(
 			'rest_pre_serve_request',
@@ -137,6 +142,7 @@ final class Plugin {
 				( new WatchEndpoint() )->register_routes();
 				( new CheckoutEndpoint() )->register_routes();
 				( new WebhookHandler() )->register_routes();
+				( new HealthEndpoint() )->register_routes();
 			}
 		);
 

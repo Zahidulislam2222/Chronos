@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace ChronosBridge\AI;
 
+use ChronosBridge\Configuration\Policy;
 use ChronosBridge\Database\ContactTable;
 
 /**
@@ -23,6 +24,11 @@ final class ContactResponder {
 	 * Register hooks.
 	 */
 	public static function register(): void {
+		// Off unless an operator enables it: it sends a contact's name, email and message to the AI provider.
+		if ( ! Policy::contact_responder_enabled() ) {
+			return;
+		}
+
 		// REST API endpoint.
 		add_action( 'rest_api_init', array( self::class, 'register_rest_routes' ) );
 
@@ -38,7 +44,7 @@ final class ContactResponder {
 	 * Check if AI features are available.
 	 */
 	public static function is_available(): bool {
-		return DescriptionGenerator::is_available();
+		return Policy::contact_responder_enabled() && DescriptionGenerator::is_available();
 	}
 
 	/**
