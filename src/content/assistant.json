@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-20.4",
+  "version": "2026-11-25.1",
   "owner": "Chronos project maintainer",
   "title": "Chronos AI guide",
   "disclosure": "I use AI to find approved Chronos guidance. I can explain this website and help you navigate. I cannot see accounts, orders or messages, or perform actions. Do not enter personal details, passwords or payment information.",
@@ -31,9 +31,9 @@
   "topics": [
     {
       "id": "project",
-      "label": "About this portfolio",
+      "label": "About Chronos",
       "description": "Whether Chronos is a real shop; fictional watches, illustrative specifications and prices, AI-created imagery, no goods sold or shipped.",
-      "answer": "Chronos is an independent watch storefront portfolio demonstration. The watches, prices and specifications are illustrative. Imagery includes AI-created illustrations. Nothing is sold or shipped.",
+      "answer": "Chronos is an independent watch studio and store created by Zahidul Islam. The current collection is an original design series presented with AI-created imagery, so specifications and prices describe the designs. Checkout runs in Stripe test mode: no card is charged and no order ships.",
       "source": {
         "label": "About Chronos",
         "href": "/about"
@@ -51,9 +51,9 @@
     },
     {
       "id": "checkout",
-      "label": "Test checkout",
+      "label": "Checkout",
       "description": "How checkout and the bag work; Stripe test mode, no real charges, no real card information, a test order does not ship. Does not include looking up or changing an existing order.",
-      "answer": "Review your bag before checkout. In preview mode, checkout only reviews your local selection; it does not start a payment. In connected mode, checkout uses Stripe test mode. Never enter real card information. No goods are sold or shipped. I cannot look up an order or confirm a payment.",
+      "answer": "Review your bag, then sign in to continue to Stripe checkout. Checkout runs in Stripe test mode: use Stripe test card details only, never a real card. No card is charged and no order ships. I cannot look up an order or confirm a payment.",
       "source": {
         "label": "Review your bag",
         "href": "/cart"

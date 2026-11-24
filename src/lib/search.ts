@@ -26,7 +26,7 @@ export function pageSearch(pathname: string, remote?: {title:string;description:
   const post = isPreview ? previewCatalogue.posts.find(p => path === `/blog/${p.slug}`) : undefined;
   const entry = searchContent.routes.find(p => p.path === (searchContent.routeAliases[path] ?? path));
   const title = remote?.title || (product ? `${product.name} — ${searchContent.productSuffix}` : post ? post.title : entry?.title || searchContent.notFound.title);
-  const description = remote?.description || (product ? `${product.shortDescription} ${searchContent.productDisclosure}` : post ? post.excerpt : entry?.description || searchContent.notFound.description);
+  const description = remote?.description || (product ? `${product.shortDescription} ${searchContent.productDisclosure}`.trim() : post ? post.excerpt : entry?.description || searchContent.notFound.description);
   const canonical = settings.siteUrl ? new URL(path, settings.siteUrl).href : "";
   const image = settings.siteUrl ? new URL(remote?.image || product?.image || post?.featuredImage || searchContent.image, settings.siteUrl).href : "";
   const index = Boolean(settings.searchIndexable && (remote || entry?.index || product || post));

@@ -14,15 +14,16 @@ async function searchModule(mode) {
   return import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 }
 
-test('connected account/contact/checkout metadata describes persisted workflows and test payments', async()=>{
+test('connected account/contact/checkout metadata uses the store voice and keeps the workflow contract', async()=>{
   const search = await searchModule('connected');
-  assert.match(search.pageSearch('/contact').description,/inbox/);
-  assert.match(search.pageSearch('/account').description,/Create a Chronos account/);
+  assert.match(search.pageSearch('/contact').description,/Chronos team/);
+  assert.match(search.pageSearch('/account').description,/Chronos account/);
   assert.equal(search.pageSearch('/my-account').description,search.pageSearch('/account').description);
   assert.equal(search.pageSearch('/my-account/').title,search.pageSearch('/account').title);
   assert.equal(search.pageSearch('/my-account').index,false);
-  assert.match(search.pageSearch('/checkout').description,/Stripe test checkout/);
-  assert.match(search.pageSearch('/checkout/success').description,/server-verified/);
+  assert.match(search.pageSearch('/checkout').description,/Stripe checkout/);
+  assert.equal(search.pageSearch('/checkout').index,false);
+  assert.match(search.pageSearch('/checkout/success').description,/status of your payment/);
   assert.equal(search.cmsOwnsPage('/contact'),false);
   assert.equal(search.cmsOwnsPage('/account'),false);
   assert.equal(search.cmsOwnsPage('/privacy'),true);

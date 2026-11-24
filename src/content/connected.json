@@ -1,6 +1,6 @@
 {
   "brand": {
-    "description": "A WordPress-powered watch website. Browse the live catalogue and journal; checkout uses test payments only."
+    "description": "Original watch designs and a journal on design, materials and craft."
   },
   "collection": {
     "title": "Find the timepiece that speaks to you."
@@ -15,9 +15,9 @@
   "ui": {
     "shopIntro": "Distinctive timepieces. Considered details. Find your own perspective.",
     "searchPlaceholder": "Search by name, category or movement",
-    "productNote": "Catalogue imagery and specifications are illustrative. Checkout accepts test payments only; no goods are shipped.",
+    "productNote": "Prices and availability are confirmed by the store when you check out.",
     "available": "In stock",
-    "checkout": "Continue to test checkout"
+    "checkout": "Continue to checkout"
   },
   "contact": {
     "notice": "Your message is saved in the WordPress contact inbox. Do not include sensitive information.",
@@ -26,20 +26,20 @@
     "failure": "The message could not be saved. Please retry."
   },
   "checkout": {
-    "title": "Test checkout",
-    "notice": "Test checkout only. Use Stripe test details; no real money is charged and no goods are shipped. Prices and availability are checked by the server.",
+    "title": "Checkout",
+    "notice": "Payments are processed by Stripe in test mode: use Stripe test card details. No card is charged and orders are not shipped. Prices and availability are confirmed by the store.",
     "signIn": "Sign in to continue",
-    "submit": "Continue to Stripe test checkout",
-    "pending": "Opening test checkout…",
-    "unavailable": "Test checkout is currently unavailable. Your bag has been kept.",
+    "submit": "Continue to secure checkout",
+    "pending": "Opening secure checkout…",
+    "unavailable": "Checkout is currently unavailable. Your bag has been kept.",
     "gift": "Gift wrapping",
     "instructions": "Delivery instructions",
     "retry": "Start a new checkout",
-    "confirming": "Verifying test payment…",
-    "paid": "Test payment verified",
+    "confirming": "Verifying your payment…",
+    "paid": "Payment confirmed",
     "unpaid": "Payment has not been confirmed. Your bag has been kept.",
     "account": "View your orders",
-    "noEmail": "This website does not send order emails."
+    "noEmail": "Your order appears in your account."
   },
   "account": {
     "title": "Your account",
@@ -70,6 +70,6 @@
     "copyright": "Chronos — Watches & Journal."
   },
   "preview": {
-    "notice": "Catalogue prices and availability come from the store. Checkout uses test payments only; no goods are shipped."
+    "notice": "Payments are processed by Stripe in test mode: no card is charged and orders are not shipped."
   }
 }
