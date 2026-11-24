@@ -48,6 +48,7 @@ final class Hardening {
 	 * @return mixed
 	 */
 	public static function hide_restricted_avatar( $nil, $source, $args, $context, $info, $type_name, $field_key ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Required by the filter signature.
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- WPGraphQL model property name.
 		if ( 'User' === $type_name && 'avatar' === $field_key && is_object( $source ) && ! empty( $source->isRestricted ) ) {
 			return null;
 		}
