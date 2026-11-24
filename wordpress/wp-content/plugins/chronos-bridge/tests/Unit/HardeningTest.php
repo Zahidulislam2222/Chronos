@@ -17,6 +17,9 @@ namespace {
 			public function __construct( public string $code = "", public string $message = "", public mixed $data = array() ) {}
 			public function get_error_code(): string { return $this->code; }
 			public function get_error_message(): string { return $this->message; }
+			public function get_error_data(): mixed { return $this->data; }
+			public function has_errors(): bool { return '' !== $this->code; }
+			public function get_error_codes(): array { return '' === $this->code ? array() : array( $this->code ); }
 		}
 	}
 	if ( ! class_exists( 'WP_REST_Response' ) ) {
@@ -48,6 +51,7 @@ namespace {
 		public static array $actions    = array();
 		public static array $routes     = array();
 		public static string $now       = '2026-11-25 12:00:00';
+		public static int $login_init   = 0;
 
 		public static function reset(): void {
 			self::$options   = array();
@@ -57,6 +61,7 @@ namespace {
 			self::$filters   = array();
 			self::$actions   = array();
 			self::$routes    = array();
+			self::$login_init = 0;
 		}
 	}
 }
@@ -85,6 +90,12 @@ namespace ChronosBridge\Security {
 	}
 	function is_wp_error( mixed $thing ): bool {
 		return $thing instanceof \WP_Error;
+	}
+	function did_action( string $hook ): int {
+		return 'login_init' === $hook ? \HardeningState::$login_init : 0;
+	}
+	function add_action( string $hook, mixed $callback, int $priority = 10, int $args = 1 ): void {
+		\HardeningState::$actions[] = $hook;
 	}
 }
 
@@ -183,6 +194,31 @@ namespace ChronosBridge\Tests\Unit {
 			$this->assertNull( PublicExposure::uniform_login_error( null ) );
 		}
 
+		public function test_rest_application_password_failures_are_indistinguishable(): void {
+			$unknown = PublicExposure::uniform_rest_auth_error( new \WP_Error( 'invalid_username', 'Unknown username.', array( 'status' => 401 ) ) );
+			$wrong   = PublicExposure::uniform_rest_auth_error( new \WP_Error( 'incorrect_password', 'Invalid application password.', array( 'status' => 401 ) ) );
+			$this->assertEquals( $unknown, $wrong );
+			$this->assertSame( 'invalid_credentials', $unknown->get_error_code() );
+			$this->assertSame( array( 'status' => 401 ), $unknown->get_error_data() );
+			$other = new \WP_Error( 'rest_cookie_invalid_nonce', 'x', array( 'status' => 403 ) );
+			$this->assertSame( $other, PublicExposure::uniform_rest_auth_error( $other ) );
+			$this->assertTrue( PublicExposure::uniform_rest_auth_error( true ) );
+			$this->assertNull( PublicExposure::uniform_rest_auth_error( null ) );
+		}
+
+		public function test_lost_password_masks_only_unknown_accounts_on_the_login_screen(): void {
+			$clean = new \WP_Error();
+			$this->assertFalse( PublicExposure::masks_unknown_account( $clean, false ), 'outside wp-login.php' );
+			\HardeningState::$login_init = 1;
+			$this->assertTrue( PublicExposure::masks_unknown_account( $clean, false ) );
+			$this->assertFalse( PublicExposure::masks_unknown_account( $clean, (object) array( 'ID' => 1 ) ), 'real account follows core' );
+			$this->assertTrue( PublicExposure::masks_unknown_account( new \WP_Error( 'invalid_email', 'no account', array() ), false ), 'unknown email' );
+			$this->assertFalse( PublicExposure::masks_unknown_account( new \WP_Error( 'empty_username', 'x', array() ), false ), 'empty input keeps its error' );
+			PublicExposure::register();
+			$this->assertContains( 'lostpassword_post', \HardeningState::$actions );
+			$this->assertContains( 'rest_authentication_errors', \HardeningState::$filters );
+		}
+
 		public function test_author_queries_become_404_for_visitors_only(): void {
 			$this->assertSame( array( 'error' => '404' ), PublicExposure::remove_author_query( array( 'author' => '1' ) ) );
 			$this->assertSame( array( 'error' => '404' ), PublicExposure::remove_author_query( array( 'author_name' => 'studio' ) ) );
@@ -231,6 +267,15 @@ namespace ChronosBridge\Tests\Unit {
 			$this->assertSame( $nil, Hardening::hide_restricted_avatar( $nil, $visible, array(), null, null, 'User', 'avatar' ) );
 			$this->assertSame( $nil, Hardening::hide_restricted_avatar( $nil, $restricted, array(), null, null, 'User', 'name' ) );
 			$this->assertSame( $nil, Hardening::hide_restricted_avatar( $nil, $restricted, array(), null, null, 'Post', 'avatar' ) );
+		}
+
+		public function test_guest_commenter_avatar_hash_is_hidden_from_visitors(): void {
+			$nil   = new \stdClass();
+			$guest = (object) array( 'name' => 'Guest' );
+			$this->assertNull( Hardening::hide_restricted_avatar( $nil, $guest, array(), null, null, 'CommentAuthor', 'avatar' ) );
+			$this->assertSame( $nil, Hardening::hide_restricted_avatar( $nil, $guest, array(), null, null, 'CommentAuthor', 'name' ) );
+			\HardeningState::$caps = array( 'moderate_comments' );
+			$this->assertSame( $nil, Hardening::hide_restricted_avatar( $nil, $guest, array(), null, null, 'CommentAuthor', 'avatar' ) );
 		}
 
 		public function test_visitors_cannot_look_up_accounts_through_root_fields(): void {

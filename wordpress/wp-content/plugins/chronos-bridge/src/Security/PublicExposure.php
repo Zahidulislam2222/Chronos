@@ -3,7 +3,8 @@
  * Stops signed-out visitors from enumerating WordPress accounts.
  *
  * Covers the REST users routes, author archives (including `?author=N`),
- * the core users sitemap, oEmbed author fields and sign-in error messages.
+ * the core users sitemap, oEmbed author fields, sign-in error messages
+ * (including REST application passwords) and the lost-password form.
  * Signed-in users keep `/wp/v2/users/me`; staff keep the user routes.
  *
  * @package ChronosBridge
@@ -20,6 +21,8 @@ final class PublicExposure {
 	public static function register(): void {
 		add_filter( 'rest_dispatch_request', array( self::class, 'guard_rest_users' ), 10, 3 );
 		add_filter( 'authenticate', array( self::class, 'uniform_login_error' ), 100 );
+		add_filter( 'rest_authentication_errors', array( self::class, 'uniform_rest_auth_error' ), 100 );
+		add_action( 'lostpassword_post', array( self::class, 'uniform_lost_password' ), 10, 2 );
 		add_filter( 'request', array( self::class, 'remove_author_query' ) );
 		add_filter( 'wp_sitemaps_add_provider', array( self::class, 'remove_users_sitemap' ), 10, 2 );
 		add_filter( 'oembed_response_data', array( self::class, 'remove_oembed_author' ) );
@@ -57,17 +60,85 @@ final class PublicExposure {
 	/**
 	 * Make failed sign-ins indistinguishable, so they cannot confirm that an account exists.
 	 *
-	 * Covers wp-login.php, REST application passwords and the GraphQL JWT login mutation,
-	 * which all call wp_authenticate().
+	 * Covers wp-login.php, XML-RPC and the GraphQL JWT login mutation, which call
+	 * wp_authenticate(). REST application passwords are handled separately.
 	 *
 	 * @param mixed $user Authentication result.
 	 * @return mixed
 	 */
 	public static function uniform_login_error( $user ) {
-		if ( is_wp_error( $user ) && in_array( $user->get_error_code(), array( 'invalid_username', 'invalid_email', 'incorrect_password' ), true ) ) {
-			return new \WP_Error( 'invalid_credentials', __( 'The username or password is incorrect.', 'chronos-bridge' ) );
+		return self::is_account_error( $user ) ? self::credentials_error() : $user;
+	}
+
+	/**
+	 * Apply the same uniform error to REST application-password failures.
+	 *
+	 * Core validates application passwords without the `authenticate` filter and
+	 * reports "unknown username" and "invalid application password" differently.
+	 *
+	 * @param mixed $result Earlier authentication result.
+	 * @return mixed
+	 */
+	public static function uniform_rest_auth_error( $result ) {
+		return self::is_account_error( $result ) ? self::credentials_error( 401 ) : $result;
+	}
+
+	/**
+	 * Answer a lost-password request for an unknown account exactly like a sent reset.
+	 *
+	 * Core adds its "no account" error after every filter, so the request is
+	 * finished here with core's own success redirect.
+	 *
+	 * @param mixed $errors    Errors collected so far.
+	 * @param mixed $user_data Matched user, or false.
+	 */
+	public static function uniform_lost_password( $errors, $user_data ): void {
+		if ( ! self::masks_unknown_account( $errors, $user_data ) ) {
+			return;
 		}
-		return $user;
+		// Mirrors core's success branch in wp-login.php, which reads the same field without a nonce.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wp_safe_redirect() validates the target, as in core.
+		$redirect_to = ! empty( $_REQUEST['redirect_to'] ) ? wp_unslash( $_REQUEST['redirect_to'] ) : 'wp-login.php?checkemail=confirm';
+		wp_safe_redirect( $redirect_to );
+		exit;
+	}
+
+	/**
+	 * Whether a lost-password request names no account and has no other error.
+	 *
+	 * An unknown username arrives with no error yet; an unknown email address
+	 * arrives with core's `invalid_email` ("no account") error only.
+	 *
+	 * @param mixed $errors    Errors collected so far.
+	 * @param mixed $user_data Matched user, or false.
+	 */
+	public static function masks_unknown_account( $errors, $user_data ): bool {
+		if ( false !== $user_data || ! $errors instanceof \WP_Error || did_action( 'login_init' ) < 1 ) {
+			return false;
+		}
+		return ! $errors->has_errors() || array( 'invalid_email' ) === $errors->get_error_codes();
+	}
+
+	/**
+	 * Whether a value is an error that would reveal whether an account exists.
+	 *
+	 * @param mixed $value Authentication result.
+	 */
+	private static function is_account_error( $value ): bool {
+		return is_wp_error( $value ) && in_array( $value->get_error_code(), array( 'invalid_username', 'invalid_email', 'incorrect_password' ), true );
+	}
+
+	/**
+	 * The one sign-in error visitors see.
+	 *
+	 * @param int $status HTTP status for REST responses, 0 for none.
+	 */
+	private static function credentials_error( int $status = 0 ): \WP_Error {
+		return new \WP_Error(
+			'invalid_credentials',
+			__( 'The username or password is incorrect.', 'chronos-bridge' ),
+			$status > 0 ? array( 'status' => $status ) : ''
+		);
 	}
 
 	/**

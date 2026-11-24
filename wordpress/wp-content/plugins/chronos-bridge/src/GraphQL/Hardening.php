@@ -71,10 +71,12 @@ final class Hardening {
 	}
 
 	/**
-	 * Resolve a restricted user's avatar to null instead of a resolver error.
+	 * Resolve avatars that would leak an identity to null instead of an error.
 	 *
-	 * WPGraphQL's avatar resolver needs the user ID, which restricted objects hide;
-	 * the storefront treats any GraphQL error as a failed request.
+	 * WPGraphQL's avatar resolver needs the user ID, which restricted user objects
+	 * hide (the storefront treats any GraphQL error as a failed request). A guest
+	 * commenter's avatar URL carries a hash of their email address, so it is
+	 * hidden from anyone who cannot moderate comments.
 	 *
 	 * @param mixed  $nil        Sentinel meaning "resolve normally".
 	 * @param mixed  $source     Parent model.
@@ -86,8 +88,14 @@ final class Hardening {
 	 * @return mixed
 	 */
 	public static function hide_restricted_avatar( $nil, $source, $args, $context, $info, $type_name, $field_key ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Required by the filter signature.
+		if ( 'avatar' !== $field_key ) {
+			return $nil;
+		}
 		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- WPGraphQL model property name.
-		if ( 'User' === $type_name && 'avatar' === $field_key && is_object( $source ) && ! empty( $source->isRestricted ) ) {
+		if ( 'User' === $type_name && is_object( $source ) && ! empty( $source->isRestricted ) ) {
+			return null;
+		}
+		if ( 'CommentAuthor' === $type_name && ! current_user_can( 'moderate_comments' ) ) {
 			return null;
 		}
 		return $nil;
