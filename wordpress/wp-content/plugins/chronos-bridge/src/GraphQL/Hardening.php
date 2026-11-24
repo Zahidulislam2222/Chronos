@@ -28,6 +28,48 @@ final class Hardening {
 		add_filter( 'graphql_get_setting_section_field_value', array( self::class, 'enforce_setting' ), PHP_INT_MAX, 5 );
 		add_filter( 'graphql_object_visibility', array( self::class, 'restrict_users' ), 10, 5 );
 		add_filter( 'graphql_allowed_fields_on_restricted_type', array( self::class, 'public_user_fields' ), 10, 6 );
+		add_filter( 'graphql_request_results', array( self::class, 'strip_debug_extension' ), PHP_INT_MAX );
+		add_filter( 'graphql_pre_resolve_field', array( self::class, 'hide_restricted_avatar' ), 10, 7 );
+	}
+
+	/**
+	 * Resolve a restricted user's avatar to null instead of a resolver error.
+	 *
+	 * WPGraphQL's avatar resolver needs the user ID, which restricted objects hide;
+	 * the storefront treats any GraphQL error as a failed request.
+	 *
+	 * @param mixed  $nil        Sentinel meaning "resolve normally".
+	 * @param mixed  $source     Parent model.
+	 * @param mixed  $args       Field arguments (unused).
+	 * @param mixed  $context    Request context (unused).
+	 * @param mixed  $info       Resolve info (unused).
+	 * @param string $type_name  Parent type name.
+	 * @param string $field_key  Field name.
+	 * @return mixed
+	 */
+	public static function hide_restricted_avatar( $nil, $source, $args, $context, $info, $type_name, $field_key ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Required by the filter signature.
+		if ( 'User' === $type_name && 'avatar' === $field_key && is_object( $source ) && ! empty( $source->isRestricted ) ) {
+			return null;
+		}
+		return $nil;
+	}
+
+	/**
+	 * Remove the `debug` extension WPGraphQL attaches to every response.
+	 *
+	 * @param mixed $response Array or execution-result object.
+	 * @return mixed
+	 */
+	public static function strip_debug_extension( $response ) {
+		if ( is_array( $response ) ) {
+			unset( $response['extensions']['debug'] );
+			if ( isset( $response['extensions'] ) && array() === $response['extensions'] ) {
+				unset( $response['extensions'] );
+			}
+		} elseif ( is_object( $response ) && isset( $response->extensions ) && is_array( $response->extensions ) ) {
+			unset( $response->extensions['debug'] );
+		}
+		return $response;
 	}
 
 	/**

@@ -178,6 +178,31 @@ namespace ChronosBridge\Tests\Unit {
 			$this->assertSame( 'on', Hardening::enforce_setting( 'on', 'off', 'debug_mode_enabled', array(), 'other_section' ) );
 		}
 
+		public function test_debug_extension_is_removed_from_array_and_object_responses(): void {
+			$this->assertSame(
+				array( 'data' => array( 'a' => 1 ) ),
+				Hardening::strip_debug_extension( array( 'data' => array( 'a' => 1 ), 'extensions' => array( 'debug' => array( 'x' ) ) ) )
+			);
+			$this->assertSame(
+				array( 'extensions' => array( 'other' => 1 ) ),
+				Hardening::strip_debug_extension( array( 'extensions' => array( 'debug' => array(), 'other' => 1 ) ) )
+			);
+			$result             = new \stdClass();
+			$result->extensions = array( 'debug' => array( 'x' ), 'keep' => true );
+			$this->assertSame( array( 'keep' => true ), Hardening::strip_debug_extension( $result )->extensions );
+			$this->assertSame( 'text', Hardening::strip_debug_extension( 'text' ) );
+		}
+
+		public function test_restricted_avatar_resolves_to_null_and_others_resolve_normally(): void {
+			$nil        = new \stdClass();
+			$restricted = (object) array( 'isRestricted' => true );
+			$visible    = (object) array( 'isRestricted' => false );
+			$this->assertNull( Hardening::hide_restricted_avatar( $nil, $restricted, array(), null, null, 'User', 'avatar' ) );
+			$this->assertSame( $nil, Hardening::hide_restricted_avatar( $nil, $visible, array(), null, null, 'User', 'avatar' ) );
+			$this->assertSame( $nil, Hardening::hide_restricted_avatar( $nil, $restricted, array(), null, null, 'User', 'name' ) );
+			$this->assertSame( $nil, Hardening::hide_restricted_avatar( $nil, $restricted, array(), null, null, 'Post', 'avatar' ) );
+		}
+
 		public function test_graphql_depth_option_is_bounded(): void {
 			\HardeningState::$options['chronos_graphql_max_depth'] = '8';
 			$this->assertSame( 8, Policy::graphql_max_depth() );
