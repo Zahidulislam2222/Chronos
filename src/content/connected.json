@@ -20,7 +20,7 @@
     "checkout": "Continue to checkout"
   },
   "contact": {
-    "notice": "Your message is saved in the WordPress contact inbox. Do not include sensitive information.",
+    "notice": "Your message is saved in the WordPress contact inbox and deleted automatically after 30 days. Do not include sensitive information.",
     "action": "Send message",
     "success": "Your message has been saved.",
     "failure": "The message could not be saved. Please retry."

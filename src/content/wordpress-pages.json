@@ -17,7 +17,7 @@
       "paragraphs": [
         "Chronos is a connected WordPress website. Browsing requests reach the hosting provider and WordPress server. Infrastructure providers may process request metadata for delivery and security.",
         "If you create an account, WordPress stores the name and email you provide and a password hash. The browser stores a sign-in token and your bag on this device. Sign out to remove the active browser token and selection. Do not reuse a password from another service.",
-        "Contact form submissions are stored in the WordPress contact inbox with their supplied name, email, subject and message. Do not include sensitive information.",
+        "Contact form submissions are stored in the WordPress contact inbox with their supplied name, email, subject and message, and are deleted automatically 30 days after they are sent. Do not include sensitive information.",
         "Checkout is test-only. Stripe processes the test checkout; WooCommerce stores the corresponding test order. No goods are shipped, and this website does not send order emails. Use Stripe test details, never real card details.",
         "To request access, correction or deletion of submitted personal data, use the Contact page. Do not submit identity documents through this website."
       ]
