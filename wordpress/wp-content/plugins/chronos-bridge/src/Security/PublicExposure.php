@@ -3,8 +3,8 @@
  * Stops signed-out visitors from enumerating WordPress accounts.
  *
  * Covers the REST users routes, author archives (including `?author=N`),
- * the core users sitemap and oEmbed author fields. Signed-in users keep
- * `/wp/v2/users/me`; administrators keep every route.
+ * the core users sitemap, oEmbed author fields and sign-in error messages.
+ * Signed-in users keep `/wp/v2/users/me`; staff keep the user routes.
  *
  * @package ChronosBridge
  */
@@ -18,26 +18,33 @@ final class PublicExposure {
 
 	/** Register the guards. */
 	public static function register(): void {
-		add_filter( 'rest_pre_dispatch', array( self::class, 'guard_rest_users' ), 10, 3 );
+		add_filter( 'rest_dispatch_request', array( self::class, 'guard_rest_users' ), 10, 3 );
+		add_filter( 'authenticate', array( self::class, 'uniform_login_error' ), 100 );
 		add_filter( 'request', array( self::class, 'remove_author_query' ) );
 		add_filter( 'wp_sitemaps_add_provider', array( self::class, 'remove_users_sitemap' ), 10, 2 );
 		add_filter( 'oembed_response_data', array( self::class, 'remove_oembed_author' ) );
 	}
 
 	/**
-	 * Refuse user listings and lookups to anyone who cannot list users.
+	 * Refuse user listings and lookups to visitors and customers.
+	 *
+	 * Runs on the route pattern WordPress actually matched, so letter case or
+	 * trailing-slash variations of the URL cannot bypass it. Staff who can edit
+	 * posts keep the block editor's author picker; `/wp/v2/users/me` stays open.
 	 *
 	 * @param mixed            $result  Earlier short-circuit value.
-	 * @param mixed            $server  REST server (unused).
-	 * @param \WP_REST_Request $request Current request.
+	 * @param \WP_REST_Request $request Current request (unused).
+	 * @param string           $route   Matched route pattern.
 	 * @return mixed
 	 */
-	public static function guard_rest_users( $result, $server, $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Required by the filter signature.
-		if ( null !== $result || ! is_object( $request ) || ! method_exists( $request, 'get_route' ) ) {
+	public static function guard_rest_users( $result, $request, $route ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Required by the filter signature.
+		if ( null !== $result || ! is_string( $route ) ) {
 			return $result;
 		}
-		$route = (string) $request->get_route();
-		if ( 1 !== preg_match( '#^/wp/v2/users(?:/|$)#', $route ) || '/wp/v2/users/me' === $route || current_user_can( 'list_users' ) ) {
+		$route          = strtolower( $route );
+		$is_users_route = '/wp/v2/users' === rtrim( $route, '/' ) || str_starts_with( $route, '/wp/v2/users/' );
+		if ( ! $is_users_route || '/wp/v2/users/me' === $route
+			|| current_user_can( 'list_users' ) || current_user_can( 'edit_posts' ) ) {
 			return $result;
 		}
 		return new \WP_Error(
@@ -45,6 +52,22 @@ final class PublicExposure {
 			__( 'Sorry, you are not allowed to view users.', 'chronos-bridge' ),
 			array( 'status' => is_user_logged_in() ? 403 : 401 )
 		);
+	}
+
+	/**
+	 * Make failed sign-ins indistinguishable, so they cannot confirm that an account exists.
+	 *
+	 * Covers wp-login.php, REST application passwords and the GraphQL JWT login mutation,
+	 * which all call wp_authenticate().
+	 *
+	 * @param mixed $user Authentication result.
+	 * @return mixed
+	 */
+	public static function uniform_login_error( $user ) {
+		if ( is_wp_error( $user ) && in_array( $user->get_error_code(), array( 'invalid_username', 'invalid_email', 'incorrect_password' ), true ) ) {
+			return new \WP_Error( 'invalid_credentials', __( 'The username or password is incorrect.', 'chronos-bridge' ) );
+		}
+		return $user;
 	}
 
 	/**

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace {
 	if ( ! class_exists( 'WP_Error' ) ) {
 		class WP_Error {
-			public function __construct( public string $code, public string $message, public array $data ) {}
+			public function __construct( public string $code = "", public string $message = "", public mixed $data = array() ) {}
 			public function get_error_code(): string { return $this->code; }
 			public function get_error_message(): string { return $this->message; }
 		}
@@ -27,6 +27,12 @@ namespace {
 			public function get_status(): int { return $this->status; }
 			public function get_data(): mixed { return $this->data; }
 		}
+	}
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		class WooCommerce {}
+	}
+	if ( ! function_exists( 'graphql' ) ) {
+		function graphql(): array { return array(); }
 	}
 	if ( ! defined( 'DAY_IN_SECONDS' ) ) {
 		define( 'DAY_IN_SECONDS', 86400 );
@@ -77,6 +83,9 @@ namespace ChronosBridge\Security {
 	function __( string $text, string $domain = 'default' ): string {
 		return $text;
 	}
+	function is_wp_error( mixed $thing ): bool {
+		return $thing instanceof \WP_Error;
+	}
 }
 
 namespace ChronosBridge\GraphQL {
@@ -122,16 +131,9 @@ namespace ChronosBridge\Tests\Unit {
 			\HardeningState::reset();
 		}
 
-		private function request( string $route ): object {
-			return new class( $route ) {
-				public function __construct( private string $route ) {}
-				public function get_route(): string { return $this->route; }
-			};
-		}
-
 		public function test_signed_out_user_routes_are_refused_with_401(): void {
 			foreach ( array( '/wp/v2/users', '/wp/v2/users/1', '/wp/v2/users/1/application-passwords' ) as $route ) {
-				$result = PublicExposure::guard_rest_users( null, null, $this->request( $route ) );
+				$result = PublicExposure::guard_rest_users( null, null, $route );
 				$this->assertInstanceOf( \WP_Error::class, $result, $route );
 				$this->assertSame( 401, $result->data['status'] );
 			}
@@ -139,18 +141,46 @@ namespace ChronosBridge\Tests\Unit {
 
 		public function test_signed_in_customer_keeps_me_but_cannot_list(): void {
 			\HardeningState::$logged_in = true;
-			$this->assertNull( PublicExposure::guard_rest_users( null, null, $this->request( '/wp/v2/users/me' ) ) );
-			$result = PublicExposure::guard_rest_users( null, null, $this->request( '/wp/v2/users' ) );
+			$this->assertNull( PublicExposure::guard_rest_users( null, null, '/wp/v2/users/me' ) );
+			$result = PublicExposure::guard_rest_users( null, null, '/wp/v2/users' );
 			$this->assertSame( 403, $result->data['status'] );
 		}
 
 		public function test_user_administrators_and_other_routes_pass_through(): void {
-			$this->assertNull( PublicExposure::guard_rest_users( null, null, $this->request( '/wp/v2/posts' ) ) );
-			$this->assertNull( PublicExposure::guard_rest_users( null, null, $this->request( '/wp/v2/usersettings' ) ) );
+			$this->assertNull( PublicExposure::guard_rest_users( null, null, '/wp/v2/posts' ) );
+			$this->assertNull( PublicExposure::guard_rest_users( null, null, '/wp/v2/usersettings' ) );
 			\HardeningState::$caps = array( 'list_users' );
-			$this->assertNull( PublicExposure::guard_rest_users( null, null, $this->request( '/wp/v2/users' ) ) );
+			$this->assertNull( PublicExposure::guard_rest_users( null, null, '/wp/v2/users' ) );
 			$earlier = new \WP_Error( 'x', 'y', array() );
-			$this->assertSame( $earlier, PublicExposure::guard_rest_users( $earlier, null, $this->request( '/wp/v2/users' ) ) );
+			$this->assertSame( $earlier, PublicExposure::guard_rest_users( $earlier, null, '/wp/v2/users' ) );
+		}
+
+		public function test_route_case_and_null_route_variants_cannot_bypass_the_guard(): void {
+			foreach ( array( '/WP/V2/USERS', '/wp/v2/Users/1', '/Wp/V2/users' ) as $route ) {
+				$this->assertInstanceOf( \WP_Error::class, PublicExposure::guard_rest_users( null, null, $route ), $route );
+			}
+			$this->assertNull( PublicExposure::guard_rest_users( null, null, null ) );
+		}
+
+		public function test_staff_who_edit_posts_keep_the_author_picker(): void {
+			\HardeningState::$logged_in = true;
+			\HardeningState::$caps      = array( 'edit_posts' );
+			$this->assertNull( PublicExposure::guard_rest_users( null, null, '/wp/v2/users' ) );
+		}
+
+		public function test_failed_sign_ins_are_indistinguishable(): void {
+			$codes = array();
+			foreach ( array( 'invalid_username', 'invalid_email', 'incorrect_password' ) as $code ) {
+				$result  = PublicExposure::uniform_login_error( new \WP_Error( $code, 'detail for ' . $code, array() ) );
+				$codes[] = $result->get_error_code() . '|' . $result->get_error_message();
+			}
+			$this->assertCount( 1, array_unique( $codes ) );
+			$this->assertStringStartsWith( 'invalid_credentials|', $codes[0] );
+			$other = new \WP_Error( 'empty_password', 'x', array() );
+			$this->assertSame( $other, PublicExposure::uniform_login_error( $other ) );
+			$user = (object) array( 'ID' => 3 );
+			$this->assertSame( $user, PublicExposure::uniform_login_error( $user ) );
+			$this->assertNull( PublicExposure::uniform_login_error( null ) );
 		}
 
 		public function test_author_queries_become_404_for_visitors_only(): void {
@@ -203,6 +233,24 @@ namespace ChronosBridge\Tests\Unit {
 			$this->assertSame( $nil, Hardening::hide_restricted_avatar( $nil, $restricted, array(), null, null, 'Post', 'avatar' ) );
 		}
 
+		public function test_visitors_cannot_look_up_accounts_through_root_fields(): void {
+			$nil = new \stdClass();
+			$this->assertNull( Hardening::refuse_user_lookups( $nil, null, array( 'id' => 'studio', 'idType' => 'SLUG' ), null, null, 'RootQuery', 'user' ) );
+			$this->assertNull( Hardening::refuse_user_lookups( $nil, null, array(), null, null, 'RootQuery', 'users' ) );
+			$this->assertSame( $nil, Hardening::refuse_user_lookups( $nil, null, array(), null, null, 'RootQuery', 'posts' ) );
+			$this->assertSame( $nil, Hardening::refuse_user_lookups( $nil, null, array(), null, null, 'Post', 'author' ) );
+			\HardeningState::$caps = array( 'list_users' );
+			$this->assertSame( $nil, Hardening::refuse_user_lookups( $nil, null, array(), null, null, 'RootQuery', 'user' ) );
+		}
+
+		public function test_author_filters_are_dropped_from_visitor_post_queries(): void {
+			$args = array( 'post_type' => 'post', 'author_name' => 'studio', 'author' => 1, 'author__in' => array( 1 ), 'author__not_in' => array( 2 ) );
+			$this->assertSame( array( 'post_type' => 'post' ), Hardening::drop_author_filters( $args ) );
+			$this->assertSame( 'x', Hardening::drop_author_filters( 'x' ) );
+			\HardeningState::$caps = array( 'list_users' );
+			$this->assertSame( $args, Hardening::drop_author_filters( $args ) );
+		}
+
 		public function test_graphql_depth_option_is_bounded(): void {
 			\HardeningState::$options['chronos_graphql_max_depth'] = '8';
 			$this->assertSame( 8, Policy::graphql_max_depth() );
@@ -237,43 +285,48 @@ namespace ChronosBridge\Tests\Unit {
 			try {
 				$report = HealthEndpoint::checks();
 				$this->assertSame( array( 'database', 'commerce', 'graphql' ), array_keys( $report['checks'] ) );
-				$this->assertTrue( $report['checks']['database'] );
-				// The unit environment has neither WooCommerce nor WPGraphQL loaded.
-				$this->assertSame( 'degraded', $report['status'] );
+				$this->assertSame( 'ok', $report['status'] );
 				$response = HealthEndpoint::report();
-				$this->assertSame( 503, $response->get_status() );
+				$this->assertSame( 200, $response->get_status() );
 				$this->assertSame( 'no-store', $response->headers['Cache-Control'] );
 				$this->assertStringNotContainsString( 'version', json_encode( $response->get_data() ) );
 				$GLOBALS['wpdb']->up = false;
 				$this->assertFalse( HealthEndpoint::checks()['checks']['database'] );
+				$this->assertSame( 503, HealthEndpoint::report()->get_status() );
 				( new HealthEndpoint() )->register_routes();
-				$this->assertSame( array( 'chronos/v1/health' ), \HardeningState::$routes );
+				$this->assertSame( array( 'chronos/v1/health', 'chronos/v1/health/backup' ), \HardeningState::$routes );
 			} finally {
 				$GLOBALS['wpdb'] = $previous;
 			}
 		}
 
-		public function test_backup_freshness_is_checked_only_when_configured(): void {
+		public function test_backup_freshness_is_separate_from_site_health(): void {
 			$previous        = $GLOBALS['wpdb'] ?? null;
 			$GLOBALS['wpdb'] = new class() {
 				public function get_var( string $sql ): string { return '1'; }
 			};
 			$marker = sys_get_temp_dir() . '/chronos-backup-marker-' . getmypid();
 			try {
-				$this->assertArrayNotHasKey( 'backup', HealthEndpoint::checks()['checks'] );
+				$this->assertSame( 'off', HealthEndpoint::backup_status() );
+				$this->assertSame( 200, HealthEndpoint::report_backup()->get_status() );
 				\HardeningState::$options['chronos_backup_marker_file'] = 'relative/marker';
-				$this->assertArrayNotHasKey( 'backup', HealthEndpoint::checks()['checks'] );
+				$this->assertSame( 'off', HealthEndpoint::backup_status() );
 				\HardeningState::$options['chronos_backup_marker_file'] = '/var/../etc/passwd';
-				$this->assertArrayNotHasKey( 'backup', HealthEndpoint::checks()['checks'] );
+				$this->assertSame( 'off', HealthEndpoint::backup_status() );
 				\HardeningState::$options['chronos_backup_marker_file'] = $marker;
-				$this->assertFalse( HealthEndpoint::checks()['checks']['backup'], 'missing marker' );
+				$this->assertSame( 'stale', HealthEndpoint::backup_status(), 'missing marker' );
+				$stale = HealthEndpoint::report_backup();
+				$this->assertSame( 503, $stale->get_status() );
+				$this->assertSame( 'no-store', $stale->headers['Cache-Control'] );
+				$this->assertSame( 'ok', HealthEndpoint::checks()['status'], 'a stale backup never degrades site health' );
 				touch( $marker );
-				$this->assertTrue( HealthEndpoint::checks()['checks']['backup'], 'fresh marker' );
+				$this->assertSame( 'ok', HealthEndpoint::backup_status(), 'fresh marker' );
+				$this->assertSame( 200, HealthEndpoint::report_backup()->get_status() );
 				touch( $marker, time() - 31 * 3600 );
 				clearstatcache();
-				$this->assertFalse( HealthEndpoint::checks()['checks']['backup'], 'stale marker' );
+				$this->assertSame( 'stale', HealthEndpoint::backup_status(), 'stale marker' );
 				\HardeningState::$options['chronos_backup_max_age_hours'] = '48';
-				$this->assertTrue( HealthEndpoint::checks()['checks']['backup'], 'within configured age' );
+				$this->assertSame( 'ok', HealthEndpoint::backup_status(), 'within configured age' );
 			} finally {
 				$GLOBALS['wpdb'] = $previous;
 				if ( is_file( $marker ) ) {

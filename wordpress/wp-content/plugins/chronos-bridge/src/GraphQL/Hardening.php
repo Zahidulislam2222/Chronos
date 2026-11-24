@@ -30,6 +30,44 @@ final class Hardening {
 		add_filter( 'graphql_allowed_fields_on_restricted_type', array( self::class, 'public_user_fields' ), 10, 6 );
 		add_filter( 'graphql_request_results', array( self::class, 'strip_debug_extension' ), PHP_INT_MAX );
 		add_filter( 'graphql_pre_resolve_field', array( self::class, 'hide_restricted_avatar' ), 10, 7 );
+		add_filter( 'graphql_pre_resolve_field', array( self::class, 'refuse_user_lookups' ), 10, 7 );
+		add_filter( 'graphql_post_object_connection_query_args', array( self::class, 'drop_author_filters' ), 10, 1 );
+	}
+
+	/**
+	 * Visitors cannot look up or list accounts through the root `user`/`users` fields.
+	 *
+	 * A lookup by slug, username, email or ID would confirm that an account exists.
+	 * The storefront reads post authors through posts and the signed-in user through `viewer`.
+	 *
+	 * @param mixed  $nil       Sentinel meaning "resolve normally".
+	 * @param mixed  $source    Parent value (unused).
+	 * @param mixed  $args      Field arguments (unused).
+	 * @param mixed  $context   Request context (unused).
+	 * @param mixed  $info      Resolve info (unused).
+	 * @param string $type_name Parent type name.
+	 * @param string $field_key Field name.
+	 * @return mixed
+	 */
+	public static function refuse_user_lookups( $nil, $source, $args, $context, $info, $type_name, $field_key ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Required by the filter signature.
+		if ( 'RootQuery' === $type_name && in_array( $field_key, array( 'user', 'users' ), true ) && ! current_user_can( 'list_users' ) ) {
+			return null;
+		}
+		return $nil;
+	}
+
+	/**
+	 * Drop author filters from post queries for visitors, so `authorName` cannot test slugs.
+	 *
+	 * @param array<string, mixed> $query_args WP_Query arguments.
+	 * @return array<string, mixed>
+	 */
+	public static function drop_author_filters( $query_args ) {
+		if ( ! is_array( $query_args ) || current_user_can( 'list_users' ) ) {
+			return $query_args;
+		}
+		unset( $query_args['author_name'], $query_args['author'], $query_args['author__in'], $query_args['author__not_in'] );
+		return $query_args;
 	}
 
 	/**
