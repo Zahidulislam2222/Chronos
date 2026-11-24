@@ -17,22 +17,32 @@
   "availability": {
     "targetPercent": 99,
     "windowDays": 30,
-    "probeIntervalSeconds": 60,
+    "probeIntervalSeconds": 1800,
     "timeoutMs": 10000,
+    "retryDelayMs": 20000,
     "paths": [
       {
         "path": "/",
-        "expectedText": "TIME IS"
+        "expectedText": "TIME IS",
+        "origin": "site"
       },
       {
         "path": "/shop",
-        "expectedText": "Find your point of view."
+        "expectedText": "Find your point of view.",
+        "origin": "site"
       },
       {
         "path": "/healthz",
-        "expectedText": "chronos-ok"
+        "expectedText": "chronos-ok",
+        "origin": "site"
+      },
+      {
+        "origin": "backend",
+        "path": "/wp-json/chronos/v1/health",
+        "expectedText": "\"status\":\"ok\""
       }
     ],
+    "drillPath": "/__chronos-probe-drill__",
     "outputFile": "memory/operations/availability.jsonl"
   },
   "localLoad": {
