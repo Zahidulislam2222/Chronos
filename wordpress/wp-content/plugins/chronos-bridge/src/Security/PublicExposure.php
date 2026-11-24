@@ -86,15 +86,22 @@ final class PublicExposure {
 	/**
 	 * Answer a lost-password request for an unknown account exactly like a sent reset.
 	 *
-	 * Core adds its "no account" error after every filter, so the request is
-	 * finished here with core's own success redirect.
+	 * Core (wp-login.php) and WooCommerce (My Account) both add their "no account"
+	 * error after this hook, so the request is finished here with each form's own
+	 * success redirect.
 	 *
 	 * @param mixed $errors    Errors collected so far.
 	 * @param mixed $user_data Matched user, or false.
 	 */
 	public static function uniform_lost_password( $errors, $user_data ): void {
-		if ( ! self::masks_unknown_account( $errors, $user_data ) ) {
+		$form = self::lost_password_form();
+		if ( ! self::masks_unknown_account( $errors, $user_data, $form ) ) {
 			return;
+		}
+		if ( 'woocommerce' === $form ) {
+			// WooCommerce has already verified its form nonce before this hook runs.
+			wp_safe_redirect( add_query_arg( 'reset-link-sent', 'true', wc_get_account_endpoint_url( 'lost-password' ) ) );
+			exit;
 		}
 		// Mirrors core's success branch in wp-login.php, which reads the same field without a nonce.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wp_safe_redirect() validates the target, as in core.
@@ -106,17 +113,30 @@ final class PublicExposure {
 	/**
 	 * Whether a lost-password request names no account and has no other error.
 	 *
-	 * An unknown username arrives with no error yet; an unknown email address
-	 * arrives with core's `invalid_email` ("no account") error only.
+	 * An unknown username arrives with no error yet; on wp-login.php an unknown
+	 * email address arrives with core's `invalid_email` ("no account") error only.
 	 *
-	 * @param mixed $errors    Errors collected so far.
-	 * @param mixed $user_data Matched user, or false.
+	 * @param mixed  $errors    Errors collected so far.
+	 * @param mixed  $user_data Matched user, or false.
+	 * @param string $form      `core`, `woocommerce` or '' (another caller: left alone).
 	 */
-	public static function masks_unknown_account( $errors, $user_data ): bool {
-		if ( false !== $user_data || ! $errors instanceof \WP_Error || did_action( 'login_init' ) < 1 ) {
+	public static function masks_unknown_account( $errors, $user_data, string $form ): bool {
+		if ( false !== $user_data || ! $errors instanceof \WP_Error || '' === $form ) {
 			return false;
 		}
-		return ! $errors->has_errors() || array( 'invalid_email' ) === $errors->get_error_codes();
+		return ! $errors->has_errors() || ( 'core' === $form && array( 'invalid_email' ) === $errors->get_error_codes() );
+	}
+
+	/** Which public lost-password form is being processed, if any. */
+	private static function lost_password_form(): string {
+		if ( did_action( 'login_init' ) > 0 ) {
+			return 'core';
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Presence check only; WooCommerce verifies the nonce before this hook.
+		if ( isset( $_POST['wc_reset_password'] ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
+			return 'woocommerce';
+		}
+		return '';
 	}
 
 	/**

@@ -78,6 +78,12 @@ LE=$(curl -s -m 60 -o /dev/null -w '%{http_code} %{redirect_url}' -d 'user_login
 check "lost password unknown email"    "$LE" "302 $B/wp-login.php?checkemail=confirm"
 LB=$(curl -s -m 60 -d 'user_login=&redirect_to=&wp-submit=Get+New+Password' "$B/wp-login.php?action=lostpassword" | grep -c 'login_error')
 check "lost password empty keeps error" "$LB" 1
+WP=$(curl -s -m 60 "$B/my-account/lost-password/")
+WN=$(printf '%s' "$WP" | grep -o 'name="woocommerce-lost-password-nonce" value="[^"]*"' | sed 's/.*value="//;s/"//')
+if [ -n "$WN" ]; then
+  WL=$(curl -s -m 60 -o /dev/null -w '%{http_code} %{redirect_url}' --data-urlencode 'user_login=nobody-xyz' -d "wc_reset_password=true&woocommerce-lost-password-nonce=$WN" "$B/my-account/lost-password/")
+  check "store lost password unknown = sent" "$WL" "302 $B/my-account/lost-password/?reset-link-sent=true"
+else skip "store lost-password form not rendered"; fi
 CA=$(gql '{"query":"{ posts(first:10) { nodes { comments(first:20) { nodes { author { node { name avatar { url } } } } } } } }"}')
 check "gql guest comment avatar hidden" "$(printf '%s' "$CA" | grep -c 'gravatar')" 0
 check "gql comments query no error"    "$(printf '%s' "$CA" | grep -c '"errors"')" 0

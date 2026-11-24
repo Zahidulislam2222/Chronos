@@ -11,6 +11,15 @@ private key stays with the owner.
 | `pull-backup.sh` | off-host server, unprivileged user, cron | Pull (one run at a time, `PULL_TIMEOUT`, SSH keep-alives), check size and OpenPGP format, acknowledge, then keep the copy and prune past `RETENTION_DAYS`. A refused ack discards the copy |
 | `backup.conf.example`, `pull.env.example` | both | Settings (no secrets) |
 
+## Capacity limit
+
+The dump, small files and the whole encrypted archive are held in `/dev/shm`
+(RAM, half of memory by default: about 480 MB on the e2-micro backend). The
+database is about 27 MB today. If dump plus archive approach that size the
+backup fails closed (no ack, the probe alerts), but memory pressure can affect
+MariaDB first: move staging to an encrypted disk area before the data grows
+past about 150 MB.
+
 ## Access model
 
 - Backend user `chronos-backup` has no password and one `authorized_keys` entry:

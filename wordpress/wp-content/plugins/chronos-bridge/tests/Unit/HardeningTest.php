@@ -206,14 +206,16 @@ namespace ChronosBridge\Tests\Unit {
 			$this->assertNull( PublicExposure::uniform_rest_auth_error( null ) );
 		}
 
-		public function test_lost_password_masks_only_unknown_accounts_on_the_login_screen(): void {
-			$clean = new \WP_Error();
-			$this->assertFalse( PublicExposure::masks_unknown_account( $clean, false ), 'outside wp-login.php' );
-			\HardeningState::$login_init = 1;
-			$this->assertTrue( PublicExposure::masks_unknown_account( $clean, false ) );
-			$this->assertFalse( PublicExposure::masks_unknown_account( $clean, (object) array( 'ID' => 1 ) ), 'real account follows core' );
-			$this->assertTrue( PublicExposure::masks_unknown_account( new \WP_Error( 'invalid_email', 'no account', array() ), false ), 'unknown email' );
-			$this->assertFalse( PublicExposure::masks_unknown_account( new \WP_Error( 'empty_username', 'x', array() ), false ), 'empty input keeps its error' );
+		public function test_lost_password_masks_only_unknown_accounts_on_public_forms(): void {
+			$clean   = new \WP_Error();
+			$no_mail = new \WP_Error( 'invalid_email', 'no account', array() );
+			$this->assertFalse( PublicExposure::masks_unknown_account( $clean, false, '' ), 'other callers left alone' );
+			$this->assertTrue( PublicExposure::masks_unknown_account( $clean, false, 'core' ) );
+			$this->assertTrue( PublicExposure::masks_unknown_account( $no_mail, false, 'core' ), 'unknown email on wp-login.php' );
+			$this->assertTrue( PublicExposure::masks_unknown_account( $clean, false, 'woocommerce' ), 'unknown account on My Account' );
+			$this->assertFalse( PublicExposure::masks_unknown_account( $no_mail, false, 'woocommerce' ) );
+			$this->assertFalse( PublicExposure::masks_unknown_account( $clean, (object) array( 'ID' => 1 ), 'core' ), 'real account follows core' );
+			$this->assertFalse( PublicExposure::masks_unknown_account( new \WP_Error( 'empty_username', 'x', array() ), false, 'core' ), 'empty input keeps its error' );
 			PublicExposure::register();
 			$this->assertContains( 'lostpassword_post', \HardeningState::$actions );
 			$this->assertContains( 'rest_authentication_errors', \HardeningState::$filters );
