@@ -253,6 +253,35 @@ namespace ChronosBridge\Tests\Unit {
 			}
 		}
 
+		public function test_backup_freshness_is_checked_only_when_configured(): void {
+			$previous        = $GLOBALS['wpdb'] ?? null;
+			$GLOBALS['wpdb'] = new class() {
+				public function get_var( string $sql ): string { return '1'; }
+			};
+			$marker = sys_get_temp_dir() . '/chronos-backup-marker-' . getmypid();
+			try {
+				$this->assertArrayNotHasKey( 'backup', HealthEndpoint::checks()['checks'] );
+				\HardeningState::$options['chronos_backup_marker_file'] = 'relative/marker';
+				$this->assertArrayNotHasKey( 'backup', HealthEndpoint::checks()['checks'] );
+				\HardeningState::$options['chronos_backup_marker_file'] = '/var/../etc/passwd';
+				$this->assertArrayNotHasKey( 'backup', HealthEndpoint::checks()['checks'] );
+				\HardeningState::$options['chronos_backup_marker_file'] = $marker;
+				$this->assertFalse( HealthEndpoint::checks()['checks']['backup'], 'missing marker' );
+				touch( $marker );
+				$this->assertTrue( HealthEndpoint::checks()['checks']['backup'], 'fresh marker' );
+				touch( $marker, time() - 31 * 3600 );
+				clearstatcache();
+				$this->assertFalse( HealthEndpoint::checks()['checks']['backup'], 'stale marker' );
+				\HardeningState::$options['chronos_backup_max_age_hours'] = '48';
+				$this->assertTrue( HealthEndpoint::checks()['checks']['backup'], 'within configured age' );
+			} finally {
+				$GLOBALS['wpdb'] = $previous;
+				if ( is_file( $marker ) ) {
+					unlink( $marker );
+				}
+			}
+		}
+
 		public function test_contact_reply_helper_is_off_by_default_and_registers_nothing(): void {
 			$this->assertFalse( Policy::contact_responder_enabled() );
 			$this->assertFalse( ContactResponder::is_available() );

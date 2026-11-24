@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace ChronosBridge\Api;
 
+use ChronosBridge\Configuration\Policy;
+
 /** `GET /chronos/v1/health`. */
 final class HealthEndpoint {
 
@@ -26,9 +28,9 @@ final class HealthEndpoint {
 	}
 
 	/**
-	 * Check the database, commerce and GraphQL dependencies.
+	 * Check the database, commerce and GraphQL dependencies, and backup freshness when configured.
 	 *
-	 * @return array{status: string, checks: array{database: bool, commerce: bool, graphql: bool}}
+	 * @return array{status: string, checks: array<string, bool>}
 	 */
 	public static function checks(): array {
 		global $wpdb;
@@ -42,6 +44,12 @@ final class HealthEndpoint {
 			'commerce' => class_exists( 'WooCommerce' ),
 			'graphql'  => function_exists( 'graphql' ),
 		);
+		$marker = Policy::backup_marker_file();
+		if ( '' !== $marker ) {
+			// Written by the backup command when the off-host copy acknowledges a stored file.
+			$modified         = is_file( $marker ) ? filemtime( $marker ) : false;
+			$checks['backup'] = false !== $modified && ( time() - $modified ) <= Policy::backup_max_age_hours() * HOUR_IN_SECONDS;
+		}
 		return array(
 			'status' => in_array( false, $checks, true ) ? 'degraded' : 'ok',
 			'checks' => $checks,

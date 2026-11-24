@@ -19,6 +19,11 @@ final class Policy {
 	public const GRAPHQL_MAX_DEPTH_OPTION = 'chronos_graphql_max_depth';
 	public const CONTACT_RETENTION_OPTION = 'chronos_contact_retention_days';
 	public const CONTACT_RESPONDER_OPTION = 'chronos_ai_contact_responder';
+	public const BACKUP_MARKER_OPTION     = 'chronos_backup_marker_file';
+	public const BACKUP_MAX_AGE_OPTION    = 'chronos_backup_max_age_hours';
+
+	private const BACKUP_MAX_AGE_DEFAULT = 30;
+	private const BACKUP_MAX_AGE_RANGE   = array( 1, 720 );
 
 	private const GRAPHQL_MAX_DEPTH_DEFAULT = 12;
 	private const GRAPHQL_MAX_DEPTH_RANGE   = array( 5, 30 );
@@ -37,6 +42,19 @@ final class Policy {
 	/** Whether the admin AI reply helper may send submissions to a provider. */
 	public static function contact_responder_enabled(): bool {
 		return 'on' === get_option( self::CONTACT_RESPONDER_OPTION, 'off' );
+	}
+
+	/**
+	 * Absolute path of the off-host backup marker, or '' when the check is off.
+	 */
+	public static function backup_marker_file(): string {
+		$path = get_option( self::BACKUP_MARKER_OPTION, '' );
+		return is_string( $path ) && 1 === preg_match( '#^/(?:[A-Za-z0-9._-]+/)*[A-Za-z0-9._-]+$#D', $path ) && ! str_contains( $path, '..' ) ? $path : '';
+	}
+
+	/** Maximum age in hours of the last confirmed off-host backup. */
+	public static function backup_max_age_hours(): int {
+		return self::bounded( self::BACKUP_MAX_AGE_OPTION, self::BACKUP_MAX_AGE_DEFAULT, self::BACKUP_MAX_AGE_RANGE );
 	}
 
 	/**
