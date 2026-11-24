@@ -21,7 +21,7 @@
     "guide:budget:init": "node --env-file-if-exists=.env.assistant.local scripts/assistant/initialize-budget.mjs",
     "test:dependency-security": "node verification/dependency-security.cjs wordpress/wp-content/plugins/chronos-blocks",
     "guide:package": "node scripts/assistant/package.mjs",
-    "test:render": "node --test verification/render-readiness.test.mjs verification/search-metadata.test.mjs",
+    "test:render": "node --test verification/render-readiness.test.mjs verification/search-metadata.test.mjs verification/payment-disclosure.test.mjs",
     "test:render:browser": "node verification/render-readiness-browser.mjs"
   },
   "dependencies": {

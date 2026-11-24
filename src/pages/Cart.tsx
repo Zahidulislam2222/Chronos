@@ -22,6 +22,7 @@ export default function Cart() {
             <Link className="button button-dark" to="/checkout">
               {content.ui.checkout}
             </Link>
+            <p className="catalogue-note">{content.preview.notice}</p>
           </>
         ) : (
           <div className="empty-state">

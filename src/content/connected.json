@@ -15,7 +15,7 @@
   "ui": {
     "shopIntro": "Distinctive timepieces. Considered details. Find your own perspective.",
     "searchPlaceholder": "Search by name, category or movement",
-    "productNote": "Prices and availability are confirmed by the store when you check out.",
+    "productNote": "Prices and availability are confirmed by the store when you check out. Checkout runs in Stripe test mode: no card is charged and orders are not shipped.",
     "available": "In stock",
     "checkout": "Continue to checkout"
   },
