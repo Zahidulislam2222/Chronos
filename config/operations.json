@@ -40,6 +40,12 @@
         "origin": "backend",
         "path": "/wp-json/chronos/v1/health",
         "expectedText": "\"status\":\"ok\""
+      },
+      {
+        "origin": "backend",
+        "path": "/wp-json/chronos/v1/health/backup",
+        "expectedText": "\"status\":\"ok\"",
+        "slo": false
       }
     ],
     "drillPath": "/__chronos-probe-drill__",

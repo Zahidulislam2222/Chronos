@@ -19,6 +19,8 @@ const c = z.object({
     origin: z.enum(['site', 'backend']).default('site'),
     path: z.string().startsWith('/'),
     expectedText: z.string().min(1),
+    // false: the check alerts the owner but is not storefront downtime (for example backup freshness).
+    slo: z.boolean().default(true),
   })).min(1),
   drillPath: z.string().startsWith('/'),
   outputFile: z.string().startsWith('memory/'),
@@ -39,14 +41,14 @@ const paths = [...c.paths];
 // A drill adds a path that cannot succeed, to prove that a failure reaches the owner.
 if (process.env.CHRONOS_PROBE_DRILL === 'true') paths.push({ origin: 'site', path: c.drillPath, expectedText: 'chronos-drill-never-matches' });
 
-async function probe({ origin, path: route, expectedText }) {
+async function probe({ origin, path: route, expectedText, slo = true }) {
   const start = performance.now();
   try {
     const response = await fetch(new URL(route, origins[origin]), { redirect: 'error', signal: AbortSignal.timeout(c.timeoutMs) });
     const text = await response.text();
-    return { origin, path: route, ok: response.status === 200 && text.includes(expectedText), status: response.status, ms: Math.round(performance.now() - start) };
+    return { origin, path: route, slo, ok: response.status === 200 && text.includes(expectedText), status: response.status, ms: Math.round(performance.now() - start) };
   } catch {
-    return { origin, path: route, ok: false, status: null, ms: Math.round(performance.now() - start) };
+    return { origin, path: route, slo, ok: false, status: null, ms: Math.round(performance.now() - start) };
   }
 }
 
@@ -60,10 +62,17 @@ for (const target of paths) {
   }
   checks.push(result);
 }
-const record = { time: new Date().toISOString(), ok: checks.every((check) => check.ok), checks };
+// `ok` is the availability observation (SLO paths only); `allOk` also covers owner-alert paths.
+const record = {
+  time: new Date().toISOString(),
+  ok: checks.filter((check) => check.slo).every((check) => check.ok),
+  allOk: checks.every((check) => check.ok),
+  checks,
+};
 const file = await outputPath('memory', c.outputFile.slice('memory/'.length));
 await mkdir(path.dirname(file), { recursive: true });
 await appendFile(file, JSON.stringify(record) + '\n');
 console.log(JSON.stringify(record));
 // One observation is not an availability percentage; the scheduled workflow repeats it.
-process.exitCode = record.ok ? 0 : 1;
+// Any failed check, SLO or not, fails the run so the workflow notifies the owner.
+process.exitCode = record.allOk ? 0 : 1;
