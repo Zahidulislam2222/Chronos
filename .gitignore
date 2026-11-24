@@ -132,3 +132,8 @@ wordpress/wp-content/plugins/chronos-bridge/vendor-*/
 
 # Private task tracker (global Rule 25)
 TASKS.md
+
+# Private, local-only working areas (never committed)
+/.worktrees/
+/.chronos-backup/
+/.work/
