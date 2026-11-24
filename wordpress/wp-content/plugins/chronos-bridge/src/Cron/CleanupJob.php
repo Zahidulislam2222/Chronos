@@ -27,6 +27,20 @@ final class CleanupJob {
 	public static function register(): void {
 		add_action( self::DAILY_HOOK, array( self::class, 'daily_cleanup' ) );
 		add_action( self::WEEKLY_HOOK, array( self::class, 'weekly_summary' ) );
+		add_action( 'init', array( self::class, 'ensure_daily_cleanup' ) );
+	}
+
+	/**
+	 * Keep the daily cleanup scheduled even if the cron entry was lost.
+	 *
+	 * Activation alone is not enough: a plugin updated in place is never
+	 * re-activated, and contact retention depends on this job. The weekly
+	 * summary email is left to activation, so no new email starts by itself.
+	 */
+	public static function ensure_daily_cleanup(): void {
+		if ( ! wp_next_scheduled( self::DAILY_HOOK ) ) {
+			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', self::DAILY_HOOK );
+		}
 	}
 
 	/**

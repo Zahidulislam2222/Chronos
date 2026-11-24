@@ -52,6 +52,7 @@ namespace {
 		public static array $routes     = array();
 		public static string $now       = '2026-11-25 12:00:00';
 		public static int $login_init   = 0;
+		public static array $scheduled  = array();
 
 		public static function reset(): void {
 			self::$options   = array();
@@ -62,6 +63,7 @@ namespace {
 			self::$actions   = array();
 			self::$routes    = array();
 			self::$login_init = 0;
+			self::$scheduled  = array();
 		}
 	}
 }
@@ -123,6 +125,16 @@ namespace ChronosBridge\AI {
 namespace ChronosBridge\Cron {
 	function current_datetime(): \DateTimeImmutable {
 		return new \DateTimeImmutable( \HardeningState::$now );
+	}
+	function add_action( string $hook, mixed $callback, int $priority = 10, int $args = 1 ): void {
+		\HardeningState::$actions[] = $hook;
+	}
+	function wp_next_scheduled( string $hook ): int|false {
+		return \HardeningState::$scheduled[ $hook ] ?? false;
+	}
+	function wp_schedule_event( int $timestamp, string $recurrence, string $hook ): bool {
+		\HardeningState::$scheduled[ $hook ] = $timestamp;
+		return true;
 	}
 }
 
@@ -391,6 +403,17 @@ namespace ChronosBridge\Tests\Unit {
 			ContactResponder::register();
 			$this->assertContains( 'rest_api_init', \HardeningState::$actions );
 			$this->assertContains( 'wp_ajax_chronos_ai_suggest_reply', \HardeningState::$actions );
+		}
+
+		public function test_daily_cleanup_reschedules_itself_but_not_the_weekly_email(): void {
+			CleanupJob::register();
+			$this->assertContains( 'init', \HardeningState::$actions );
+			CleanupJob::ensure_daily_cleanup();
+			$this->assertArrayHasKey( 'chronos_daily_cleanup', \HardeningState::$scheduled );
+			$this->assertArrayNotHasKey( 'chronos_weekly_summary', \HardeningState::$scheduled );
+			$first = \HardeningState::$scheduled['chronos_daily_cleanup'];
+			CleanupJob::ensure_daily_cleanup();
+			$this->assertSame( $first, \HardeningState::$scheduled['chronos_daily_cleanup'], 'an existing schedule is kept' );
 		}
 
 		public function test_contact_retention_is_off_by_default_and_deletes_by_site_time_cutoff(): void {

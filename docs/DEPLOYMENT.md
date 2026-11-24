@@ -61,6 +61,12 @@ swaps `runtime.php` back (about 8 seconds in the November 2026 drill). After
 promotion, run `verification/backend-exposure.sh` and prove release and live
 `src/` hashes equal the commit.
 
+Release check for privacy copy: the WordPress option
+`chronos_contact_retention_days` must equal the period the privacy page and
+contact notice publish (`src/content/wordpress-pages.json`,
+`src/content/connected.json`; currently 30). Change both together, sync the CMS
+privacy page, and confirm `wp cron event list` shows `chronos_daily_cleanup`.
+
 ## GitHub Actions
 
 | Workflow | Trigger | What it does | State |

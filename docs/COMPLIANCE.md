@@ -23,7 +23,7 @@ Selected EDPB, CPPA, FTC, PCI SSC and European Commission AI/CRA sources were re
 | Sign-in token (JWT) | Visitor's browser storage | Keep the visitor signed in | Until sign-out or expiry |
 | Cart selection | Visitor's browser storage | Remember the selection the visitor asked for | Until cleared |
 | Test orders: items, totals, gift and delivery notes, Stripe session reference | WooCommerce order tables | Test checkout and receipts | Not yet defined |
-| Contact messages: name, email, subject, message | Custom `chronos-bridge` table | Admin inbox | Not yet defined |
+| Contact messages: name, email, subject, message | Custom `chronos-bridge` table | Admin inbox | **30 days**: deleted by the daily cleanup (`chronos_contact_retention_days` = 30), stated on the privacy page and contact form; encrypted off-host backups keep copies up to 14 more days |
 | AI question and previous approved topic | Ephemeral page/service context; sent to approved OpenRouter endpoint | Select maintained help topic | Service does not save question text; request privacy flags do not replace vendor retention/contract review |
 | Card data | **Never on Chronos systems**; entered on Stripe's hosted page | Payment | Stripe's policies |
 | Network metadata (IP, user agent) | Cloudflare, hosting providers; frontend access logs disabled | Delivery and security | Provider policies |
