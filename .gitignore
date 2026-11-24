@@ -129,3 +129,6 @@ wordpress/wp-content/plugins/chronos-bridge/vendor-*/
 .playwright-mcp/
 # Project film exports and editing assets stay local.
 /project-film/
+
+# Private task tracker (global Rule 25)
+TASKS.md
