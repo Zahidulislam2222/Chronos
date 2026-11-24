@@ -50,6 +50,17 @@ core, WooCommerce and the WPGraphQL plugins are installed and updated on the
 server with WP-CLI. Composer runtime dependencies (`stripe/stripe-php`) are
 installed on the server; dev tools are not needed there.
 
+`chronos-bridge` classes load from an immutable release directory
+(`/srv/apps/chronos-bridge/releases/<id>/{src,vendor}`) chosen by the plugin's
+`content/runtime.php`. A release is built from a reviewed commit with
+`git -c core.autocrlf=false archive` (so files keep repository line endings),
+staged with every file hash checked and PHP 8.1 lint, then promoted by
+atomically replacing `runtime.php`. PHP-FPM is shared with another site and is
+never reloaded; opcache revalidates timestamps within two seconds. Rollback
+swaps `runtime.php` back (about 8 seconds in the November 2026 drill). After
+promotion, run `verification/backend-exposure.sh` and prove release and live
+`src/` hashes equal the commit.
+
 ## GitHub Actions
 
 | Workflow | Trigger | What it does | State |
@@ -80,7 +91,8 @@ This repository is public. GitHub lets anyone with read access download
 workflow artifacts, which for a public repository means any signed-in GitHub
 user. A database dump contains customer records and settings, so it must not
 be uploaded as an artifact here. The steps are commented out, not deleted. The
-replacement design (encrypted backups to private object storage) is in
+replacement, nightly encrypted off-host copies pulled by the frontend server,
+is in [deploy/backup](../deploy/backup/README.md) and
 [AVAILABILITY-AND-DR.md](AVAILABILITY-AND-DR.md#backups).
 
 ## Hosting history
