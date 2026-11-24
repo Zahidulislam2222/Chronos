@@ -71,7 +71,9 @@ R2=$(rest_as 'nobody-xyz')
 R3=$(rest_as 'nobody@example.invalid')
 check "REST app-password no oracle"    "$R1" "$R2"
 check "REST app-password email same"   "$R1" "$R3"
-check "REST app-password uniform"      "$(printf '%s' "$R1" | grep -c '"code":"invalid_credentials"')" 1
+if printf '%s' "$R1" | grep -q '"code":'; then
+  check "REST app-password uniform"    "$(printf '%s' "$R1" | grep -c '"code":"invalid_credentials"')" 1
+else skip "REST app-password uniform (application passwords not in use; Basic auth ignored)"; fi
 LP=$(curl -s -m 60 -o /dev/null -w '%{http_code} %{redirect_url}' -d 'user_login=nobody-xyz&redirect_to=&wp-submit=Get+New+Password' "$B/wp-login.php?action=lostpassword")
 check "lost password unknown = sent"   "$LP" "302 $B/wp-login.php?checkemail=confirm"
 LE=$(curl -s -m 60 -o /dev/null -w '%{http_code} %{redirect_url}' -d 'user_login=nobody@example.invalid&redirect_to=&wp-submit=Get+New+Password' "$B/wp-login.php?action=lostpassword")
@@ -82,7 +84,9 @@ WP=$(curl -s -m 60 "$B/my-account/lost-password/")
 WN=$(printf '%s' "$WP" | grep -o 'name="woocommerce-lost-password-nonce" value="[^"]*"' | sed 's/.*value="//;s/"//')
 if [ -n "$WN" ]; then
   WL=$(curl -s -m 60 -o /dev/null -w '%{http_code} %{redirect_url}' --data-urlencode 'user_login=nobody-xyz' -d "wc_reset_password=true&woocommerce-lost-password-nonce=$WN" "$B/my-account/lost-password/")
-  check "store lost password unknown = sent" "$WL" "302 $B/my-account/lost-password/?reset-link-sent=true"
+  # WooCommerce's success branch redirects (to the account page, or wp-admin when that page is on
+  # another host); its "Invalid username or email" branch re-renders the form with 200.
+  check "store lost password unknown = sent" "${WL%% *}" 302
 else skip "store lost-password form not rendered"; fi
 CA=$(gql '{"query":"{ posts(first:10) { nodes { comments(first:20) { nodes { author { node { name avatar { url } } } } } } } }"}')
 check "gql guest comment avatar hidden" "$(printf '%s' "$CA" | grep -c 'gravatar')" 0
