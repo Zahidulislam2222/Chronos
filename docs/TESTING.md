@@ -57,6 +57,21 @@ vendor/bin/phpunit
 
 PHPCS warnings are reported separately. PHPUnit uses controlled doubles; actual CMS permission, persistence and payment flows require a running configured stack. Preserve test-mode protection against stock changes and transactional emails. Test mismatched user/session/amount/currency, duplicate requests, webhook signatures and retry behavior; never charge a live card for a repository check.
 
+Account-exposure, GraphQL and health checks against a real WordPress (a disposable local stack or, read-only, production):
+
+```bash
+CHRONOS_KNOWN_LOGIN=<an existing login> bash verification/backend-exposure.sh <backend-url>
+# Optional on test sites only: CHRONOS_EDITOR_AUTH / CHRONOS_CUSTOMER_AUTH="login:application-password"
+```
+
+It compares failed sign-in, application-password, lost-password, GraphQL `user(idType:SLUG)` and `authorName` responses for a real and a non-existent account (they must be identical), and checks REST users routes in mixed case and with trailing slashes, health, introspection, depth and avatar hiding. Failed attempts use a fresh random password. Lost-password probes use non-existent accounts only, so no reset email is sent.
+
+Backup stream (disposable container, fake wp-cli, throwaway key):
+
+```bash
+docker run --rm -v "$PWD/deploy/backup:/src:ro" -v "$PWD/verification:/t:ro" ubuntu:22.04 bash /t/backup-stream.container.sh
+```
+
 From `wordpress/wp-content/plugins/chronos-blocks`:
 
 ```bash
