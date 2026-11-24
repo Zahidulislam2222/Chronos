@@ -73,6 +73,15 @@ const file = await outputPath('memory', c.outputFile.slice('memory/'.length));
 await mkdir(path.dirname(file), { recursive: true });
 await appendFile(file, JSON.stringify(record) + '\n');
 console.log(JSON.stringify(record));
+// In GitHub Actions, label the run so history separates downtime from owner-only alerts.
+if (process.env.GITHUB_ACTIONS === 'true') {
+  const failed = (slo) => checks.filter((check) => check.slo === slo && !check.ok).map((check) => `${check.origin}${check.path}`);
+  if (!record.ok) console.log(`::error title=Storefront unavailable::${failed(true).join(', ')}`);
+  if (failed(false).length) console.log(`::warning title=Owner alert (not downtime)::${failed(false).join(', ')}`);
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    await appendFile(process.env.GITHUB_STEP_SUMMARY, `| Availability (SLO) | Owner alerts |\n|---|---|\n| ${record.ok ? 'up' : 'DOWN: ' + failed(true).join(', ')} | ${failed(false).join(', ') || 'none'} |\n`);
+  }
+}
 // One observation is not an availability percentage; the scheduled workflow repeats it.
 // Any failed check, SLO or not, fails the run so the workflow notifies the owner.
 process.exitCode = record.allOk ? 0 : 1;

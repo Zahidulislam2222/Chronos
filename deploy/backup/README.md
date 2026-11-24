@@ -7,8 +7,8 @@ private key stays with the owner.
 
 | File | Runs on | Purpose |
 |---|---|---|
-| `chronos-backup-stream.sh` | backend, as root through one sudoers rule | `stream`: dump (`--single-transaction`), write `MANIFEST`, stream a tar through `gpg` to stdout. Plaintext is staged only in RAM (`/dev/shm`); uploads stream from the site directory. Any failure exits non-zero (`pipefail`), so a truncated archive is never acknowledged. `ack <sha256>`: record the confirmed off-host copy (exactly 64 lowercase hex characters) |
-| `pull-backup.sh` | off-host server, unprivileged user, cron | Pull, check size and OpenPGP format, keep `RETENTION_DAYS`, acknowledge |
+| `chronos-backup-stream.sh` | backend, as root through one sudoers rule | `stream`: dump (`--single-transaction`), write `MANIFEST`, stream a tar through `gpg` to stdout. Plaintext is staged only in RAM (`/dev/shm`); uploads stream from the site directory. Any failure exits non-zero (`pipefail`), so a truncated archive is never acknowledged. `ack <sha256>`: record the confirmed off-host copy; accepted only when it is exactly 64 lowercase hex characters **and** equals the digest of the last archive produced (one use) |
+| `pull-backup.sh` | off-host server, unprivileged user, cron | Pull (one run at a time, `PULL_TIMEOUT`, SSH keep-alives), check size and OpenPGP format, acknowledge, then keep the copy and prune past `RETENTION_DAYS`. A refused ack discards the copy |
 | `backup.conf.example`, `pull.env.example` | both | Settings (no secrets) |
 
 ## Access model

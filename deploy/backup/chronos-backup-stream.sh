@@ -3,8 +3,10 @@
 #
 #   (no command) | stream   write an OpenPGP-encrypted tar to stdout:
 #                           database dump, uploads, wp-config.php, nginx site
-#   ack <sha256>            record that the off-host copy with this digest was
-#                           stored; /chronos/v1/health/backup reads the marker's age
+#   ack <sha256>            record that the off-host copy was stored; accepted only
+#                           when it matches the digest of the last archive this
+#                           script produced. /chronos/v1/health/backup reads the
+#                           marker's age
 #
 # The server holds only the public key, so it cannot decrypt its own backups.
 # Plaintext never touches disk: the dump and small files are staged in RAM
@@ -17,6 +19,8 @@ umask 077
 # shellcheck source=/dev/null
 . /etc/chronos-backup/backup.conf
 : "${WP_PATH:?}" "${WP_USER:?}" "${RECIPIENT_FILE:?}" "${MARKER_FILE:?}" "${NGINX_SITE:?}"
+# Digest of the last archive produced; an ack must match it.
+PENDING_FILE="$(dirname "$MARKER_FILE")/pending-digest"
 
 request=${SSH_ORIGINAL_COMMAND:-stream}
 case "$request" in
@@ -26,11 +30,16 @@ case "$request" in
     # Exactly 64 lowercase hex characters: no newlines, spaces or extra text.
     case "$digest" in *[!0-9a-f]*) echo 'invalid digest' >&2; exit 2 ;; esac
     [ "${#digest}" -eq 64 ] || { echo 'invalid digest' >&2; exit 2; }
+    if [ ! -f "$PENDING_FILE" ] || [ "$(cat "$PENDING_FILE")" != "$digest" ]; then
+      echo 'digest does not match the last archive' >&2
+      exit 3
+    fi
     install -d -m 0755 "$(dirname "$MARKER_FILE")"
     tmp="$MARKER_FILE.tmp"
     printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$digest" > "$tmp"
     chmod 0644 "$tmp"
     mv -f "$tmp" "$MARKER_FILE"
+    rm -f "$PENDING_FILE"
     exit 0 ;;
   *) echo 'unsupported request' >&2; exit 2 ;;
 esac
@@ -59,7 +68,13 @@ cp -p "$NGINX_SITE" "$work/chronos/nginx-site.conf"
   (cd "$uploads_parent" && find uploads -type f -exec sha256sum {} + | sort -k2 | sed 's,  uploads/,  ./uploads/,')
 } > "$work/chronos/MANIFEST"
 
+# Encrypt into RAM first so the digest of exactly what is sent can be recorded.
 tar -cf - -C "$work" chronos \
   -C "$uploads_parent" --transform='s,^uploads\(/\|$\),chronos/uploads\1,' uploads \
   | gpg --batch --no-tty --quiet --homedir "$work/gnupg" \
-      --trust-model always --recipient-file "$RECIPIENT_FILE" --encrypt
+      --trust-model always --recipient-file "$RECIPIENT_FILE" --encrypt > "$work/archive.gpg"
+rm -rf "$work/chronos"
+install -d -m 0755 "$(dirname "$PENDING_FILE")"
+sha256sum "$work/archive.gpg" | cut -d' ' -f1 > "$PENDING_FILE.tmp"
+mv -f "$PENDING_FILE.tmp" "$PENDING_FILE"
+cat "$work/archive.gpg"
