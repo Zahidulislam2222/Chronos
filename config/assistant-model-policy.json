@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-21",
+  "checkedAt": "2026-11-25",
   "source": "https://openrouter.ai/api/v1/models",
   "model": "qwen/qwen3-30b-a3b-instruct-2507",
   "contextTokens": 262144,
