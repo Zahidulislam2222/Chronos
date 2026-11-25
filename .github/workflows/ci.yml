@@ -103,7 +103,7 @@ jobs:
       - name: Verify data readiness
         run: npm run test:render && npm run test:render:browser
 
-      - name: Build rendered portfolio
+      - name: Build pre-rendered storefront
         env:
           VITE_API_URL: ''
           VITE_WP_API_URL: ''

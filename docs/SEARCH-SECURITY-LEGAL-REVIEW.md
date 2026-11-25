@@ -2,7 +2,7 @@
 
 ## Scope and conclusion
 
-Chronos is a public storefront website of a watch storefront, not a retailer. Its products are fictional, its prices and specifications are illustrative, and the connected website supports accounts, stored contact messages, test orders and Stripe test payments only. This distinction determines what can responsibly be implemented now. The current connected privacy notice explains CMS account/contact/order data and test payment processing. This review does not certify commercial sale of real goods.
+Chronos is a public watch storefront website that does not sell physical goods. Its products are original designs, its prices and specifications are illustrative and are not offers, and the connected website supports accounts, stored contact messages, test orders and Stripe test payments only. This distinction determines what can responsibly be implemented now. The current connected privacy notice explains CMS account/contact/order data and test payment processing. This review does not certify commercial sale of real goods.
 
 The appropriate immediate work is to make the storefront discoverable and understandable, reduce the exposed application surface, explain actual browser and infrastructure processing, provide accessible alternatives to motion, and document the evidence needed before commercial launch. Applying every US and EU law is not a finite frontend feature: applicability depends on establishment, markets, data practices, business size, goods, distribution roles and national implementation. Requirements below distinguish implemented website controls from conditional launch obligations. Research was checked on 14 September 2026; later releases need a new applicability review.
 
@@ -14,7 +14,7 @@ Google explains that JavaScript sites require crawling, rendering and indexing s
 
 Search-agent optimization is treated as clear information architecture, not a separate ranking trick. Google states that ordinary SEO foundations apply to AI Overviews and AI Mode, with no special schema or AI text file required. Important information must be textual, internally linked and consistent with structured data. Eligibility does not guarantee indexing or citation. Chronos therefore describes itself explicitly as a design website and supplies meaningful headings and factual descriptions rather than adding keyword repetition or fabricated merchant authority.[2]
 
-The structured-data graph identifies the website and its creator, describes editorial pages as articles, and uses Product metadata for connected WooCommerce records (the optional offline catalogue uses CreativeWork for fictional designs). It deliberately omits merchant offers, aggregate ratings, purchase availability and fictitious customer reviews. Prices visible in the website are not a basis for real merchant listings. Canonicals and social URLs come from the typed public site configuration; route content is maintained in validated data. Indexability is separate from commerce mode, so the website can be indexed while payments remain disabled.
+The structured-data graph identifies the website and its creator, describes editorial pages as articles, and uses Product metadata for connected WooCommerce records (the optional offline catalogue uses CreativeWork for its original designs). It deliberately omits merchant offers, aggregate ratings, purchase availability and fictitious customer reviews. Prices visible in the website are not a basis for real merchant listings. Canonicals and social URLs come from the typed public site configuration; route content is maintained in validated data. Indexability is separate from commerce mode, so the website can be indexed while payments remain disabled.
 
 Search Console ownership verification and post-release URL inspection are the appropriate next measurement steps for an account holder. No verification token is invented, and no indexing submission or search ranking result is claimed without evidence. Robots directives are discovery instructions, not authentication or data protection. Cloudflare's cache behaviour must also be considered: HTML is not cached by default merely because a site is proxied. A proposed HTML edge-cache policy is a separate, measurable operating decision.[3]
 
@@ -52,7 +52,7 @@ The website does not sell personal information or share it for cross-context beh
 
 ## Consumer protection and commercial launch
 
-US advertising must be truthful, substantiated and not misleading. The FTC also prohibits specified fake reviews and testimonials, including claims attributed to nonexistent people or people without the represented experience. Chronos therefore discloses that its products and visuals are illustrative designs, avoids fabricated customer reviews, and does not market invented specifications as tested performance. A small footer should not be the only place a visitor learns that a realistic product is fictional: product-level disclosures remain important.[12][13]
+US advertising must be truthful, substantiated and not misleading. The FTC also prohibits specified fake reviews and testimonials, including claims attributed to nonexistent people or people without the represented experience. Chronos therefore discloses that its products and visuals are illustrative designs, avoids fabricated customer reviews, and does not market invented specifications as tested performance. A small footer should not be the only place a visitor learns that a realistic product is not offered for sale: product-level disclosures remain important.[12][13]
 
 Actual US online merchandise sales would bring shipment representations and delay/refund handling into scope. The FTC's Mail, Internet, or Telephone Order Merchandise Rule requires a reasonable basis for the advertised shipping period and sets a default 30-day period in relevant cases where none is stated. A working merchant implementation needs inventory, fulfilment promises and an operational cancellation/refund process. Those promises are not added to a website that ships nothing.[14]
 
@@ -87,9 +87,9 @@ US copyright analysis distinguishes human authorship from material generated sol
 | Privacy | Accurate website notice and provider links | Controller identity, lawful bases, contacts, contracts, retention and transfer assessment |
 | Marketing | No mailing, ads, profiling or fabricated reviews | Valid consent/opt-out records and substantiated claims |
 | US sales | No fulfilment or warranty promises in website | Shipping rule, returns/warranties, state-law and tax review |
-| EU sales | No fictional trader or product-compliance claims | Distance-sale information, withdrawal, guarantees, GPSR and national product review |
+| EU sales | No trader or product-compliance claims for goods that are not on sale | Distance-sale information, withdrawal, guarantees, GPSR and national product review |
 | Accessibility | Semantic UI, motion alternatives and recorded checks | Manual assistive-technology assessment and applicable-law review |
-| AI imagery | Clear fictional/synthetic disclosure | Rights, provenance, model terms and content-specific legal review |
+| AI imagery | Clear AI-created imagery disclosure | Rights, provenance, model terms and content-specific legal review |
 | Capacity/availability | Auditable target and bounded measurement tooling | Representative distributed load/failure evidence and funded operating design |
 
 ## Sources

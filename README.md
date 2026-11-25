@@ -13,7 +13,7 @@
 # Chronos
 
 <!-- release-current:start -->
-**Release documentation — 21 October 2026:** See the [current release, before/after comparison and engineering roadmap](docs/RELEASE.md) for deployed scope, verification, security/legal requirements, operations, the path toward 1M+ simultaneous sessions and availability objectives. Component-specific instructions below remain authoritative for setup.
+**Release documentation — 25 November 2026:** See the [current release record with before/after tables](docs/RELEASE.md) for deployed scope, verification, security and legal requirements, operations, the path toward 1M+ simultaneous sessions and the availability objectives. Component-specific instructions below remain authoritative for setup.
 <!-- release-current:end -->
 
 
@@ -34,8 +34,11 @@ contact inbox and a server-priced, idempotent Stripe **test** checkout.
   <a href="#getting-started">Getting started</a>
 </p>
 
-> **Release and growth plan.** Storefront content, accounts, contact persistence and
-> Stripe test checkout were reverified on 21 October 2026 ([release evidence](docs/VERIFICATION.md)).
+> **Release and growth plan.** The November 2026 releases added account-enumeration
+> guards, GraphQL hardening, health endpoints, nightly encrypted off-host backups with a
+> timed restore, a scheduled availability probe, a repaired AI guide route, sign-in expiry
+> handling and stable page layout ([release record](docs/RELEASE.md), [evidence](docs/VERIFICATION.md)).
+> Every change to `main` passes 10 required CI checks before merge.
 > The roadmap targets **1M+ concurrent sessions**, an initial **99% availability
 > objective** and a later **99.9% objective**, with defined workloads and stage exits.
 > These growth targets do not establish capacity for the bounded AI route.
@@ -45,7 +48,7 @@ contact inbox and a server-priced, idempotent Stripe **test** checkout.
 
 ## Features
 
-The deployed storefront includes a header that hides on downward scroll and returns upward, clear primary page links, grouped footer navigation and responsive information pages. Five products with illustrative imagery and three completed journal articles are published; four unfinished records remain drafts. Scroll thresholds and links live in validated navigation data; one runtime/build policy owns catalogue eligibility. Live browser, payment, release parity and independent review results are recorded in [verification](docs/VERIFICATION.md).
+The deployed storefront includes a header that hides on downward scroll and returns upward, clear primary page links, grouped footer navigation and responsive information pages. Five products with AI-created imagery of original designs and three journal articles are published; unpublished records never reach visitors because public reads are anonymous. Scroll thresholds and links live in validated navigation data; one runtime/build policy owns catalogue eligibility. Live browser, payment, release parity and independent review results are recorded in [verification](docs/VERIFICATION.md).
 
 **Project AI guide**
 - Server-hosted remote AI guidance for browsing, accounts, test checkout, privacy, accessibility and contact
@@ -61,20 +64,24 @@ The deployed storefront includes a header that hides on downward scroll and retu
 - Cinematic scroll-driven hero films with reduced-motion and failed-media fallbacks
 - Build-time pre-rendering: real HTML, per-route metadata, JSON-LD, sitemap. Crawlable without JavaScript
 - Live WooCommerce catalogue, WordPress posts, pages and menus
-- JWT accounts with order history; guest cart kept across login
-- Hosted Stripe Checkout (test mode) with **server-side pricing**, idempotency and payment reconciliation
+- JWT accounts with order history; guest cart kept across login; an expired or refused sign-in signs out quietly and never breaks the catalogue
+- Hosted Stripe Checkout (test mode) with **server-side pricing**, idempotency and payment reconciliation; the return page reports each state honestly (checking, sign in, could not check, paid, unpaid)
 - Real HTTP 404s for drafts and missing routes
-- Accessibility: keyboard flows, skip link, labelled controls, reduced motion; 0 violations in 6 automated axe scans (not a full WCAG audit)
+- Stable layout: loading, error and empty states reserve their space (layout shift 0.17-0.57 before, at most 0.035 after on desktop, phone and a tall screen)
+- Accessibility: keyboard flows verified on the live site, skip link, labelled controls with autocomplete purposes, reduced motion, automated axe scans; a manual screen-reader review is still open
 
 **Backend (WordPress plugins, PHP 8.1+ minimum)**
-- **chronos-bridge** v2.1.0: OOP plugin with PSR-4 autoloading, custom REST API, Stripe checkout and webhooks, contact inbox with rate limiting, WooCommerce fields, JSON-LD, privacy exporter/eraser, Redis-ready caching, i18n, WP 7.0 AI admin helpers
+- **chronos-bridge** v2.1.0: OOP plugin with PSR-4 autoloading, custom REST API, Stripe checkout and webhooks, contact inbox with rate limiting and configurable retention (30 days on the live site), account-enumeration guards, GraphQL hardening (no debug output or public introspection, depth limit), health endpoints, WooCommerce fields, JSON-LD, privacy exporter/eraser, Redis-ready caching, i18n, WP 7.0 AI admin helpers (off by default)
 - **chronos-blocks** v1.0.0: Watch Showcase, Collection Grid and Contact Form Gutenberg blocks
 
 **Engineering**
 - CI on pushes to `main` and every PR: PHPCS + PHPUnit, blocks lint/build/Jest, frontend typecheck/lint/pre-render/release check
 - npm and Composer audits, CodeQL, Dependabot
 - Hardened container release: read-only, non-root, dropped capabilities, CSP, HSTS, request budget
-- Local-first releases with SHA-256 local/live parity proof
+- Local-first, immutable releases with a kept rollback target and SHA-256 local/live parity proof
+- Nightly encrypted off-host backups, a timed restore drill and a host-rebuild rehearsal
+- Scheduled availability probe (storefront and backend health) with owner alerts; it is scheduled every 30 minutes, but GitHub's scheduler is best-effort and ran it far less often, so an always-on external monitor is a Phase 1 item
+- Protected `main`: pull requests only, 10 required checks, administrators included
 
 ## Architecture
 
@@ -163,8 +170,9 @@ All frontend settings are listed in [`.env.example`](.env.example). Every
 
 ```bash
 npm run typecheck && npm run lint && npm run build && npm run verify:release
+npm run test:assistant && npm run test:render && npm run test:dependency-security
 cd wordpress/wp-content/plugins/chronos-blocks && npm ci && npm test   # 19 Jest tests
-cd ../chronos-bridge && composer install && vendor/bin/phpunit      # 38 tests, 60 assertions
+cd ../chronos-bridge && composer install && vendor/bin/phpunit      # 71 tests, 210 assertions (25 Nov 2026)
 vendor/bin/phpcs --standard=phpcs.xml --warning-severity=0
 ```
 
@@ -185,20 +193,26 @@ CI runs the same commands on pushes to `main` and every pull request. See
 | [Security operations](docs/SECURITY-OPERATIONS.md) | Implemented controls, gates, operating limits |
 | [Legal and compliance](docs/COMPLIANCE.md) | GDPR, ePrivacy, CCPA, PCI DSS, consumer law, accessibility, AI Act, CRA, licensing (not legal advice) |
 | [Search, security and legal review](docs/SEARCH-SECURITY-LEGAL-REVIEW.md) | Detailed cited analysis |
+| [Release record](docs/RELEASE.md) | Current release, before/after tables, previous releases |
 | [Verification](docs/VERIFICATION.md) | Dated test and release evidence |
+| [Testing](docs/TESTING.md), [Configuration](docs/CONFIGURATION.md), [Operations](docs/OPERATIONS.md) | Gates, settings ownership, runbooks |
 | [Public technical overview](https://docs.google.com/document/d/1vxOa2xT6dvLN1q8Mq0SWtN-BQWNdMcTfV9PLyzMkM5Y) | Client-facing summary (Google Doc) |
 
 ## Scalability and availability, in short
 
-- **Today:** one frontend origin and one small backend VM. Honest and
-  documented as a single point of failure.
+- **Today:** one frontend origin and one small backend VM, documented as a
+  single point of failure. Nightly encrypted off-host backups (RPO about
+  24 h), a timed restore and a host-rebuild rehearsal (8 min 40 s from a
+  clean OS to a verified backend; VM creation and TLS not included).
 - **Target:** 1M+ concurrent sessions with edge-cached HTML and GraphQL reads,
   stateless autoscaled PHP, Redis object cache, HA MySQL with replicas,
   queues, search service and multi-zone/DR. Includes capacity math, and the
   fact that **Stripe's default 25 req/s per-endpoint limit** caps checkout
   before WordPress does. See [SCALABILITY.md](docs/SCALABILITY.md).
 - **Availability:** 99% objective (7 h 12 min/month budget) now, 99.9% after
-  redundancy. It is measured with external probes, never assumed. See
+  redundancy. A scheduled GitHub Actions probe checks storefront and backend
+  health (scheduled every 30 minutes; GitHub runs schedules best-effort, so
+  an always-on external monitor is still required). See
   [AVAILABILITY-AND-DR.md](docs/AVAILABILITY-AND-DR.md).
 
 ## Security
@@ -241,7 +255,7 @@ Issues and pull requests are welcome. Please read
 - Bundled `wp-graphql-cors`: **GPL-3.0** (third-party)
 
 Details: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). Campaign media is
-AI-generated; products and brand are fictional.
+AI-generated; the watches are original Chronos designs that are not offered for delivery.
 
 ---
 
@@ -251,6 +265,6 @@ AI-generated; products and brand are fictional.
 
 [Documentation index](docs/README.md) · [Configuration](docs/CONFIGURATION.md) · [Testing](docs/TESTING.md) · [Operations](docs/OPERATIONS.md) · [Legal and compliance](docs/COMPLIANCE.md).
 
-The repository contains frontend source, both first-party WordPress plugins, advertising MCP tools, inventory service and n8n graph, safe configuration templates and CI. Runtime secrets, database/media backups, private recovery records and personal verification tools stay outside Git. Source publication and runtime deployment have separate acceptance checks. The frontend, remote AI service and Stripe SDK 20 backend are deployed with executed recovery and parity checks. The installed inventory-service upgrade and advertising account/Claude attachment retain separate operator gates.
+The repository contains frontend source, both first-party WordPress plugins, advertising MCP tools, inventory service and n8n graph, safe configuration templates and CI. Runtime secrets, database/media backups, private recovery records and personal verification tools stay outside Git. Source publication and runtime deployment have separate acceptance checks. The frontend, remote AI guide and backend are deployed as immutable releases with executed rollback and parity checks. The installed inventory-service upgrade and advertising account/Claude attachment retain separate operator gates.
 
 Maintainer: **Zahidul Islam**. Contributions follow [CONTRIBUTING.md](CONTRIBUTING.md); security reports use [SECURITY.md](SECURITY.md). Future infrastructure is provisioned only after workload validation, provider-capacity review and budget approval.

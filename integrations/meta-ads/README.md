@@ -1,7 +1,7 @@
 # Chronos advertising tools for Claude
 
 <!-- release-current:start -->
-**Release documentation — 21 October 2026:** See the [current release, before/after comparison and engineering roadmap](../../docs/RELEASE.md) for deployed scope, verification, security/legal requirements, operations, the path toward 1M+ simultaneous sessions and availability objectives. Component-specific instructions below remain authoritative for setup.
+**Release documentation — 25 November 2026:** See the [current release record with before/after tables](../../docs/RELEASE.md) for deployed scope, verification, security and legal requirements, operations, the path toward 1M+ simultaneous sessions and the availability objectives. Component-specific instructions below remain authoritative for setup.
 <!-- release-current:end -->
 
 
