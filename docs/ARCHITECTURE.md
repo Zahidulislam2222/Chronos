@@ -172,7 +172,8 @@ unpaid. Browser-stored tokens remain an XSS-sensitive boundary, mitigated
 - **Small backend:** e2-micro has 2 shared vCPUs and 1 GB RAM (plus 2 GB
   swap). It is suitable for a website, not for sustained real traffic.
 - **Ephemeral backend IP**, tied to the sslip.io hostname.
-- **No automated off-server backups today** (see
+- **Backups are nightly, not continuous:** an encrypted off-host copy every
+  night (RPO about 24 h) and no point-in-time recovery (see
   [AVAILABILITY-AND-DR.md](AVAILABILITY-AND-DR.md)).
 
 These limits are stated deliberately. The path beyond them is in

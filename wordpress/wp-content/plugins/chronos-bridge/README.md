@@ -1,7 +1,7 @@
 # Chronos Bridge
 
 <!-- release-current:start -->
-**Release documentation — 21 October 2026:** See the [current release, before/after comparison and engineering roadmap](../../../../docs/RELEASE.md) for deployed scope, verification, security/legal requirements, operations, the path toward 1M+ simultaneous sessions and availability objectives. Component-specific instructions below remain authoritative for setup.
+**Release documentation — 25 November 2026:** See the [current release record with before/after tables](../../../../docs/RELEASE.md) for deployed scope, verification, security and legal requirements, operations, the path toward 1M+ simultaneous sessions and the availability objectives. Component-specific instructions below remain authoritative for setup.
 <!-- release-current:end -->
 
 
@@ -65,7 +65,7 @@ webhook secret in wp-admin → Chronos settings.
 composer install
 composer phpcs    # WordPress Coding Standards (errors fail CI)
 composer phpcbf   # auto-fix
-composer test     # PHPUnit: 38 tests, 60 assertions
+composer test     # PHPUnit: 71 tests, 210 assertions (25 Nov 2026)
 composer audit
 ```
 

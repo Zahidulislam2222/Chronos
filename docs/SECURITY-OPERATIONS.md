@@ -39,7 +39,7 @@ The private origin port is not publicly reachable, but the public Caddy hostname
 
 A CDN logo is not a WAF configuration audit. No paid WAF, managed rate-limit add-on, monitoring subscription or load-balancer product was added. The local-only load test must not be repointed at the shared public site. Representative high-capacity validation needs an isolated environment, an approved traffic plan and provider capacity arrangements.
 
-PHP: 38 tests / 60 assertions passed; PHPCS has 0 errors / 7 warnings. Real CMS permissions, contact persistence and hosted test payment were exercised. Real-commerce launch still needs merchant, retention, fulfilment and provider-operating requirements. Public audit counts must identify the package tree and date; a clean frontend audit does not describe every tool in the repository.
+PHP on 25 November 2026: 71 tests / 210 assertions passed in CI; PHPCS reports 0 errors. Real CMS permissions, contact persistence and hosted test payment were exercised. Real-commerce launch still needs merchant, retention, fulfilment and provider-operating requirements. Public audit counts must identify the package tree and date; a clean frontend audit does not describe every tool in the repository.
 
 ## Disclosure and incident handling
 

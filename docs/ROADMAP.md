@@ -9,7 +9,7 @@ selling real watches.
 phase that costs money must be priced with current provider calculators and
 approved before anything is provisioned.
 
-## Phase 0: Delivered foundations (September–October 2026)
+## Phase 0: Delivered foundations (September–November 2026)
 
 - [x] Headless WordPress/WooCommerce backend with custom `chronos-bridge` and
       `chronos-blocks` plugins
@@ -25,20 +25,33 @@ approved before anything is provisioned.
 - [x] Public documentation: architecture, API, deployment, security, threat
       model, compliance, scalability, availability
 
+### Delivered in November 2026
+
+- [x] Account-enumeration guards on every user-revealing route and uniform sign-in errors
+- [x] GraphQL hardening: no debug output, analyzer or public introspection; depth limit
+- [x] Health endpoints (`/chronos/v1/health`, `/chronos/v1/health/backup`) and a scheduled availability probe every 30 minutes with owner alerts
+- [x] Nightly encrypted off-host backups, a timed restore into an isolated stack and a host-rebuild rehearsal (8 min 40 s from a clean OS)
+- [x] Patched runtime images (0 high or critical findings) and clean npm audits
+- [x] AI guide on zero-retention endpoints, refusal-aware spend reservations and automatic pause
+- [x] Sign-in expiry handling, an honest payment return page and stable page layout
+- [x] Protected `main`: pull requests, 10 required checks, administrators included
+
 ## Phase 1: Operate the website reliably (target: 99% measured)
 
 Cost: small (some items may fit free tiers; verify before use).
 
-| Work item | Exit criterion |
-|---|---|
-| Encrypted off-server backups to private object storage | Nightly DB + weekly uploads for 14 days; **one timed restore test passes** |
-| External uptime monitoring every 60 s with alerts | 30 consecutive days of probe data with ≥ 99% coverage |
-| Separate backend health probe (GraphQL + REST) | Backend outage detected while frontend HTML is still up |
-| Restart the frontend container when its health check fails (autoheal watcher or orchestrator) | Induced unhealthy state recovers without manual action |
-| Static backend IP and owned domain instead of sslip.io | Backend reachable at an owned hostname; old hostname redirected |
-| Registrar auto-renew and expiry alerts | Documented in the private recovery record |
-| Rotate any secret ever stored in a place that became public | Rotation recorded |
-| Error-budget report | First monthly report published in VERIFICATION.md |
+| Work item | Exit criterion | Status on 25 November 2026 |
+|---|---|---|
+| Encrypted off-server backups | Nightly DB + uploads for 14 days; **one timed restore test passes** | Running nightly since 25 November (14 days kept); timed restore passed; 14-day run in progress |
+| External uptime monitoring every 60 s with alerts | 30 consecutive days of probe data with ≥ 99% coverage | Probe every 30 minutes with owner alerts; 60 s interval and the 30-day window still open |
+| Separate backend health probe (GraphQL + REST) | Backend outage detected while frontend HTML is still up | Done: backend health counts separately in the probe |
+| Restart the frontend container when its health check fails (autoheal watcher or orchestrator) | Induced unhealthy state recovers without manual action | Open |
+| Static backend IP and owned domain instead of sslip.io | Backend reachable at an owned hostname; old hostname redirected | Open |
+| Registrar auto-renew and expiry alerts | Documented in the private recovery record | Open |
+| Rotate any secret ever stored in a place that became public | Rotation recorded | Deferred by the operator until the current work is complete |
+| Administrator multi-factor sign-in | Every administrator account requires a second factor | Deferred by the operator; risk recorded in the threat model |
+| Stripe test webhook on the live backend | Signed `checkout.session.completed` marks orders paid without the buyer returning | Open: needs the operator's webhook secret |
+| Error-budget report | First monthly report published in VERIFICATION.md | Open: needs 30 days of probe data |
 
 ## Phase 2: Scale to about 10k–100k concurrent users
 
@@ -97,6 +110,7 @@ Required before selling real products to real customers. See
   reviewed security release. Keep full audits and the 19 block tests active;
   re-run them against each new lockfile and generated-asset release.
 
+- Narrow the AI guide's action guard: "send ... the contact form" is wrongly treated as an action request (1 of 13 evaluation tasks).
 - Move the browser JWT out of script-readable storage (HttpOnly cookie with
   CSRF protection, or a backend-for-frontend).
 - Versioned public API contract with a deprecation policy.

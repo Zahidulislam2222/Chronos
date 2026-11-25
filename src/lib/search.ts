@@ -38,7 +38,7 @@ export function pageSearch(pathname: string, remote?: {title:string;description:
     description, image, inLanguage: "en", isPartOf: { "@id": websiteId },
     ...(product ? { creator: { "@type": "Person", ...searchContent.creator } } : {}),
   };
-  // Fictional concepts are CreativeWork, never merchant offers or review ratings.
+  // Offline catalogue designs are CreativeWork, never merchant offers or review ratings.
   const graph: Record<string, unknown>[] = [
     { "@type": "WebSite", "@id": websiteId, url: settings.siteUrl, name: content.brand.name, description: searchContent.siteDescription, creator: { "@type": "Person", ...searchContent.creator }, inLanguage: "en" },
     page,

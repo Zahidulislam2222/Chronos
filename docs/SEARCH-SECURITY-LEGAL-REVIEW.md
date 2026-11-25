@@ -2,7 +2,7 @@
 
 ## Scope and conclusion
 
-Chronos is a public storefront website of a watch storefront, not a retailer. Its products are fictional, its prices and specifications are illustrative, and the connected website supports accounts, stored contact messages, test orders and Stripe test payments only. This distinction determines what can responsibly be implemented now. The current connected privacy notice explains CMS account/contact/order data and test payment processing. This review does not certify commercial sale of real goods.
+Chronos is a public watch storefront website run by an independent studio; it does not yet sell physical goods. Its products are original designs, its prices and specifications describe those designs, and the connected website supports accounts, stored contact messages, test orders and Stripe test payments only. This distinction determines what can responsibly be implemented now. The current connected privacy notice explains CMS account/contact/order data and test payment processing. This review does not certify commercial sale of real goods.
 
 The appropriate immediate work is to make the storefront discoverable and understandable, reduce the exposed application surface, explain actual browser and infrastructure processing, provide accessible alternatives to motion, and document the evidence needed before commercial launch. Applying every US and EU law is not a finite frontend feature: applicability depends on establishment, markets, data practices, business size, goods, distribution roles and national implementation. Requirements below distinguish implemented website controls from conditional launch obligations. Research was checked on 14 September 2026; later releases need a new applicability review.
 
@@ -87,9 +87,9 @@ US copyright analysis distinguishes human authorship from material generated sol
 | Privacy | Accurate website notice and provider links | Controller identity, lawful bases, contacts, contracts, retention and transfer assessment |
 | Marketing | No mailing, ads, profiling or fabricated reviews | Valid consent/opt-out records and substantiated claims |
 | US sales | No fulfilment or warranty promises in website | Shipping rule, returns/warranties, state-law and tax review |
-| EU sales | No fictional trader or product-compliance claims | Distance-sale information, withdrawal, guarantees, GPSR and national product review |
+| EU sales | No trader or product-compliance claims for goods that are not on sale | Distance-sale information, withdrawal, guarantees, GPSR and national product review |
 | Accessibility | Semantic UI, motion alternatives and recorded checks | Manual assistive-technology assessment and applicable-law review |
-| AI imagery | Clear fictional/synthetic disclosure | Rights, provenance, model terms and content-specific legal review |
+| AI imagery | Clear AI-created imagery disclosure | Rights, provenance, model terms and content-specific legal review |
 | Capacity/availability | Auditable target and bounded measurement tooling | Representative distributed load/failure evidence and funded operating design |
 
 ## Sources

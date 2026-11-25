@@ -2,7 +2,7 @@
   "brand": {
     "name": "Chronos",
     "tagline": "An independent perspective on time.",
-    "description": "An independent watch design website. Original fictional timepieces, cinematic motion and an interactive catalogue; nothing is for sale.",
+    "description": "An independent watch studio. Original watch designs, cinematic motion and an interactive catalogue.",
     "currency": "USD",
     "locale": "en-US"
   },
@@ -89,8 +89,8 @@
     "heading": "Objects with a point of view.",
     "body": [
       "A watch is both useful and deeply personal. Its proportions, materials and small rituals become part of the way we move through a day.",
-      "Our collection explores three different characters: the understated Nocturne, the warm Meridian, and the blue-dial Pelagic. Each is an original fictional design created for this website.",
-      "This is an independent portfolio website, not an established watch manufacturer. The products, specifications and prices illustrate the shopping experience; no items are offered for sale on this website."
+      "Our collection explores three different characters: the understated Nocturne, the warm Meridian, and the blue-dial Pelagic. Each is an original design by the Chronos studio.",
+      "Chronos is an independent watch studio created by Zahidul Islam, not an established manufacturer. This offline catalogue edition shows the collection, specifications and prices; ordering opens when the store is connected."
     ],
     "image": "/images/meridian.webp"
   },
@@ -99,7 +99,7 @@
     "title": "A conversation,",
     "italic": "well worth having.",
     "description": "Questions about the collection? Start here.",
-    "notice": "This portfolio website does not send messages. You can compose a note and copy it to keep.",
+    "notice": "The offline catalogue edition does not send messages. You can compose a note and copy it to keep.",
     "action": "Copy your note",
     "success": "Your note has been copied. No message was sent.",
     "failure": "Copy is unavailable in this browser. Select and copy your note manually."
@@ -108,7 +108,7 @@
     "label": "Watch collection",
     "notice": "An original design collection. Illustrative prices and specifications; no orders or payments are submitted.",
     "checkout": "Your selection, at a glance.",
-    "checkoutDescription": "This is a portfolio website. Review your collection below; purchasing is not enabled.",
+    "checkoutDescription": "This offline catalogue edition does not take orders. Review your collection below.",
     "accountTitle": "Your collection, personal.",
     "accountDescription": "Account access is available when connected to the store. This website keeps your selection on this device without creating an account."
   },
@@ -183,7 +183,7 @@
     "privacy": {
       "title": "Your privacy, considered.",
       "body": [
-        "Chronos is a portfolio website developed by Zahidul Islam, not a retailer. This notice describes this public website; no account, order, payment, newsletter subscription or contact-message database is created.",
+        "Chronos is an independent watch studio created by Zahidul Islam. This notice describes the offline catalogue edition of this website; it creates no account, order, payment, newsletter subscription or contact-message database.",
         "Your selection is saved in browser local storage only after you add an item. It contains design product details and quantities, not payment or account information. It stays on this browser until you remove the items or clear it below. If storage is blocked, you can still explore and make a temporary selection.",
         "Contact notes remain in the open page. The copy button writes your note to your device clipboard only when you request it. The site does not send the note to us. Avoid entering sensitive information on shared devices.",
         "The site is delivered through Cloudflare and hosted by Contabo. Delivering and protecting a website involves processing network data such as IP addresses, request details and browser information. We use this infrastructure to serve the site, diagnose failures and prevent abuse. Routine application access logging is disabled in this release; diagnostic and provider security records may still be processed.",
@@ -211,7 +211,7 @@
     "terms": {
       "title": "A note on this collection.",
       "body": [
-        "Chronos is an independent portfolio website by Zahidul Islam. Nocturne, Meridian and Pelagic are fictional watch designs. Displayed prices, stock states, materials and specifications illustrate the interface; they are not verified product performance claims or offers for sale.",
+        "Chronos is an independent watch studio created by Zahidul Islam. Nocturne, Meridian and Pelagic are original watch designs. Displayed prices, stock states, materials and specifications illustrate the interface; they are not verified product performance claims or offers for sale.",
         "No contract to purchase goods is formed here. Checkout, payments and account registration are disabled. Adding an item to the bag only changes your local website selection. No shipping, delivery date, return promise or commercial warranty is offered by this website.",
         "Watch, lifestyle and movement imagery includes AI-generated images and video, with creative direction and editing for this project. These are illustrations, not photographs of goods available for delivery. The exploded movement is an imaginative visual study, not a technically accurate assembly or repair guide.",
         "Product and project names do not imply affiliation with, authorization by or endorsement from an established watch manufacturer. Do not infer exclusive copyright ownership in purely AI-generated elements. Third-party components and fonts remain subject to their respective licences.",

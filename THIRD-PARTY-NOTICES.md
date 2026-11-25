@@ -34,12 +34,12 @@ Use `npx license-checker --summary` in the root and in
 
 ## Media and brand
 
-- Campaign images and films are AI-generated illustrations of fictional
-  products, created for this project. See the AI-media notes in
+- Campaign images and films are AI-generated illustrations of original
+  Chronos designs, created for this project. See the AI-media notes in
   [docs/COMPLIANCE.md](docs/COMPLIANCE.md).
 - "Chronos" is used as a website project name. No affiliation with any real
-  watch brand is implied. Product names, prices and specifications are
-  fictional.
+  watch brand is implied. Product names, prices and specifications
+  describe original designs that are not offered for delivery.
 - Third-party names (WordPress, WooCommerce, Stripe, Cloudflare, Google
   Cloud, GitHub) are trademarks of their owners and are used only to describe
   compatibility.
