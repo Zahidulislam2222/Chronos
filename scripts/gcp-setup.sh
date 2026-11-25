@@ -99,10 +99,13 @@ ln -sf /etc/nginx/sites-available/chronos /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 
-# ── 5. PHP-FPM tuning for e2-micro (1GB RAM) ────────────────────
-echo "[5/8] Tuning PHP-FPM..."
-# Tune the default pool in place. A second pool on the same socket stops PHP-FPM from
-# starting (found in the 2026-11-25 rebuild drill). Matches production: PHP's own limits apply.
+# ── 5. PHP-FPM pool (one pool, production values) ──────────────
+echo "[5/8] Configuring the PHP-FPM pool..."
+# Configure the default pool in place. A second pool on the same socket stops PHP-FPM from
+# starting (found in the 2026-11-25 rebuild drill), so remove one left by older versions of
+# this script. Production uses PHP's own limits; WordPress raises memory to WP_MEMORY_LIMIT.
+# nginx's /var/run/php path is the same socket: /var/run links to /run on Ubuntu.
+rm -f /etc/php/8.1/fpm/pool.d/chronos.conf
 cat > /etc/php/8.1/fpm/pool.d/www.conf <<PHPFPM
 [www]
 user = www-data
