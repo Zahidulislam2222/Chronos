@@ -19,7 +19,7 @@ const visitorOrigin = z.string().url().refine(value => {
   return (url.protocol === 'https:' || (url.protocol === 'http:' && url.hostname === '127.0.0.1')) &&
     !url.username && !url.password && url.pathname === '/' && !url.search && !url.hash && value === url.origin;
 }, 'An exact HTTPS or loopback HTTP origin is required');
-const schema = z.object({
+export const assistantConfigSchema = z.object({
   bindHost: z.literal('127.0.0.1'), port: z.number().int().min(1).max(65535),
   ollamaOrigin: localOrigin, model: z.string().regex(/^[a-zA-Z0-9_.-]+:[a-zA-Z0-9_.-]+$/),
   allowedOrigins: z.array(visitorOrigin).min(1), enabled: z.boolean(), localEnabled: z.boolean(),
@@ -41,10 +41,14 @@ const schema = z.object({
   openrouter: z.object({
     enabled: z.boolean(), origin: z.literal('https://openrouter.ai'),
     model: z.string().regex(/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/),
-    providers: z.array(z.string().regex(/^[a-z0-9-]+(?:\/[a-z0-9._-]+)*$/)).length(1),
+    // Ordered allow-list of endpoints for the one approved model; OpenRouter may use no others.
+    providers: z.array(z.string().regex(/^[a-z0-9-]+(?:\/[a-z0-9._-]+)*$/)).min(1).max(3)
+      .refine(list => new Set(list).size === list.length, 'Duplicate provider endpoint'),
     maxOutputTokens: z.number().int().positive().max(256),
     contextTokens: z.number().int().positive().max(262144),
     maxInputBytes: z.number().int().positive().max(32768),
+    // Chat-template tokens added around the byte-bounded prompt when sizing a reservation.
+    reservationTemplateTokens: z.number().int().positive().max(4096),
     maxPrice: z.object({prompt: z.number().positive().max(modelPolicy.maximumPromptPricePerMillion), completion: z.number().positive().max(modelPolicy.maximumCompletionPricePerMillion), request: z.literal(0)}).strict(),
     budgetUsd: z.number().positive().max(modelPolicy.authorizedBudgetUsd), dataCollection: z.literal('deny'), zeroDataRetention: z.literal(true),
   }).strict().refine(value => value.model === modelPolicy.model && value.contextTokens === modelPolicy.contextTokens,
@@ -73,7 +77,7 @@ export function loadAssistantConfig(env = process.env) {
     const requested = z.enum(['true', 'false']).parse(env.CHRONOS_ASSISTANT_OPENROUTER_ENABLED) === 'true';
     base.openrouter.enabled = base.openrouter.enabled && requested;
   }
-  return schema.parse(base);
+  return assistantConfigSchema.parse(base);
 }
 
 // Read only in the server process. Never import credentials into client configuration.
@@ -106,6 +110,8 @@ export function loadKnowledge() {
 // Versioned API paths are protocol invariants, owned here rather than duplicated.
 const protocolPath = z.string().regex(/^\/[a-z0-9]+(?:[/-][a-z0-9]+)*$/);
 export const protocolSchema = z.object({message: protocolPath, health: protocolPath, generate: protocolPath,
-  chatCompletions: protocolPath, tokensPerMillion: z.literal(1_000_000)}).strict();
+  chatCompletions: protocolPath, tokensPerMillion: z.literal(1_000_000),
+  // OpenRouter refusals returned before any model runs: bad request, auth, credits, moderation, no endpoint, rate limit.
+  unbilledRefusalStatuses: z.array(z.number().int().min(400).max(429)).min(1)}).strict();
 export const protocol = Object.freeze(protocolSchema.parse(
   JSON.parse(readFileSync(new URL('../../config/assistant-protocol.json', import.meta.url), 'utf8'))));

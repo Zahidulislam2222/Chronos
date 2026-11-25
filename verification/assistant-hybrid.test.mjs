@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createServer } from 'node:http';
-import { loadAssistantConfig, loadKnowledge, loadProviderSecrets, modelPolicy, modelPolicySchema, protocol, protocolSchema } from '../scripts/assistant/config.mjs';
+import { assistantConfigSchema, loadAssistantConfig, loadKnowledge, loadProviderSecrets, modelPolicy, modelPolicySchema, protocol, protocolSchema } from '../scripts/assistant/config.mjs';
 import { initializeBudget, openBudget, readBudget } from '../scripts/assistant/budget.mjs';
-import { classifyRemote, routeQuestion } from '../scripts/assistant/service.mjs';
+import { classifyRemote, reservationUsd, routeQuestion } from '../scripts/assistant/service.mjs';
 
 // Explicit local-provider fixture; the maintained release may contain local inference.
 const config = {...loadAssistantConfig({}), localEnabled: true};
@@ -129,7 +129,7 @@ test('budget exhaustion, provider outage and invalid remote replies do not retry
 });
 
 test('remote request uses pinned model, no retries/tools and enforced privacy/price limits', async () => {
-  assert.ok(Array.isArray(config.openrouter.providers), 'a maintained single-provider route is required');
+  assert.ok(Array.isArray(config.openrouter.providers), 'a maintained provider allow-list is required');
   const opts = options(async (url, request) => {
     assert.equal(new URL(url).href, config.openrouter.origin + protocol.chatCompletions);
     assert.equal(request.headers.Authorization, 'Bearer sk-or-test-credential');
@@ -171,6 +171,43 @@ test('actual loopback HTTP OpenRouter-compatible upstream receives one private r
   t.after(() => new Promise(resolve => upstream.close(resolve)));
   const opts = options(async (url, request) => fetch(`http://${config.bindHost}:${upstream.address().port}${new URL(url).pathname}`, request));
   assert.equal((await classifyRemote('Explain the project', null, opts)).topic, 'project'); assert.equal(calls, 1);
+});
+
+test('a refusal before inference releases its reservation; uncertain failures keep it', async () => {
+  for (const status of protocol.unbilledRefusalStatuses) {
+    const opts = options(async () => new Response(JSON.stringify({error: {code: status}}), {status}));
+    await assert.rejects(classifyRemote('Contact help', null, opts));
+    assert.deepEqual(opts.stats().settled, [['reservation', 0]], `status ${status} releases the reservation`);
+  }
+  for (const reply of [() => new Response('', {status: 500}), () => new Response('', {status: 502}),
+    () => new Response('', {status: 408}), () => { throw new Error('connection reset'); }, () => new Response('poisoned')]) {
+    const opts = options(async () => reply());
+    await assert.rejects(classifyRemote('Contact help', null, opts));
+    assert.deepEqual(opts.stats().settled, [], 'an uncertain outcome keeps the full reservation');
+  }
+});
+
+test('reservation covers the byte-bounded prompt at the price ceiling, not the whole context', () => {
+  const route = config.openrouter;
+  const expected = ((route.maxInputBytes + route.reservationTemplateTokens) * route.maxPrice.prompt +
+    route.maxOutputTokens * route.maxPrice.completion) / protocol.tokensPerMillion;
+  assert.equal(reservationUsd(route), expected);
+  assert.ok(reservationUsd(route) < reservationUsd({...route, maxInputBytes: route.contextTokens}), 'smaller than a full-context reservation');
+  assert.equal(reservationUsd({...route, maxInputBytes: route.contextTokens * 2}),
+    (route.contextTokens * route.maxPrice.prompt + route.maxOutputTokens * route.maxPrice.completion) / protocol.tokensPerMillion,
+    'never assumes more prompt tokens than the model context');
+  assert.ok(route.budgetUsd / reservationUsd(route) >= 50, 'the allowance covers at least 50 concurrent uncertain calls');
+});
+
+test('provider allow-list is bounded, unique and requires zero data retention', () => {
+  const base = JSON.parse(readFileSync(new URL('../config/assistant.json', import.meta.url), 'utf8'));
+  const attempt = openrouter => () => assistantConfigSchema.parse({...base, openrouter: {...base.openrouter, ...openrouter}});
+  assert.doesNotThrow(attempt({}));
+  assert.throws(attempt({providers: []}));
+  assert.throws(attempt({providers: ['deepinfra/fp8', 'deepinfra/fp8']}));
+  assert.throws(attempt({providers: ['a/1', 'b/1', 'c/1', 'd/1']}));
+  assert.throws(attempt({zeroDataRetention: false}));
+  assert.throws(attempt({model: 'qwen/qwen3-30b-a3b-instruct-2507'}), 'model must match the checked pricing policy');
 });
 
 test('durable reservations survive restart; settled calls release only verified cost', t => {

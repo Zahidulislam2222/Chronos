@@ -65,6 +65,8 @@ export async function classifyRemote(question, previousTopic, {config, knowledge
     }),
   });
   observe({provider: 'openrouter', status: response.status});
+  // A refusal before inference costs nothing, so release it; every other failure stays reserved.
+  if (protocol.unbilledRefusalStatuses.includes(response.status)) remote.budget.settle(reservation, 0);
   if (!response.ok || !response.body) throw new Error('Remote guide unavailable');
   const envelope = z.object({
     choices: z.array(z.object({finish_reason: z.literal('stop'), message: z.object({content: z.string()}).passthrough()}).passthrough()).length(1),
@@ -78,6 +80,14 @@ export async function classifyRemote(question, previousTopic, {config, knowledge
   const topic = knowledge.topics.find(item => item.id === selected.topic);
   return {topic: selected.topic, answer: topic?.answer ?? knowledge.unknown,
     source: topic?.source ?? null, knowledgeVersion: knowledge.version};
+}
+
+// Worst-case cost of one call at the enforced price ceiling. Byte-level BPE tokenizers never produce more
+// tokens than input bytes, so the byte-bounded prompt plus template tokens caps the prompt tokens.
+export function reservationUsd(openrouter) {
+  const promptTokens = Math.min(openrouter.contextTokens, openrouter.maxInputBytes + openrouter.reservationTemplateTokens);
+  return (promptTokens * openrouter.maxPrice.prompt + openrouter.maxOutputTokens * openrouter.maxPrice.completion) /
+    protocol.tokensPerMillion;
 }
 
 export async function routeQuestion(question, previousTopic, options) {
@@ -189,11 +199,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (config.openrouter.enabled) {
       const secrets = loadProviderSecrets();
       if (!secrets.key || !secrets.budgetPath) throw new Error('Remote configuration missing');
-      // Reserve the complete model context at the enforced maximum price, even for tiny prompts.
-      // Uncertain requests keep this reservation; successful billed responses settle to actual cost.
-      const reservation = (config.openrouter.contextTokens * config.openrouter.maxPrice.prompt +
-        config.openrouter.maxOutputTokens * config.openrouter.maxPrice.completion) / protocol.tokensPerMillion;
-      remote = {key: secrets.key, budget: openBudget(secrets.budgetPath, config.openrouter.budgetUsd, reservation)};
+      // Uncertain requests keep this reservation; billed responses settle to their actual cost.
+      remote = {key: secrets.key, budget: openBudget(secrets.budgetPath, config.openrouter.budgetUsd, reservationUsd(config.openrouter))};
     }
     const server = createAssistantServer({config, remote});
     server.on('close', () => remote?.budget.close());

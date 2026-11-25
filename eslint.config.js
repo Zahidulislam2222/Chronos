@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   // Exclude generated snapshots and third-party distribution/test fixtures.
-  { ignores: ["dist", "memory/**", "tests/**", ".research-preview/**", ".local-deployment-manifests/**", "**/vendor/**", "wordpress/wp-content/plugins/woocommerce/**"] },
+  { ignores: ["dist", "memory/**", "tests/**", ".work/**", ".worktrees/**", ".chronos-backup/**", ".research-preview/**", ".local-deployment-manifests/**", "**/vendor/**", "wordpress/wp-content/plugins/woocommerce/**"] },
   { files: ["wordpress/wp-content/plugins/chronos-blocks/src/**/*.js"], languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
   { files: ["scripts/assistant/**/*.mjs", "verification/**/*.mjs", "src/lib/render-readiness.mjs"], ...js.configs.recommended,
     languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: globals.node } },

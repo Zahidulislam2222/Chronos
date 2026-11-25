@@ -3,5 +3,13 @@
   "health": "/healthz",
   "generate": "/api/generate",
   "chatCompletions": "/api/v1/chat/completions",
-  "tokensPerMillion": 1000000
+  "tokensPerMillion": 1000000,
+  "unbilledRefusalStatuses": [
+    400,
+    401,
+    402,
+    403,
+    404,
+    429
+  ]
 }

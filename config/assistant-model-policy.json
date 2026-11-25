@@ -1,10 +1,10 @@
 {
   "checkedAt": "2026-11-25",
-  "source": "https://openrouter.ai/api/v1/models",
-  "model": "qwen/qwen3-30b-a3b-instruct-2507",
-  "contextTokens": 262144,
-  "maximumPromptPricePerMillion": 0.09,
-  "maximumCompletionPricePerMillion": 0.30,
+  "source": "https://openrouter.ai/api/v1/endpoints/zdr",
+  "model": "mistralai/mistral-small-3.2-24b-instruct",
+  "contextTokens": 128000,
+  "maximumPromptPricePerMillion": 0.075,
+  "maximumCompletionPricePerMillion": 0.20,
   "authorizedBudgetUsd": 0.10,
   "maxJournalBytes": 8388608,
   "maxReservations": 1000
