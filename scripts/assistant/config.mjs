@@ -50,6 +50,7 @@ export const assistantConfigSchema = z.object({
     maxInputBytes: z.number().int().positive().max(32768),
     // Consecutive pre-inference refusals that pause the paid route; the pause doubles per repeat up to the maximum.
     refusalLimit: z.number().int().min(1).max(10),
+    // One trial after a pause is guaranteed only while maxConcurrent is 1.
     refusalPauseMs: z.number().int().min(10_000).max(3_600_000),
     maxRefusalPauseMs: z.number().int().min(60_000).max(86_400_000),
     // Chat-template tokens added around the byte-bounded prompt when sizing a reservation.

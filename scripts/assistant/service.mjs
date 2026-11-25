@@ -42,7 +42,7 @@ export async function classify(question, previousTopic, {config, knowledge, sign
     source: topic?.source ?? null, knowledgeVersion: knowledge.version};
 }
 
-export async function classifyRemote(question, previousTopic, {config, knowledge, signal, transport = fetch, remote, observe = () => {}, now = Date.now}) {
+export async function classifyRemote(question, previousTopic, {config, knowledge, signal, transport = fetch, remote, observe = () => {}, now = () => performance.now()}) {
   signal.throwIfAborted();
   if (!config.openrouter.enabled) throw new Error('Paid route disabled');
   const ids = [...knowledge.topics.map(t => t.id), 'unknown'];
