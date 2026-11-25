@@ -36,7 +36,7 @@ reliability fixes ship until the budget recovers.
 | One frontend origin, one backend VM, database on that VM | Any host failure is a full outage for dynamic features |
 | Provider infrastructure commitments are separate from application SLIs | They do not measure WordPress, MySQL, TLS, release correctness or business-flow availability |
 | Ephemeral IP behind the sslip.io hostname | Stopping the VM changes the backend address. It must not be stopped |
-| Nightly encrypted off-host backup since 25 November 2026 (see below) | A disk loss loses at most about one day of data; rebuilding the VM itself is not yet measured |
+| Nightly encrypted off-host backup since 25 November 2026 (see below) | A disk loss loses at most about one day of data; a host rebuild takes about 9 minutes plus VM creation, TLS and the address change |
 | Pre-rendered frontend HTML | The storefront shell and editorial snapshots can still load while the backend is down; live catalogue, login and checkout cannot |
 
 The initial 99% objective requires external monitoring, alert ownership and
@@ -124,8 +124,29 @@ There is no staffed 24/7 on-call today. That is a phase 3 requirement.
   outbound network. Catalogue, pages, posts and the account guards worked and
   record counts matched production. Data restore to a verified application
   took about 67 seconds once a database engine existed.
-- Not yet covered: provisioning a replacement VM, TLS and the backend address
-  change, so a full-host RTO is still unmeasured. The old weekly
+- **Host rebuild rehearsal, 25 November 2026:** a clean Ubuntu 22.04 container
+  (the production OS, PHP 8.1, MariaDB 10.6, nginx 1.18, WP-CLI 2.12.0) ran
+  `scripts/gcp-setup.sh`, restored the same archive, installed the plugins at
+  the live versions, then lost network access and was checked: health `ok`,
+  GraphQL served 5 products and 3 posts, counts matched production and the
+  users route answered 401. **8 min 40 s** from a clean OS to a verified
+  backend: packages 50 s, setup script 75 s, decrypt 1 s, data restore 9 s,
+  plugin install 6 min 18 s, checks 7 s.
+- The rehearsal found and fixed two faults in the setup script: it added a
+  second PHP-FPM pool on the default pool's socket, so PHP-FPM could not
+  start, and it always downloaded the newest WordPress. It now tunes the
+  default pool, matching production, and takes `CHRONOS_WP_VERSION` from the
+  `wordpress <version>` line of the backup MANIFEST.
+- **Plugin code is not in the backup.** A rebuild installs the
+  wordpress.org plugins at the versions running in production
+  (`wp plugin install <slug> --version=<v> --force --skip-plugins`) and copies
+  WPGraphQL for WooCommerce 0.19.0, WPGraphQL JWT Authentication 0.7.0,
+  WPGraphQL CORS 2.1 and the two Chronos plugins from the repository and the
+  owner's copies. Without `--force`, three installs were skipped silently,
+  so check every plugin folder after installing.
+- Not yet measured: creating the replacement VM, issuing TLS, and pointing the
+  storefront at a new backend address (the sslip hostname follows the IP), so
+  the end-to-end RTO is the rehearsal time plus those steps. The old weekly
   Actions-artifact workflow stays disabled because this repository is public.
 
 ### Target design
@@ -145,7 +166,7 @@ A backup that has never been restored is not a backup.
 | Objective | Today | Phase 1 target | Phase 3 target |
 |---|---|---|---|
 | **RPO** (max data loss) | ≤ 24 h by design (nightly copy; alert after 30 h) | 24 h | ≤ 5 min (PITR) |
-| **RTO** (time to restore service) | Data restore ~67 s measured; full host rebuild unmeasured | 4 h | ≤ 15 min (zone failover), ≤ 4 h (region loss) |
+| **RTO** (time to restore service) | Host rebuild from a clean OS ~9 min measured (rehearsal); VM creation, TLS and the address change unmeasured | 4 h | ≤ 15 min (zone failover), ≤ 4 h (region loss) |
 
 ## Disaster scenarios
 
@@ -153,7 +174,7 @@ A backup that has never been restored is not a backup.
 |---|---|---|
 | Bad frontend release | Previous immutable release kept | Switch back to the previous release directory; verify hashes and `/healthz` |
 | Bad plugin release | Immutable backend release directories selected by `content/runtime.php` | `release.sh rollback` switches back atomically (drill: about 8 s, no PHP-FPM reload); re-hash local vs live |
-| Backend VM lost | Full dynamic outage; data at risk | Rebuild from `scripts/gcp-setup.sh` (with `CHRONOS_BACKEND_DOMAIN` set), restore latest DB + uploads, re-issue TLS, update the hostname if the IP changed |
+| Backend VM lost | Full dynamic outage; at most a day of data lost | Rebuild from `scripts/gcp-setup.sh` (with `CHRONOS_BACKEND_DOMAIN` and `CHRONOS_WP_VERSION` set), restore the latest archive, install plugins at the production versions (see backup state above), re-issue TLS, update the hostname if the IP changed |
 | Backend IP changes | Hostname and frontend config break | Avoid stopping the VM; target: static IP + owned domain |
 | Database corruption / bad migration | No PITR | Restore latest dump into a copy, verify, then switch |
 | Domain or hosting expiry | **Happened in 2026**: the original domain and cPanel hosting expired | Registrar auto-renew, expiry alerts, and DNS documented in the private recovery record |
