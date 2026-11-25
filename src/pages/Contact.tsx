@@ -40,7 +40,7 @@ export default function Contact() {
           }}
         >
           <p>{c.notice}</p>
-          {!isPreview && (["name", "email", "subject"] as const).map(field=><div key={field}><label htmlFor={`contact-${field}`}>{connectedContent.fields[field]}</label><input className="w-full border p-3 mb-4" id={`contact-${field}`} name={field} type={field === "email" ? "email" : "text"} required maxLength={field === "subject" ? formLimits.contactSubject : field === "email" ? formLimits.contactEmail : formLimits.contactName} /></div>)}
+          {!isPreview && (["name", "email", "subject"] as const).map(field=><div key={field}><label htmlFor={`contact-${field}`}>{connectedContent.fields[field]}</label><input className="w-full border p-3 mb-4" id={`contact-${field}`} name={field} type={field === "email" ? "email" : "text"} autoComplete={field === "subject" ? "off" : field} required maxLength={field === "subject" ? formLimits.contactSubject : field === "email" ? formLimits.contactEmail : formLimits.contactName} /></div>)}
           <label htmlFor="contact-note">{content.ui.yourNote}</label>
           <textarea
             id="contact-note"

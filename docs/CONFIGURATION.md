@@ -39,7 +39,7 @@ See [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md), [TESTING.md](TESTING.md) a
 
 ## Public guide ownership
 
-[Assistant configuration](../config/assistant.json), [model policy](../config/assistant-model-policy.json), [protocol](../config/assistant-protocol.json) and [knowledge](../src/content/assistant.json) own the changeable guide settings. Provider endpoint selection is a validated single-provider list. No fallback model/provider retry is implicit. The maintained hosted policy enables the approved route; `.env.example` explicitly disables it for local-only setup.
+[Assistant configuration](../config/assistant.json), [model policy](../config/assistant-model-policy.json), [protocol](../config/assistant-protocol.json) and [knowledge](../src/content/assistant.json) own the changeable guide settings. Provider endpoint selection is a validated allow-list of one to three zero-data-retention endpoints for one model; OpenRouter serves each request from the cheapest eligible listed endpoint. No fallback model/provider retry is implicit. The maintained hosted policy enables the approved route; `.env.example` explicitly disables it for local-only setup.
 
 Keys and the existing append journal are server-only. Never ship them as `VITE_` variables or release assets, overwrite accounting with an old checkpoint, or initialize a replacement journal during recovery. Unknown usage remains reserved. Current measured deployment and operational limits are recorded separately in [verification](VERIFICATION.md).
 

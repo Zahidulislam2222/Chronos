@@ -36,16 +36,21 @@
   "openrouter": {
     "enabled": true,
     "origin": "https://openrouter.ai",
-    "model": "qwen/qwen3-30b-a3b-instruct-2507",
+    "model": "mistralai/mistral-small-3.2-24b-instruct",
     "providers": [
-      "siliconflow/fp8"
+      "deepinfra/fp8",
+      "venice/fp8"
     ],
     "maxOutputTokens": 128,
-    "contextTokens": 262144,
+    "contextTokens": 128000,
     "maxInputBytes": 16384,
+    "reservationTemplateTokens": 512,
+    "refusalLimit": 3,
+    "refusalPauseMs": 300000,
+    "maxRefusalPauseMs": 21600000,
     "maxPrice": {
-      "prompt": 0.09,
-      "completion": 0.3,
+      "prompt": 0.08,
+      "completion": 0.22,
       "request": 0
     },
     "budgetUsd": 0.1,

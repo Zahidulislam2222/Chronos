@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createServer } from 'node:http';
-import { loadAssistantConfig, loadKnowledge, loadProviderSecrets, modelPolicy, modelPolicySchema, protocol, protocolSchema } from '../scripts/assistant/config.mjs';
+import { assistantConfigSchema, loadAssistantConfig, loadKnowledge, loadProviderSecrets, modelPolicy, modelPolicySchema, protocol, protocolSchema } from '../scripts/assistant/config.mjs';
 import { initializeBudget, openBudget, readBudget } from '../scripts/assistant/budget.mjs';
-import { classifyRemote, routeQuestion } from '../scripts/assistant/service.mjs';
+import { classifyRemote, reservationUsd, routeQuestion } from '../scripts/assistant/service.mjs';
 
 // Explicit local-provider fixture; the maintained release may contain local inference.
 const config = {...loadAssistantConfig({}), localEnabled: true};
@@ -17,9 +17,11 @@ const remoteReply = (topic = 'project', cost = 0.0001) => new Response(JSON.stri
 function options(transport, overrides = {}) {
   let reserves = 0;
   const settled = [];
+  const cancelled = [];
   return {config: {...config, openrouter: {...config.openrouter, enabled: true}}, knowledge, transport, signal: new AbortController().signal,
-    remote: {key: 'sk-or-test-credential', budget: {reserve: () => { reserves++; return 'reservation'; }, settle: (...args) => settled.push(args)}},
-    stats: () => ({reserves, settled}), ...overrides};
+    remote: {key: 'sk-or-test-credential', refusals: 0, budget: {reserve: () => { reserves++; return 'reservation'; },
+      settle: (...args) => settled.push(args), cancel: id => cancelled.push(id)}},
+    stats: () => ({reserves, settled, cancelled}), ...overrides};
 }
 function budgetFixture(t) {
   mkdirSync(new URL('../memory/', import.meta.url), {recursive: true, mode: 0o700});
@@ -129,7 +131,7 @@ test('budget exhaustion, provider outage and invalid remote replies do not retry
 });
 
 test('remote request uses pinned model, no retries/tools and enforced privacy/price limits', async () => {
-  assert.ok(Array.isArray(config.openrouter.providers), 'a maintained single-provider route is required');
+  assert.ok(Array.isArray(config.openrouter.providers), 'a maintained provider allow-list is required');
   const opts = options(async (url, request) => {
     assert.equal(new URL(url).href, config.openrouter.origin + protocol.chatCompletions);
     assert.equal(request.headers.Authorization, 'Bearer sk-or-test-credential');
@@ -171,6 +173,101 @@ test('actual loopback HTTP OpenRouter-compatible upstream receives one private r
   t.after(() => new Promise(resolve => upstream.close(resolve)));
   const opts = options(async (url, request) => fetch(`http://${config.bindHost}:${upstream.address().port}${new URL(url).pathname}`, request));
   assert.equal((await classifyRemote('Explain the project', null, opts)).topic, 'project'); assert.equal(calls, 1);
+});
+
+test('a refusal before inference cancels its reservation; uncertain failures keep it', async () => {
+  for (const status of protocol.unbilledRefusalStatuses) {
+    const opts = options(async () => new Response(JSON.stringify({error: {code: status}}), {status}));
+    await assert.rejects(classifyRemote('Contact help', null, opts));
+    assert.deepEqual(opts.stats().cancelled, ['reservation'], `status ${status} cancels the reservation`);
+    assert.deepEqual(opts.stats().settled, []);
+  }
+  for (const reply of [() => new Response('', {status: 500}), () => new Response('', {status: 502}),
+    () => new Response('', {status: 408}), () => new Response('', {status: 413}), () => new Response('', {status: 422}),
+    () => { throw new Error('connection reset'); }, () => new Response('poisoned')]) {
+    const opts = options(async () => reply());
+    await assert.rejects(classifyRemote('Contact help', null, opts));
+    assert.deepEqual(opts.stats().settled, [], 'an uncertain outcome keeps the full reservation');
+    assert.deepEqual(opts.stats().cancelled, []);
+  }
+});
+
+test('repeated refusals pause the paid route, reopen for one trial, back off and reset on success', async () => {
+  const {refusalLimit: limit, refusalPauseMs: pause, maxRefusalPauseMs: maxPause} = config.openrouter;
+  let clock = 1_000_000;
+  let status = 503;
+  let calls = 0;
+  const events = [];
+  const opts = options(async () => { calls++; return status ? new Response('', {status}) : remoteReply('contact'); },
+    {observe: event => events.push(event), now: () => clock});
+  for (let i = 0; i < limit; i++) await assert.rejects(classifyRemote('Contact help', null, opts));
+  assert.deepEqual(events.at(-1), {provider: 'openrouter', status: 503, routePausedForMs: pause});
+  await assert.rejects(classifyRemote('Contact help', null, opts), /paused/);
+  assert.equal(calls, limit, 'no request leaves while paused');
+  assert.equal(opts.stats().reserves, limit, 'and nothing more is reserved');
+
+  clock += pause; // one trial after the pause; another refusal pauses again for twice as long
+  await assert.rejects(classifyRemote('Contact help', null, opts));
+  assert.equal(calls, limit + 1);
+  assert.deepEqual(events.at(-1), {provider: 'openrouter', status: 503, routePausedForMs: pause * 2});
+  for (let i = 0; i < 20; i++) { clock += maxPause; await assert.rejects(classifyRemote('Contact help', null, opts)); }
+  assert.equal(events.at(-1).routePausedForMs, maxPause, 'the pause never exceeds the maximum');
+
+  clock += maxPause; status = 0; // the provider recovers: the trial succeeds and everything resets
+  assert.equal((await classifyRemote('Contact help', null, opts)).topic, 'contact');
+  assert.deepEqual([opts.remote.refusals, opts.remote.pauses, opts.remote.closedUntil], [0, 0, 0]);
+  assert.equal((await classifyRemote('Contact help', null, opts)).topic, 'contact');
+});
+
+test('the provider status is logged even when cancelling the reservation fails', async () => {
+  const events = [];
+  const opts = options(async () => new Response('', {status: 404}), {observe: event => events.push(event)});
+  opts.remote.budget.cancel = () => { throw new Error('journal limit'); };
+  await assert.rejects(classifyRemote('Contact help', null, opts), /journal limit/);
+  assert.deepEqual(events, [{provider: 'openrouter', status: 404}]);
+});
+
+test('a cancelled reservation leaves the real journal, frees the allowance and survives restart', t => {
+  const file = budgetFixture(t);
+  const budget = openBudget(file, 0.1, 0.03);
+  const kept = budget.reserve(); budget.settle(kept, 0.01);
+  for (let i = 0; i < 20; i++) budget.cancel(budget.reserve());
+  budget.cancel(kept); // only an open reservation can be cancelled
+  budget.close();
+  const state = readBudget(file);
+  assert.deepEqual(state.entries.map(e => [e.state, e.amount]), [['settled', 0.01]]);
+  const lines = readFileSync(file, 'utf8').trimEnd().split('\n');
+  assert.ok(lines.at(-1).length <= lines[2].length, 'journal snapshots do not grow with refusals');
+  const next = openBudget(file, 0.1, 0.03); next.reserve(); next.reserve(); next.reserve(); assert.throws(() => next.reserve()); next.close();
+});
+
+test('only documented pre-inference refusals can release a reservation', () => {
+  assert.equal(protocolSchema.safeParse({...protocol, unbilledRefusalStatuses: [...protocol.unbilledRefusalStatuses, 408]}).success, false);
+  assert.equal(protocolSchema.safeParse({...protocol, unbilledRefusalStatuses: [422]}).success, false);
+  assert.equal(protocolSchema.safeParse({...protocol, unbilledRefusalStatuses: [404, 404]}).success, false);
+});
+
+test('reservation covers the byte-bounded prompt at the price ceiling, not the whole context', () => {
+  const route = config.openrouter;
+  const expected = ((route.maxInputBytes + route.reservationTemplateTokens) * route.maxPrice.prompt +
+    route.maxOutputTokens * route.maxPrice.completion) / protocol.tokensPerMillion;
+  assert.equal(reservationUsd(route), expected);
+  assert.ok(reservationUsd(route) < reservationUsd({...route, maxInputBytes: route.contextTokens}), 'smaller than a full-context reservation');
+  assert.equal(reservationUsd({...route, maxInputBytes: route.contextTokens * 2}),
+    (route.contextTokens * route.maxPrice.prompt + route.maxOutputTokens * route.maxPrice.completion) / protocol.tokensPerMillion,
+    'never assumes more prompt tokens than the model context');
+  assert.ok(route.budgetUsd / reservationUsd(route) >= 50, 'the allowance covers at least 50 concurrent uncertain calls');
+});
+
+test('provider allow-list is bounded, unique and requires zero data retention', () => {
+  const base = JSON.parse(readFileSync(new URL('../config/assistant.json', import.meta.url), 'utf8'));
+  const attempt = openrouter => () => assistantConfigSchema.parse({...base, openrouter: {...base.openrouter, ...openrouter}});
+  assert.doesNotThrow(attempt({}));
+  assert.throws(attempt({providers: []}));
+  assert.throws(attempt({providers: ['deepinfra/fp8', 'deepinfra/fp8']}));
+  assert.throws(attempt({providers: ['a/1', 'b/1', 'c/1', 'd/1']}));
+  assert.throws(attempt({zeroDataRetention: false}));
+  assert.throws(attempt({model: 'qwen/qwen3-30b-a3b-instruct-2507'}), 'model must match the checked pricing policy');
 });
 
 test('durable reservations survive restart; settled calls release only verified cost', t => {

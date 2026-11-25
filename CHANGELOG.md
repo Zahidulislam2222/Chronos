@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-25 — guide route repair
+
+- The live guide could not answer: its only OpenRouter endpoint (SiliconFlow for Qwen3 30B) stopped qualifying for zero data retention, so every request matched no endpoint. The guide now uses Mistral Small 3.2 24B on an allow-list of zero-retention endpoints (DeepInfra and Venice; at most three, never others; OpenRouter picks the cheapest eligible one, with no fallback between them). Price ceiling $0.08 / $0.22 per million tokens, about 7-10% above today's listed price.
+- Size each budget reservation from the byte-bounded prompt (about $0.0014) instead of the whole model context (about $0.0236). A refusal OpenRouter returns before any model runs (400, 401, 402, 403, 404, 429, 503) removes its reservation from the journal; after three in a row the paid route pauses for 5 minutes, then allows one trial; repeats double the pause up to 6 hours, and a success resets it. Timeouts, other server errors and malformed replies still keep the full reservation.
+- Contact form name and email declare their autocomplete purpose (WCAG 2.2 SC 1.3.5).
+- ESLint ignores the local `.work/`, `.worktrees/` and `.chronos-backup/` folders.
+
 ## 2026-11-25 — store voice, account privacy, backups and monitoring
 
 - Present Chronos as a working store in its own voice, with one honest line wherever money is involved: checkout runs in Stripe test mode, no card is charged and orders do not ship (checkout, success, bag, cart and product pages; regression-tested). CMS pages, products and journal posts updated on the live backend through a hash-guarded, reversible sync.

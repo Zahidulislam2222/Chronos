@@ -182,9 +182,9 @@ flowchart LR
     Visitor --> Proxy[Same-origin proxy and input limits]
     Proxy --> Guide[Origin, host, policy and quota checks]
     Guide --> Ledger[Persistent approved spend allowance]
-    Ledger --> Remote[One pinned OpenRouter endpoint]
+    Ledger --> Remote[Allow-listed zero-retention OpenRouter endpoints]
     Remote -->|validated topic| Answer[Maintained answer and source]
     Remote -->|failure or exhaustion| Links[Guidance links and contact]
 ```
 
-Configuration/content/policy own provider selection, prompt, knowledge, prices and limits. Remote transport has no automatic provider retry or model substitution. The append journal reserves before transport and preserves uncertain outcomes. Model data, credentials and accounting remain outside release/static artifacts. Local inference is paused by maintained policy and a separate optional Compose profile; the current guide goes directly to the approved remote classifier. The guide and optional model have explicit resource limits and loopback binds; host networking is not tenant network isolation. Current proxy-peer quotas may group users. Actual deployment/recovery and measured limits are in [verification](VERIFICATION.md).
+Configuration/content/policy own provider selection, prompt, knowledge, prices and limits. Remote transport has no automatic retry or model substitution; OpenRouter may route only to the configured zero-retention endpoints (at most three) for the one approved model. The append journal reserves the worst-case cost of the byte-bounded prompt before transport, removes it when OpenRouter refuses before inference (three refusals in a row pause the paid route, doubling up to 6 hours, then retry once), and preserves uncertain outcomes. The health endpoint reports configuration, not a working route, so provider policy drift is caught only by a real question. Model data, credentials and accounting remain outside release/static artifacts. Local inference is paused by maintained policy and a separate optional Compose profile; the current guide goes directly to the approved remote classifier. The guide and optional model have explicit resource limits and loopback binds; host networking is not tenant network isolation. Current proxy-peer quotas may group users. Actual deployment/recovery and measured limits are in [verification](VERIFICATION.md).

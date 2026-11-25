@@ -56,6 +56,13 @@ export function openBudget(file, capUsd, reservationUsd, persist = appendSnapsho
         if (actualUsd > item.amount) { ledger.halted = true; item.amount = actualUsd; save(); throw new Error('Billing anomaly; spending stopped'); }
         item.amount = actualUsd; item.state = 'settled'; save();
       },
+      // Only for a request the provider refused before any model ran. Removing the entry (rather than
+      // settling it at 0) keeps the ledger, and each journal snapshot, from growing with refusals.
+      cancel(id) {
+        const index = ledger.entries.findIndex(e => e.id === id && e.state === 'reserved');
+        if (closed || index < 0) return;
+        ledger.entries.splice(index, 1); save();
+      },
       close: release,
     };
   } catch (error) { release(); throw error; }
