@@ -48,8 +48,10 @@ export const assistantConfigSchema = z.object({
     maxOutputTokens: z.number().int().positive().max(256),
     contextTokens: z.number().int().positive().max(262144),
     maxInputBytes: z.number().int().positive().max(32768),
-    // Consecutive pre-inference refusals after which the paid route stays closed until restart.
+    // Consecutive pre-inference refusals that pause the paid route; the pause doubles per repeat up to the maximum.
     refusalLimit: z.number().int().min(1).max(10),
+    refusalPauseMs: z.number().int().min(10_000).max(3_600_000),
+    maxRefusalPauseMs: z.number().int().min(60_000).max(86_400_000),
     // Chat-template tokens added around the byte-bounded prompt when sizing a reservation.
     reservationTemplateTokens: z.number().int().positive().max(4096),
     maxPrice: z.object({prompt: z.number().positive().max(modelPolicy.maximumPromptPricePerMillion), completion: z.number().positive().max(modelPolicy.maximumCompletionPricePerMillion), request: z.literal(0)}).strict(),

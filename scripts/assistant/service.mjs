@@ -42,15 +42,15 @@ export async function classify(question, previousTopic, {config, knowledge, sign
     source: topic?.source ?? null, knowledgeVersion: knowledge.version};
 }
 
-export async function classifyRemote(question, previousTopic, {config, knowledge, signal, transport = fetch, remote, observe = () => {}}) {
+export async function classifyRemote(question, previousTopic, {config, knowledge, signal, transport = fetch, remote, observe = () => {}, now = Date.now}) {
   signal.throwIfAborted();
   if (!config.openrouter.enabled) throw new Error('Paid route disabled');
   const ids = [...knowledge.topics.map(t => t.id), 'unknown'];
   const selectedSchema = z.object({topic: z.enum(ids)}).strict();
   const prompt = JSON.stringify({topics: knowledge.topics.map(({id, description}) => ({id, description})), previousTopic, untrustedVisitorQuestion: question});
   if (Buffer.byteLength(prompt + knowledge.classifierInstruction, 'utf8') > config.openrouter.maxInputBytes) throw new Error('Prompt exceeds budget');
-  // Repeated refusals mean a configuration or provider problem; stop calling until an operator restarts.
-  if ((remote.refusals ?? 0) >= config.openrouter.refusalLimit) throw new Error('Paid route closed after repeated refusals');
+  // Repeated refusals pause the paid route; after the pause one trial request may go through.
+  if (now() < (remote.closedUntil ?? 0)) throw new Error('Paid route paused after repeated refusals');
   const reservation = remote.budget.reserve();
   const response = await transport(new URL(protocol.chatCompletions, config.openrouter.origin), {
     method: 'POST', redirect: 'error', signal,
@@ -68,9 +68,20 @@ export async function classifyRemote(question, previousTopic, {config, knowledge
   });
   // A refusal before inference costs nothing, so its reservation is removed; every other failure stays reserved.
   const refused = protocol.unbilledRefusalStatuses.includes(response.status);
-  if (refused) { remote.budget.cancel(reservation); remote.refusals = (remote.refusals ?? 0) + 1; }
-  observe({provider: 'openrouter', status: response.status,
-    ...(refused && remote.refusals >= config.openrouter.refusalLimit ? {routeClosed: true} : {})});
+  let pausedForMs;
+  if (refused) {
+    remote.refusals = (remote.refusals ?? 0) + 1;
+    if (remote.refusals >= config.openrouter.refusalLimit) {
+      // Each consecutive pause doubles up to the maximum, so a lasting fault costs a few journal lines a day.
+      pausedForMs = Math.min(config.openrouter.refusalPauseMs * 2 ** (remote.pauses ?? 0), config.openrouter.maxRefusalPauseMs);
+      remote.pauses = (remote.pauses ?? 0) + 1;
+      remote.closedUntil = now() + pausedForMs;
+      remote.refusals = config.openrouter.refusalLimit - 1; // the trial after the pause decides alone
+    }
+  }
+  // Log the provider status before touching the journal, so a failed journal write cannot hide it.
+  observe({provider: 'openrouter', status: response.status, ...(pausedForMs ? {routePausedForMs: pausedForMs} : {})});
+  if (refused) remote.budget.cancel(reservation);
   if (!response.ok || !response.body) throw new Error('Remote guide unavailable');
   const envelope = z.object({
     choices: z.array(z.object({finish_reason: z.literal('stop'), message: z.object({content: z.string()}).passthrough()}).passthrough()).length(1),
@@ -80,7 +91,7 @@ export async function classifyRemote(question, previousTopic, {config, knowledge
   }).passthrough().parse(JSON.parse(await readBounded(response.body, config.upstreamBytes)));
   // Count any separately reported upstream charge too; conservative if it overlaps credits.
   remote.budget.settle(reservation, envelope.usage.cost + (envelope.usage.cost_details?.upstream_inference_cost ?? 0));
-  remote.refusals = 0;
+  remote.refusals = 0; remote.pauses = 0; remote.closedUntil = 0;
   const selected = selectedSchema.parse(JSON.parse(envelope.choices[0].message.content));
   const topic = knowledge.topics.find(item => item.id === selected.topic);
   return {topic: selected.topic, answer: topic?.answer ?? knowledge.unknown,
@@ -177,7 +188,7 @@ export function createAssistantServer({config = loadAssistantConfig(), knowledge
       catch { return send(400, {error: 'Invalid guide request'}); }
       request.setTimeout(0);
       const answer = await routeQuestion(body.question, body.previousTopic, {config, knowledge, signal: controller.signal, transport, remote,
-        observe: ({provider, status, routeClosed}) => log(JSON.stringify({requestId, event: 'provider-response', provider, status, ...(routeClosed ? {routeClosed} : {})}))});
+        observe: ({provider, status, routePausedForMs}) => log(JSON.stringify({requestId, event: 'provider-response', provider, status, ...(routePausedForMs ? {routePausedForMs} : {})}))});
       if (!controller.signal.aborted) send(200, answer);
       else send(503, {error: 'Guide request stopped'});
     } catch {
@@ -205,7 +216,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       const secrets = loadProviderSecrets();
       if (!secrets.key || !secrets.budgetPath) throw new Error('Remote configuration missing');
       // Uncertain requests keep this reservation; billed responses settle to their actual cost.
-      remote = {key: secrets.key, budget: openBudget(secrets.budgetPath, config.openrouter.budgetUsd, reservationUsd(config.openrouter)), refusals: 0};
+      remote = {key: secrets.key, budget: openBudget(secrets.budgetPath, config.openrouter.budgetUsd, reservationUsd(config.openrouter)), refusals: 0, pauses: 0, closedUntil: 0};
     }
     const server = createAssistantServer({config, remote});
     server.on('close', () => remote?.budget.close());

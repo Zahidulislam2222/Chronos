@@ -46,6 +46,8 @@
     "maxInputBytes": 16384,
     "reservationTemplateTokens": 512,
     "refusalLimit": 3,
+    "refusalPauseMs": 300000,
+    "maxRefusalPauseMs": 21600000,
     "maxPrice": {
       "prompt": 0.08,
       "completion": 0.22,

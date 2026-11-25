@@ -192,20 +192,39 @@ test('a refusal before inference cancels its reservation; uncertain failures kee
   }
 });
 
-test('repeated refusals close the paid route until restart; a success resets the count', async () => {
-  const limit = config.openrouter.refusalLimit;
-  const events = [];
+test('repeated refusals pause the paid route, reopen for one trial, back off and reset on success', async () => {
+  const {refusalLimit: limit, refusalPauseMs: pause, maxRefusalPauseMs: maxPause} = config.openrouter;
+  let clock = 1_000_000;
+  let status = 503;
   let calls = 0;
-  const opts = options(async () => { calls++; return new Response('', {status: 404}); }, {observe: event => events.push(event)});
+  const events = [];
+  const opts = options(async () => { calls++; return status ? new Response('', {status}) : remoteReply('contact'); },
+    {observe: event => events.push(event), now: () => clock});
   for (let i = 0; i < limit; i++) await assert.rejects(classifyRemote('Contact help', null, opts));
-  assert.deepEqual(events.at(-1), {provider: 'openrouter', status: 404, routeClosed: true});
-  await assert.rejects(classifyRemote('Contact help', null, opts), /closed/);
-  assert.equal(calls, limit, 'no request leaves once the route is closed');
+  assert.deepEqual(events.at(-1), {provider: 'openrouter', status: 503, routePausedForMs: pause});
+  await assert.rejects(classifyRemote('Contact help', null, opts), /paused/);
+  assert.equal(calls, limit, 'no request leaves while paused');
   assert.equal(opts.stats().reserves, limit, 'and nothing more is reserved');
-  const recovering = options(async () => calls++ < limit + 1 ? new Response('', {status: 429}) : remoteReply('contact'));
-  await assert.rejects(classifyRemote('Contact help', null, recovering));
-  assert.equal((await classifyRemote('Contact help', null, recovering)).topic, 'contact');
-  assert.equal(recovering.remote.refusals, 0);
+
+  clock += pause; // one trial after the pause; another refusal pauses again for twice as long
+  await assert.rejects(classifyRemote('Contact help', null, opts));
+  assert.equal(calls, limit + 1);
+  assert.deepEqual(events.at(-1), {provider: 'openrouter', status: 503, routePausedForMs: pause * 2});
+  for (let i = 0; i < 20; i++) { clock += maxPause; await assert.rejects(classifyRemote('Contact help', null, opts)); }
+  assert.equal(events.at(-1).routePausedForMs, maxPause, 'the pause never exceeds the maximum');
+
+  clock += maxPause; status = 0; // the provider recovers: the trial succeeds and everything resets
+  assert.equal((await classifyRemote('Contact help', null, opts)).topic, 'contact');
+  assert.deepEqual([opts.remote.refusals, opts.remote.pauses, opts.remote.closedUntil], [0, 0, 0]);
+  assert.equal((await classifyRemote('Contact help', null, opts)).topic, 'contact');
+});
+
+test('the provider status is logged even when cancelling the reservation fails', async () => {
+  const events = [];
+  const opts = options(async () => new Response('', {status: 404}), {observe: event => events.push(event)});
+  opts.remote.budget.cancel = () => { throw new Error('journal limit'); };
+  await assert.rejects(classifyRemote('Contact help', null, opts), /journal limit/);
+  assert.deepEqual(events, [{provider: 'openrouter', status: 404}]);
 });
 
 test('a cancelled reservation leaves the real journal, frees the allowance and survives restart', t => {
