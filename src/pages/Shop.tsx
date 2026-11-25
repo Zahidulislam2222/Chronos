@@ -97,9 +97,11 @@ export default function Shop() {
           <span>{products.length} timepieces</span>
         </div>
         {isPending ? (
-          <p role="status">{content.ui.loading}</p>
+          <div className="reserved-region" role="status">
+            <p>{content.ui.loading}</p>
+          </div>
         ) : isError ? (
-          <div role="alert">
+          <div className="reserved-region" role="alert">
             {content.ui.failure}
             <button onClick={() => refetch()}>{content.ui.retry}</button>
           </div>
@@ -112,7 +114,7 @@ export default function Shop() {
             ))}
           </div>
         ) : (
-          <div className="empty-state">
+          <div className="empty-state reserved-region">
             <p>{content.ui.noResults}</p>
             <button className="text-link" onClick={() => setParams({})}>
               {content.ui.clear}

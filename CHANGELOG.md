@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-25 — no layout jump on shop and product pages
+
+- Loading, error, empty and not-found states on the shop and product pages hold one screen of space, so the footer no longer jumps when the catalogue arrives. Layout shift measured on the live site 0.17-0.57 is 0.000-0.035 on the candidate (desktop, phone, tall screen).
+
 ## 2026-11-25 — sign-in expiry and the payment return page
 
 - An expired or refused sign-in no longer breaks the collection and journal: public reads never send the sign-in token, the token's own expiry is checked before a signed-in request (`VITE_AUTH_EXPIRY_MARGIN_MS`, default 30 s), and only the exact refused token is removed. Ending a session signs out quietly; Pay after the session ended opens the sign-in box. Drafts can no longer appear for a signed-in editor.
