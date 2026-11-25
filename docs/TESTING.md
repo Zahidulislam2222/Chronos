@@ -30,6 +30,13 @@ npm run test:render
 npm run test:render:browser
 ```
 
+Layout shift on the shop and product pages cannot be measured in CI, because
+the preview build loads no catalogue data. Before a release that touches those
+pages, measure it on a connected build with a `layout-shift` PerformanceObserver
+for each outcome (loaded, error, no results, not found) on desktop, phone and a
+tall screen; Google's "good" limit is 0.1. `verification/loading-space.test.mjs`
+only checks that the reserved-space markup is in place.
+
 For the real UI checks, first build the offline preview using the documented environment and run:
 
 ```bash
