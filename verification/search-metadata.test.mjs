@@ -36,4 +36,15 @@ test('offline preview keeps its no-submission and disabled-payment disclosures',
   assert.match(search.pageSearch('/account').description,/No accounts are created/);
   assert.equal(search.pageSearch('/my-account').description,search.pageSearch('/account').description);
   assert.match(search.pageSearch('/checkout').description,/payments are disabled/);
+  assert.match(search.pageSearch('/cart').description,/No order is created/);
+});
+
+test('offline about copy states the designs are not offered for delivery and checkout is test mode', async()=>{
+  const {readFile} = await import('node:fs/promises');
+  const copy = JSON.parse(await readFile(resolve('src/content/storefront.json'), 'utf8'));
+  const about = copy.about.body.join(' ');
+  assert.match(about, /not offered for delivery/);
+  assert.match(about, /Stripe test mode/);
+  assert.match(copy.legal.terms.body.join(' '), /not .*offers for sale/);
+  assert.doesNotMatch(JSON.stringify(copy), /portfolio/i);
 });

@@ -71,7 +71,7 @@ The deployed storefront includes a header that hides on downward scroll and retu
 - Accessibility: keyboard flows verified on the live site, skip link, labelled controls with autocomplete purposes, reduced motion, automated axe scans; a manual screen-reader review is still open
 
 **Backend (WordPress plugins, PHP 8.1+ minimum)**
-- **chronos-bridge** v2.1.0: OOP plugin with PSR-4 autoloading, custom REST API, Stripe checkout and webhooks, contact inbox with rate limiting and 30-day retention, account-enumeration guards, GraphQL hardening (no debug output or public introspection, depth limit), health endpoints, WooCommerce fields, JSON-LD, privacy exporter/eraser, Redis-ready caching, i18n, WP 7.0 AI admin helpers (off by default)
+- **chronos-bridge** v2.1.0: OOP plugin with PSR-4 autoloading, custom REST API, Stripe checkout and webhooks, contact inbox with rate limiting and configurable retention (30 days on the live site), account-enumeration guards, GraphQL hardening (no debug output or public introspection, depth limit), health endpoints, WooCommerce fields, JSON-LD, privacy exporter/eraser, Redis-ready caching, i18n, WP 7.0 AI admin helpers (off by default)
 - **chronos-blocks** v1.0.0: Watch Showcase, Collection Grid and Contact Form Gutenberg blocks
 
 **Engineering**
@@ -80,7 +80,7 @@ The deployed storefront includes a header that hides on downward scroll and retu
 - Hardened container release: read-only, non-root, dropped capabilities, CSP, HSTS, request budget
 - Local-first, immutable releases with a kept rollback target and SHA-256 local/live parity proof
 - Nightly encrypted off-host backups, a timed restore drill and a host-rebuild rehearsal
-- Scheduled availability probe (storefront and backend health) every 30 minutes with owner alerts
+- Scheduled availability probe (storefront and backend health) with owner alerts; it is scheduled every 30 minutes, but GitHub's scheduler is best-effort and ran it far less often, so an always-on external monitor is a Phase 1 item
 - Protected `main`: pull requests only, 10 required checks, administrators included
 
 ## Architecture
@@ -210,8 +210,9 @@ CI runs the same commands on pushes to `main` and every pull request. See
   fact that **Stripe's default 25 req/s per-endpoint limit** caps checkout
   before WordPress does. See [SCALABILITY.md](docs/SCALABILITY.md).
 - **Availability:** 99% objective (7 h 12 min/month budget) now, 99.9% after
-  redundancy. A scheduled external probe checks storefront and backend
-  health every 30 minutes; a continuous 30-day report is the next exit. See
+  redundancy. A scheduled GitHub Actions probe checks storefront and backend
+  health (scheduled every 30 minutes; GitHub runs schedules best-effort, so
+  an always-on external monitor is still required). See
   [AVAILABILITY-AND-DR.md](docs/AVAILABILITY-AND-DR.md).
 
 ## Security
@@ -254,7 +255,7 @@ Issues and pull requests are welcome. Please read
 - Bundled `wp-graphql-cors`: **GPL-3.0** (third-party)
 
 Details: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). Campaign media is
-AI-generated; the watches are original Chronos designs.
+AI-generated; the watches are original Chronos designs that are not offered for delivery.
 
 ---
 

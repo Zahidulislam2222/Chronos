@@ -58,7 +58,7 @@
     {
       "path": "/cart",
       "title": "Shopping Bag",
-      "description": "Review the timepieces saved in your bag before checkout.",
+      "description": "Review the timepieces saved in your bag on this device. No order is created.",
       "index": false
     },
     {

@@ -29,7 +29,7 @@ approved before anything is provisioned.
 
 - [x] Account-enumeration guards on every user-revealing route and uniform sign-in errors
 - [x] GraphQL hardening: no debug output, analyzer or public introspection; depth limit
-- [x] Health endpoints (`/chronos/v1/health`, `/chronos/v1/health/backup`) and a scheduled availability probe every 30 minutes with owner alerts
+- [x] Health endpoints (`/chronos/v1/health`, `/chronos/v1/health/backup`) and a scheduled availability probe with owner alerts (GitHub runs schedules best-effort)
 - [x] Nightly encrypted off-host backups, a timed restore into an isolated stack and a host-rebuild rehearsal (8 min 40 s from a clean OS)
 - [x] Patched runtime images (0 high or critical findings) and clean npm audits
 - [x] AI guide on zero-retention endpoints, refusal-aware spend reservations and automatic pause
@@ -42,9 +42,9 @@ Cost: small (some items may fit free tiers; verify before use).
 
 | Work item | Exit criterion | Status on 25 November 2026 |
 |---|---|---|
-| Encrypted off-server backups | Nightly DB + uploads for 14 days; **one timed restore test passes** | Running nightly since 25 November (14 days kept); timed restore passed; 14-day run in progress |
-| External uptime monitoring every 60 s with alerts | 30 consecutive days of probe data with ≥ 99% coverage | Probe every 30 minutes with owner alerts; 60 s interval and the 30-day window still open |
-| Separate backend health probe (GraphQL + REST) | Backend outage detected while frontend HTML is still up | Done: backend health counts separately in the probe |
+| Encrypted off-server backups to private object storage | Nightly DB + weekly uploads for 14 days; **one timed restore test passes** | Implemented differently: the frontend server pulls a nightly encrypted copy (14 days kept); timed restore passed; 14-day run in progress. Object storage in another region remains the target design |
+| External uptime monitoring every 60 s with alerts | 30 consecutive days of probe data with ≥ 99% coverage | Open: a GitHub Actions probe with owner alerts is scheduled every 30 minutes, but GitHub ran 1 scheduled check in its first 14 hours; an always-on external monitor and the 30-day window are still needed |
+| Separate backend health probe (GraphQL + REST) | Backend outage detected while frontend HTML is still up | Implemented: backend health counts separately in the probe; the exit run (backend down, frontend up) is not yet recorded |
 | Restart the frontend container when its health check fails (autoheal watcher or orchestrator) | Induced unhealthy state recovers without manual action | Open |
 | Static backend IP and owned domain instead of sslip.io | Backend reachable at an owned hostname; old hostname redirected | Open |
 | Registrar auto-renew and expiry alerts | Documented in the private recovery record | Open |

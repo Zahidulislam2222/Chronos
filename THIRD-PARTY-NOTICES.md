@@ -38,8 +38,8 @@ Use `npx license-checker --summary` in the root and in
   Chronos designs, created for this project. See the AI-media notes in
   [docs/COMPLIANCE.md](docs/COMPLIANCE.md).
 - "Chronos" is used as a website project name. No affiliation with any real
-  watch brand is implied. Product names, prices and specifications
-  describe original designs that are not offered for delivery.
+  watch brand is implied. Product names belong to original designs that
+  are not offered for delivery; prices and specifications are illustrative.
 - Third-party names (WordPress, WooCommerce, Stripe, Cloudflare, Google
   Cloud, GitHub) are trademarks of their owners and are used only to describe
   compatibility.

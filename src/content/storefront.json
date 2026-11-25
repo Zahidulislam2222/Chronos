@@ -90,7 +90,7 @@
     "body": [
       "A watch is both useful and deeply personal. Its proportions, materials and small rituals become part of the way we move through a day.",
       "Our collection explores three different characters: the understated Nocturne, the warm Meridian, and the blue-dial Pelagic. Each is an original design by the Chronos studio.",
-      "Chronos is an independent watch studio created by Zahidul Islam, not an established manufacturer. This offline catalogue edition shows the collection, specifications and prices; ordering opens when the store is connected."
+      "Chronos is an independent watch studio created by Zahidul Islam, not an established manufacturer. This offline catalogue edition shows the collection, specifications and prices. The designs are not offered for delivery, and the connected store's checkout runs in Stripe test mode: no card is charged and nothing ships."
     ],
     "image": "/images/meridian.webp"
   },
