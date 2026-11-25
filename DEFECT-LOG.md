@@ -76,3 +76,9 @@ Fresh dependency audits also invalidated older clean results. Compatible patches
 | Maintained source used a newer payment SDK than the installed runtime dependency cohort | Native deployed dependency and artifact parity check | Yes: immutable runtime cohort, native SDK/API-version probe, controlled rollback, hosted TEST reconciliation and per-file parity |
 
 | 2026-10-21 | The initial publication candidate retained a CA bundle covered by a newly published certifi advisory; CI caught it before merge | Fresh local locked Python dependency audit before pushing | Local full-lock audits now executed; existing CI audit retained unchanged, three certifi locks updated with official hashes |
+
+## Storefront fixes — 25 November 2026
+
+| Date | What escaped | Gate that should have caught it | Gate added |
+|---|---|---|---|
+| 2026-11-25 | Shop and product pages showed a one-line loading text, so the footer sat on screen and jumped away when the catalogue arrived (CLS 0.17-0.57 on the live site against Google's 0.1). | Layout-shift measurement with attribution on connected pages, for every outcome (loaded, error, empty, not found) and several screen sizes, before release. | Partly: every state without the product grid, and the loaded product page, hold one screen of space (`.reserved-region`); `verification/loading-space.test.mjs` checks the markup; browser measurement 0.000-0.035 on desktop, phone and a tall screen in 3 runs. No automated CLS check in CI (CI preview mode loads no data). |

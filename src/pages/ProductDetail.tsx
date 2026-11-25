@@ -33,7 +33,7 @@ export default function ProductDetail() {
   if (!p)
     return (
       <Layout>
-        <div className="container section">
+        <div className="container section reserved-region">
           <h1>
             {isPending
               ? content.ui.loading
@@ -54,7 +54,7 @@ export default function ProductDetail() {
     selected && p.gallery.includes(selected) ? selected : p.image;
   return (
     <Layout>
-      <section className="container product-page">
+      <section className="container product-page reserved-region">
         <Link to="/shop" className="back-link">
           <ArrowLeft size={15} />
           {content.ui.back}

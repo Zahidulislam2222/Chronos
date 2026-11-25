@@ -143,6 +143,11 @@
 .section {
   padding-block: 112px;
 }
+/* Loading, error, empty and not-found states hold a screen of space, so the footer stays
+   below the fold whichever way the request ends and does not jump into or out of view. */
+.reserved-region {
+  min-height: 100svh;
+}
 .eyebrow {
   font-family: var(--font-body);
   font-size: 10px !important;
