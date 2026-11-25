@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-25 — public documentation refresh
+
+- New current release record in `docs/RELEASE.md` with a before/after table, the release process and the open items; the 21 October record is kept below it.
+- Roadmap: November deliveries and a dated status column for every Phase 1 item; README features, testing commands, test counts and scale/availability summary brought up to date; release banners in every README point to the new record.
+- Offline-catalogue copy, legal documents and third-party notices describe original designs that are not offered for delivery; every Stripe test-mode statement is kept.
+
 ## 2026-11-25 — no layout jump on shop and product pages
 
 - Loading, error, empty and not-found states on the shop and product pages hold one screen of space, so the footer no longer jumps when the catalogue arrives. Layout shift measured on the live site 0.17-0.57 is 0.000-0.035 on the candidate (desktop, phone, tall screen).
