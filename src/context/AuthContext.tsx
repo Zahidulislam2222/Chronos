@@ -1,6 +1,8 @@
 import { isPreview, storageKeys } from "@/config/settings";
 import React, {createContext,useContext,useState,useEffect,ReactNode,useCallback} from "react";
-import {loginUser,registerUser,fetchCurrentUser} from "@/utils/api";
+import {loginUser,registerUser} from "@/utils/api";
+import {storeAuthToken,clearAuthToken,AUTH_EXPIRED_EVENT} from "@/utils/authToken";
+import {restoreSession} from "@/utils/session";
 export interface User {id:string;name:string;email:string;avatar?:string;}
 interface AuthContextType {user:User|null;isLoginModalOpen:boolean;openLoginModal:()=>void;closeLoginModal:()=>void;login:(user:User,token:string)=>void;register:(name:string,email:string,password:string)=>Promise<User>;logout:()=>void;isLoading:boolean;}
 const AuthContext=createContext<AuthContextType|null>(null);
@@ -8,24 +10,31 @@ export const AuthProvider:React.FC<{children:ReactNode}>=({children})=>{
   const [user,setUser]=useState<User|null>(null);
   const [isLoginModalOpen,setModal]=useState(false);
   const [isLoading,setLoading]=useState(true);
+  // The token itself is removed by whoever found it no longer works (see authToken.ts),
+  // so a late answer about an old token cannot remove a newer one.
   const forget=useCallback(()=>{
-    try {localStorage.removeItem("auth-token");localStorage.removeItem("user-data");localStorage.removeItem("woo-session");} catch { /* Storage can be disabled. */ }
+    try {localStorage.removeItem("user-data");localStorage.removeItem("woo-session");} catch { /* Storage can be disabled. */ }
     setUser(null);
   },[]);
   useEffect(()=>{
     let active=true;
-    const expired=()=>{forget();setModal(true);};
-    window.addEventListener("chronos-auth-expired",expired);
+    // A session that ends signs out quietly. Pages that need an account show their own
+    // sign-in button, so nothing pops up while someone is just reading or browsing.
+    const expired=()=>forget();
+    window.addEventListener(AUTH_EXPIRED_EVENT,expired);
     async function restore(){
-      try {if(!isPreview && localStorage.getItem("auth-token")){const verified=await fetchCurrentUser();if(active)setUser(verified);}}
-      catch {if(active)setUser(null);}
+      try {
+        if(isPreview) return;
+        const restored=await restoreSession();
+        if(active && restored.current) setUser(restored.user);
+      }
       finally {if(active)setLoading(false);}
     }
     void restore();
-    return ()=>{active=false;window.removeEventListener("chronos-auth-expired",expired);};
+    return ()=>{active=false;window.removeEventListener(AUTH_EXPIRED_EVENT,expired);};
   },[forget]);
   const login=(next:User,token:string)=>{
-    localStorage.setItem("auth-token",token);
+    storeAuthToken(token);
     setUser(next);setModal(false);
   };
   const register=async(name:string,email:string,password:string)=>{
@@ -36,6 +45,7 @@ export const AuthProvider:React.FC<{children:ReactNode}>=({children})=>{
     const next={...signedIn.user,name};login(next,signedIn.authToken);return next;
   };
   const logout=()=>{
+    clearAuthToken();
     forget();
     try {localStorage.removeItem(storageKeys.guestCart);} catch { /* In-memory state clears on navigation. */ }
     window.location.assign("/");
