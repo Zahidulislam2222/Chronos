@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-25 — no layout jump on shop and product pages
+
+- Loading, error, empty and not-found states on the shop and product pages hold one screen of space, so the footer no longer jumps when the catalogue arrives. Layout shift measured on the live site 0.17-0.57 is 0.000-0.035 on the candidate (desktop, phone, tall screen).
+
 ## 2026-11-25 — guide route repair
 
 - The live guide could not answer: its only OpenRouter endpoint (SiliconFlow for Qwen3 30B) stopped qualifying for zero data retention, so every request matched no endpoint. The guide now uses Mistral Small 3.2 24B on an allow-list of zero-retention endpoints (DeepInfra and Venice; at most three, never others; OpenRouter picks the cheapest eligible one, with no fallback between them). Price ceiling $0.08 / $0.22 per million tokens, about 7-10% above today's listed price.
