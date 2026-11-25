@@ -6,5 +6,6 @@ export const interfaceSettings = z.object({
   storageKeys: z.object({
     checkoutAttemptPrefix: z.string().min(1), previewCart: z.string().min(1),
     guestCart: z.string().min(1), userCartPrefix: z.string().min(1), cookieConsent: z.string().min(1),
+    authToken: z.string().min(1),
   }).strict(),
 }).strict().parse(content);

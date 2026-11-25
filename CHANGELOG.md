@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-25 — sign-in expiry and the payment return page
+
+- An expired or refused sign-in no longer breaks the collection and journal: public reads never send the sign-in token, the token's own expiry is checked before a signed-in request (`VITE_AUTH_EXPIRY_MARGIN_MS`, default 30 s), and only the exact refused token is removed. Ending a session signs out quietly; Pay after the session ended opens the sign-in box. Drafts can no longer appear for a signed-in editor.
+- The Stripe return page only says "Payment has not been confirmed" when the store answered unpaid; while checking, when signed out, when the check fails or when the link has no session it says so instead.
+
 ## 2026-11-25 — guide route repair
 
 - The live guide could not answer: its only OpenRouter endpoint (SiliconFlow for Qwen3 30B) stopped qualifying for zero data retention, so every request matched no endpoint. The guide now uses Mistral Small 3.2 24B on an allow-list of zero-retention endpoints (DeepInfra and Venice; at most three, never others; OpenRouter picks the cheapest eligible one, with no fallback between them). Price ceiling $0.08 / $0.22 per million tokens, about 7-10% above today's listed price.

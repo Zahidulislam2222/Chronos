@@ -131,10 +131,25 @@ test payments do not reduce stock, and no order emails are sent.
 
 ### Authentication
 
-WPGraphQL JWT Authentication issues a token at login. The token is kept in
-browser storage. Network failures keep the token; only an explicit
-authentication rejection clears it. Order queries are scoped to the signed-in
-customer. Browser-stored tokens remain an XSS-sensitive boundary, mitigated
+WPGraphQL JWT Authentication issues a short-lived token at login (about five
+minutes, no refresh). The token is kept in browser storage and owned by
+`src/utils/authToken.ts`:
+
+- Public catalogue and journal reads never send it, so a stale token cannot
+  break browsing and drafts never reach the storefront.
+- Signed-in requests check the token's own expiry (`exp`, minus
+  `VITE_AUTH_EXPIRY_MARGIN_MS`) before sending; an expired token is removed.
+- The hardened backend hides why it refuses a token, so a refused viewer
+  check, an orders error confirmed by the viewer check, or a REST 401 removes
+  only the exact token that was sent. A late answer about an old token never
+  removes a newer sign-in.
+- Network and HTTP failures keep the token.
+- Ending a session signs out quietly; pages that need an account show their
+  own Sign in button, and Pay after expiry opens the sign-in box.
+
+Order queries are scoped to the signed-in customer. The Stripe return page
+reports "not confirmed" only when the store checked and Stripe answered
+unpaid. Browser-stored tokens remain an XSS-sensitive boundary, mitigated
 (not eliminated) by sanitisation and the Content Security Policy — see
 [THREAT-MODEL.md](THREAT-MODEL.md).
 

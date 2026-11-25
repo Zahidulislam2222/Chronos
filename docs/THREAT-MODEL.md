@@ -53,7 +53,7 @@ flowchart LR
 
 | # | Threat | Where | Controls in the code today | Residual risk |
 |---|---|---|---|---|
-| S1 | **Spoofing**: stolen JWT used to act as a customer | Browser storage | Tokens cleared on explicit rejection and sign-out; order queries scoped to the viewer; CSP limits script sources | JWT is script-readable. An XSS would expose it. Backlog: HttpOnly cookie or backend-for-frontend |
+| S1 | **Spoofing**: stolen JWT used to act as a customer | Browser storage | Short-lived tokens; expiry checked before use; never sent on public reads; cleared on rejection (exact token only) and sign-out; order queries scoped to the viewer; CSP limits script sources | JWT is script-readable. An XSS would expose it. Backlog: HttpOnly cookie or backend-for-frontend |
 | S2 | Forged Stripe webhook | `/stripe/webhook` | Signature verification with the webhook secret | Secret must be rotated if exposed |
 | S3 | Admin credential guessing | `wp-admin`, GraphQL login | WordPress password hashing | No MFA or login rate limiting documented for the backend. Phase 1: MFA for admins, login throttling at the edge |
 | T1 | **Tampering**: browser changes prices | Checkout | Browser sends only product IDs and quantities; server resolves price and stock | None known |

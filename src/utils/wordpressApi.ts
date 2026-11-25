@@ -2,9 +2,10 @@ import { z } from "zod";
 import { settings, isPreview } from "@/config/settings";
 import { content } from "@/content";
 import { wordpressLink } from "@/lib/wordpress";
+import { usableAuthToken, rejectAuthToken, SIGN_IN_AGAIN } from "@/utils/authToken";
 
 export class WordPressError extends Error {
-  constructor(message:string,public code:string) { super(message); }
+  constructor(message:string,public code:string,public status=0) { super(message); }
 }
 
 export async function wordpressRequest(path: string, init?: RequestInit) {
@@ -15,8 +16,7 @@ export async function wordpressRequest(path: string, init?: RequestInit) {
   });
   if (response.status === 404 && !init?.method && path.startsWith("chronos/v1/page?")) return null;
   const body = await response.json();
-  if (response.status === 401) window.dispatchEvent(new Event("chronos-auth-expired"));
-  if (!response.ok) throw new WordPressError(body.message || "WordPress request failed.",body.code || "request_failed");
+  if (!response.ok) throw new WordPressError(body.message || "WordPress request failed.",body.code || "request_failed",response.status);
   return body;
 }
 
@@ -41,8 +41,12 @@ export async function submitContact(input: {name:string;email:string;subject:str
 }
 
 export function authenticatedRequest(path:string, body:unknown) {
-  let token: string | null = null;
-  try { token = localStorage.getItem("auth-token"); } catch { /* Require an available authenticated session. */ }
-  if (!token) throw new Error("Please sign in again.");
-  return wordpressRequest(path,{method:"POST",headers:{Authorization:`Bearer ${token}`},body:JSON.stringify(body)});
+  const token = usableAuthToken();
+  if (!token) throw new Error(SIGN_IN_AGAIN);
+  return wordpressRequest(path,{method:"POST",headers:{Authorization:`Bearer ${token}`},body:JSON.stringify(body)})
+    .catch((error:unknown)=>{
+      // Sign out only for the token that was refused, never a newer one.
+      if (error instanceof WordPressError && error.status === 401) rejectAuthToken(token);
+      throw error;
+    });
 }

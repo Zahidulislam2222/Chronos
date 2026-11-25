@@ -76,3 +76,10 @@ Fresh dependency audits also invalidated older clean results. Compatible patches
 | Maintained source used a newer payment SDK than the installed runtime dependency cohort | Native deployed dependency and artifact parity check | Yes: immutable runtime cohort, native SDK/API-version probe, controlled rollback, hosted TEST reconciliation and per-file parity |
 
 | 2026-10-21 | The initial publication candidate retained a CA bundle covered by a newly published certifi advisory; CI caught it before merge | Fresh local locked Python dependency audit before pushing | Local full-lock audits now executed; existing CI audit retained unchanged, three certifi locks updated with official hashes |
+
+## Storefront fixes — 25 November 2026
+
+| Date | What escaped | Gate that should have caught it | Gate added |
+|---|---|---|---|
+| 2026-11-25 | After GraphQL hardening hid error messages, an expired sign-in token (about 5 minutes) was still sent on every request: the catalogue and journal failed for that visitor ("Internal server error" with HTTP 200), the message-based sign-out never matched, and catalogue requests carried an editor's token so draft products could appear. Found while recording a walkthrough video. | A real-browser flow with an expired or refused token after the hardening change; a check that public reads are anonymous. | Yes: public reads never send the token; the token's own expiry is checked before sending; refused tokens are removed only for the exact token; `verification/session-expiry.test.mjs` (22 cases incl. races) and a browser run against the live backend. |
+| 2026-11-25 | The Stripe return page said "Payment has not been confirmed" whenever its check was not running: for about 2 s while sign-in restored, permanently when signed out, and on a failed check. | State-by-state review of the return page, including signed-out and slow sign-in cases. | Yes: explicit states (checking, sign in, could not check, missing link, paid, unpaid only on the store's answer), no background re-checks; `verification/checkout-success.test.mjs`. |
