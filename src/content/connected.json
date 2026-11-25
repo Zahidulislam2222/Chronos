@@ -38,8 +38,12 @@
     "confirming": "Verifying your payment…",
     "paid": "Payment confirmed",
     "unpaid": "Payment has not been confirmed. Your bag has been kept.",
+    "signInToVerify": "Sign in to see this payment. If you paid, your order will appear in your account.",
+    "verifyFailed": "We couldn't check this payment just now. If you paid, your order will appear in your account.",
+    "verifyAgain": "Check again",
     "account": "View your orders",
-    "noEmail": "Your order appears in your account."
+    "noEmail": "Your order appears in your account.",
+    "missingSession": "This link does not include a payment to check. Your bag has been kept."
   },
   "account": {
     "title": "Your account",
@@ -62,6 +66,7 @@
     "notice": "This is a Chronos account. Do not reuse a password from another service.",
     "pending": "Please wait…",
     "failure": "Sign-in or registration failed. Check your details and try again.",
+    "signInAgain": "Please sign in again.",
     "name": "Name",
     "email": "Email"
   },

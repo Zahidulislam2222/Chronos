@@ -3,6 +3,7 @@ import { previewCatalogue, content } from "@/content";
 import { Product, BlogPost } from "@/lib/mockData";
 import { wordpressMedia, wordpressText } from "@/lib/wordpress";
 import { catalogueSettings } from "@/config/catalogue";
+import { usableAuthToken, rejectAuthToken, storedAuthToken, SIGN_IN_AGAIN } from "@/utils/authToken";
 
 interface WPProduct {
   databaseId: number;
@@ -370,7 +371,14 @@ if (!isPreview) {
   try { sessionToken = localStorage.getItem("woo-session"); } catch { /* No persisted session available. */ }
 }
 
-async function fetchGraphQL(query: string, variables = {}) {
+// Who may see a request: "none" for public catalogue/journal reads (a stale token must
+// never break them, and drafts stay hidden from signed-in editors), "optional" to send a
+// usable token when there is one, "required" to refuse without one.
+type AuthMode = "none" | "optional" | "required";
+
+class GraphQLRejected extends Error {}
+
+async function fetchGraphQL(query: string, variables = {}, auth: AuthMode = "none") {
   if (isPreview) throw new Error(content.preview.notice);
   if (!API_URL) throw new Error("API URL is not configured");
 
@@ -382,8 +390,8 @@ async function fetchGraphQL(query: string, variables = {}) {
     headers["woocommerce-session"] = `Session ${sessionToken}`;
   }
 
-  let authToken: string | null = null;
-  try { authToken = localStorage.getItem("auth-token"); } catch { /* Storage may be unavailable. */ }
+  const authToken = auth === "none" ? null : usableAuthToken();
+  if (auth === "required" && !authToken) throw new Error(SIGN_IN_AGAIN);
   if (authToken) {
     headers["Authorization"] = `Bearer ${authToken}`;
   }
@@ -406,9 +414,9 @@ async function fetchGraphQL(query: string, variables = {}) {
   const json = await response.json();
   if (json.errors) {
     if (authToken && json.errors.some((error: {message?:string})=>/jwt|token|authorization/i.test(error.message || ""))) {
-      window.dispatchEvent(new Event("chronos-auth-expired"));
+      rejectAuthToken(authToken);
     }
-    throw new Error("WordPress could not complete this request. Please retry or sign in again.");
+    throw new GraphQLRejected("WordPress could not complete this request. Please retry or sign in again.");
   }
   return json.data;
 }
@@ -420,7 +428,7 @@ export async function updateUserName(userId: string, name: string) {
   const data = await fetchGraphQL(UPDATE_USER_MUTATION, {
     id: userId,
     firstName: name,
-  });
+  }, "required");
   return data?.updateUser?.user;
 }
 
@@ -487,7 +495,7 @@ export async function createComment(
     author,
     email,
     body,
-  });
+  }, "optional");
   return data?.createComment;
 }
 
@@ -499,7 +507,7 @@ export async function processCheckout(
     await fetchGraphQL(ADD_TO_CART_MUTATION, {
       productId: parseInt(item.product.id, 10),
       quantity: item.quantity,
-    });
+    }, "optional");
   }
 
   const countryCode = getCountryCode(data.country);
@@ -517,7 +525,7 @@ export async function processCheckout(
     isPaid: false,
   };
 
-  const response = await fetchGraphQL(CHECKOUT_MUTATION, { input });
+  const response = await fetchGraphQL(CHECKOUT_MUTATION, { input }, "optional");
   return response?.checkout;
 }
 
@@ -542,11 +550,19 @@ export async function loginUser(username: string, password: string) {
 }
 
 export async function fetchCurrentUser() {
-  const data = await fetchGraphQL("query CurrentUser { viewer { databaseId name email avatar { url } } }");
+  const token = storedAuthToken();
+  let data;
+  try {
+    data = await fetchGraphQL("query CurrentUser { viewer { databaseId name email avatar { url } } }", {}, "required");
+  } catch (error) {
+    // WordPress answered but refused the token (it hides the reason). Network failures keep it.
+    if (error instanceof GraphQLRejected && token) rejectAuthToken(token);
+    throw error;
+  }
   const user = data?.viewer;
   if (!user) {
-    window.dispatchEvent(new Event("chronos-auth-expired"));
-    throw new Error("Please sign in again.");
+    if (token) rejectAuthToken(token);
+    throw new Error(SIGN_IN_AGAIN);
   }
   return {id:String(user.databaseId),name:String(user.name),email:String(user.email),avatar:user.avatar?.url || ""};
 }
@@ -575,9 +591,16 @@ export async function fetchCustomerOrders(): Promise<CustomerOrder[]> {
   const seen = new Set<string>();
   let after:string|null = null;
   do {
-    const data = await fetchGraphQL(GET_CUSTOMER_ORDERS,{first:settings.pageSize,after});
+    let data;
+    try {
+      data = await fetchGraphQL(GET_CUSTOMER_ORDERS,{first:settings.pageSize,after},"required");
+    } catch (error) {
+      // An orders error may be the query, not the sign-in: only the viewer check decides.
+      if (error instanceof GraphQLRejected) await fetchCurrentUser().catch(() => undefined);
+      throw error;
+    }
     const connection=data?.customer?.orders;
-    if (!Array.isArray(connection?.nodes)) throw new Error("Please sign in again.");
+    if (!Array.isArray(connection?.nodes)) throw new Error(SIGN_IN_AGAIN);
     orders.push(...connection.nodes);
     if (!connection.pageInfo?.hasNextPage) return orders;
     after=connection.pageInfo.endCursor;

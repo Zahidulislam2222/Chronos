@@ -5,6 +5,7 @@
     "previewCart": "chronos_preview_selection",
     "guestCart": "chronos_cart_guest",
     "userCartPrefix": "chronos_cart_",
-    "cookieConsent": "chronos_cookie_consent"
+    "cookieConsent": "chronos_cookie_consent",
+    "authToken": "auth-token"
   }
 }

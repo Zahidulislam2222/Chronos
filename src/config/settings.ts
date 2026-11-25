@@ -10,6 +10,7 @@ const environment = z.object({
   requestTimeoutMs: z.coerce.number().int().positive().default(30000),
   pageSize: z.coerce.number().int().min(1).max(100).default(50),
   refreshIntervalMs: z.coerce.number().int().positive().default(30000),
+  authExpiryMarginMs: z.coerce.number().int().min(0).max(120000).default(30000),
 });
 
 export const settings = environment.parse({
@@ -21,6 +22,7 @@ export const settings = environment.parse({
   requestTimeoutMs: import.meta.env.VITE_REQUEST_TIMEOUT_MS,
   pageSize: import.meta.env.VITE_CONTENT_PAGE_SIZE,
   refreshIntervalMs: import.meta.env.VITE_CONTENT_REFRESH_MS,
+  authExpiryMarginMs: import.meta.env.VITE_AUTH_EXPIRY_MARGIN_MS,
 });
 
 export const isPreview = settings.mode === "preview";
