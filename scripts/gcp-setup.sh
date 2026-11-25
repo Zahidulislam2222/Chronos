@@ -7,6 +7,8 @@ set -e
 # the VM's IP, so it is supplied per run rather than stored here. Run as root,
 # keeping the variable: sudo CHRONOS_BACKEND_DOMAIN=<host> bash scripts/gcp-setup.sh
 DOMAIN="${CHRONOS_BACKEND_DOMAIN:?Set CHRONOS_BACKEND_DOMAIN to the backend hostname}"
+# For a restore, use the WordPress version recorded in the backup MANIFEST (line "wordpress <version>").
+WP_VERSION="${CHRONOS_WP_VERSION:-latest}"
 DB_NAME="chronos_wp"
 DB_USER="chronos_user"
 DB_PASS="$(openssl rand -base64 24)"
@@ -34,7 +36,7 @@ chown -R www-data:www-data ${WP_DIR}
 # ── 3. Install WordPress core ────────────────────────────────────
 echo "[3/8] Installing WordPress..."
 cd ${WP_DIR}
-wp core download --allow-root
+wp core download --version="${WP_VERSION}" --allow-root
 wp config create \
   --dbname=${DB_NAME} \
   --dbuser=${DB_USER} \
@@ -97,13 +99,18 @@ ln -sf /etc/nginx/sites-available/chronos /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 
-# ── 5. PHP-FPM tuning for e2-micro (1GB RAM) ────────────────────
-echo "[5/8] Tuning PHP-FPM..."
-cat > /etc/php/8.1/fpm/pool.d/chronos.conf <<PHPFPM
-[chronos]
+# ── 5. PHP-FPM pool (one pool, production values) ──────────────
+echo "[5/8] Configuring the PHP-FPM pool..."
+# Configure the default pool in place. A second pool on the same socket stops PHP-FPM from
+# starting (found in the 2026-11-25 rebuild drill), so remove one left by older versions of
+# this script. Production uses PHP's own limits; WordPress raises memory to WP_MEMORY_LIMIT.
+# nginx's /var/run/php path is the same socket: /var/run links to /run on Ubuntu.
+rm -f /etc/php/8.1/fpm/pool.d/chronos.conf
+cat > /etc/php/8.1/fpm/pool.d/www.conf <<PHPFPM
+[www]
 user = www-data
 group = www-data
-listen = /var/run/php/php8.1-fpm.sock
+listen = /run/php/php8.1-fpm.sock
 listen.owner = www-data
 listen.group = www-data
 pm = dynamic
@@ -111,10 +118,6 @@ pm.max_children = 5
 pm.start_servers = 2
 pm.min_spare_servers = 1
 pm.max_spare_servers = 3
-php_admin_value[memory_limit] = 256M
-php_admin_value[upload_max_filesize] = 64M
-php_admin_value[post_max_size] = 64M
-php_admin_value[max_execution_time] = 300
 PHPFPM
 systemctl restart php8.1-fpm
 
