@@ -49,6 +49,8 @@ export async function classifyRemote(question, previousTopic, {config, knowledge
   const selectedSchema = z.object({topic: z.enum(ids)}).strict();
   const prompt = JSON.stringify({topics: knowledge.topics.map(({id, description}) => ({id, description})), previousTopic, untrustedVisitorQuestion: question});
   if (Buffer.byteLength(prompt + knowledge.classifierInstruction, 'utf8') > config.openrouter.maxInputBytes) throw new Error('Prompt exceeds budget');
+  // Repeated refusals mean a configuration or provider problem; stop calling until an operator restarts.
+  if ((remote.refusals ?? 0) >= config.openrouter.refusalLimit) throw new Error('Paid route closed after repeated refusals');
   const reservation = remote.budget.reserve();
   const response = await transport(new URL(protocol.chatCompletions, config.openrouter.origin), {
     method: 'POST', redirect: 'error', signal,
@@ -64,9 +66,11 @@ export async function classifyRemote(question, previousTopic, {config, knowledge
         max_price: Object.fromEntries(Object.entries(config.openrouter.maxPrice).map(([key, value]) => [key, String(value)]))},
     }),
   });
-  observe({provider: 'openrouter', status: response.status});
-  // A refusal before inference costs nothing, so release it; every other failure stays reserved.
-  if (protocol.unbilledRefusalStatuses.includes(response.status)) remote.budget.settle(reservation, 0);
+  // A refusal before inference costs nothing, so its reservation is removed; every other failure stays reserved.
+  const refused = protocol.unbilledRefusalStatuses.includes(response.status);
+  if (refused) { remote.budget.cancel(reservation); remote.refusals = (remote.refusals ?? 0) + 1; }
+  observe({provider: 'openrouter', status: response.status,
+    ...(refused && remote.refusals >= config.openrouter.refusalLimit ? {routeClosed: true} : {})});
   if (!response.ok || !response.body) throw new Error('Remote guide unavailable');
   const envelope = z.object({
     choices: z.array(z.object({finish_reason: z.literal('stop'), message: z.object({content: z.string()}).passthrough()}).passthrough()).length(1),
@@ -76,6 +80,7 @@ export async function classifyRemote(question, previousTopic, {config, knowledge
   }).passthrough().parse(JSON.parse(await readBounded(response.body, config.upstreamBytes)));
   // Count any separately reported upstream charge too; conservative if it overlaps credits.
   remote.budget.settle(reservation, envelope.usage.cost + (envelope.usage.cost_details?.upstream_inference_cost ?? 0));
+  remote.refusals = 0;
   const selected = selectedSchema.parse(JSON.parse(envelope.choices[0].message.content));
   const topic = knowledge.topics.find(item => item.id === selected.topic);
   return {topic: selected.topic, answer: topic?.answer ?? knowledge.unknown,
@@ -172,7 +177,7 @@ export function createAssistantServer({config = loadAssistantConfig(), knowledge
       catch { return send(400, {error: 'Invalid guide request'}); }
       request.setTimeout(0);
       const answer = await routeQuestion(body.question, body.previousTopic, {config, knowledge, signal: controller.signal, transport, remote,
-        observe: ({provider, status}) => log(JSON.stringify({requestId, event: 'provider-response', provider, status}))});
+        observe: ({provider, status, routeClosed}) => log(JSON.stringify({requestId, event: 'provider-response', provider, status, ...(routeClosed ? {routeClosed} : {})}))});
       if (!controller.signal.aborted) send(200, answer);
       else send(503, {error: 'Guide request stopped'});
     } catch {
@@ -200,7 +205,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       const secrets = loadProviderSecrets();
       if (!secrets.key || !secrets.budgetPath) throw new Error('Remote configuration missing');
       // Uncertain requests keep this reservation; billed responses settle to their actual cost.
-      remote = {key: secrets.key, budget: openBudget(secrets.budgetPath, config.openrouter.budgetUsd, reservationUsd(config.openrouter))};
+      remote = {key: secrets.key, budget: openBudget(secrets.budgetPath, config.openrouter.budgetUsd, reservationUsd(config.openrouter)), refusals: 0};
     }
     const server = createAssistantServer({config, remote});
     server.on('close', () => remote?.budget.close());

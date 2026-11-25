@@ -45,9 +45,10 @@
     "contextTokens": 128000,
     "maxInputBytes": 16384,
     "reservationTemplateTokens": 512,
+    "refusalLimit": 3,
     "maxPrice": {
-      "prompt": 0.075,
-      "completion": 0.2,
+      "prompt": 0.08,
+      "completion": 0.22,
       "request": 0
     },
     "budgetUsd": 0.1,

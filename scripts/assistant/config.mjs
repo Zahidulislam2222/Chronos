@@ -41,12 +41,15 @@ export const assistantConfigSchema = z.object({
   openrouter: z.object({
     enabled: z.boolean(), origin: z.literal('https://openrouter.ai'),
     model: z.string().regex(/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/),
-    // Ordered allow-list of endpoints for the one approved model; OpenRouter may use no others.
+    // Allow-list of endpoints for the one approved model. OpenRouter serves each request from the
+    // cheapest eligible listed endpoint and never uses others; there is no fallback between them.
     providers: z.array(z.string().regex(/^[a-z0-9-]+(?:\/[a-z0-9._-]+)*$/)).min(1).max(3)
       .refine(list => new Set(list).size === list.length, 'Duplicate provider endpoint'),
     maxOutputTokens: z.number().int().positive().max(256),
     contextTokens: z.number().int().positive().max(262144),
     maxInputBytes: z.number().int().positive().max(32768),
+    // Consecutive pre-inference refusals after which the paid route stays closed until restart.
+    refusalLimit: z.number().int().min(1).max(10),
     // Chat-template tokens added around the byte-bounded prompt when sizing a reservation.
     reservationTemplateTokens: z.number().int().positive().max(4096),
     maxPrice: z.object({prompt: z.number().positive().max(modelPolicy.maximumPromptPricePerMillion), completion: z.number().positive().max(modelPolicy.maximumCompletionPricePerMillion), request: z.literal(0)}).strict(),
@@ -111,7 +114,9 @@ export function loadKnowledge() {
 const protocolPath = z.string().regex(/^\/[a-z0-9]+(?:[/-][a-z0-9]+)*$/);
 export const protocolSchema = z.object({message: protocolPath, health: protocolPath, generate: protocolPath,
   chatCompletions: protocolPath, tokensPerMillion: z.literal(1_000_000),
-  // OpenRouter refusals returned before any model runs: bad request, auth, credits, moderation, no endpoint, rate limit.
-  unbilledRefusalStatuses: z.array(z.number().int().min(400).max(429)).min(1)}).strict();
+  // OpenRouter refusals returned before any model runs: bad request, auth, credits, moderation,
+  // no matching endpoint, rate limit, no provider meeting the routing requirements.
+  unbilledRefusalStatuses: z.array(z.union([400, 401, 402, 403, 404, 429, 503].map(code => z.literal(code)))).min(1)
+    .refine(list => new Set(list).size === list.length, 'Duplicate status')}).strict();
 export const protocol = Object.freeze(protocolSchema.parse(
   JSON.parse(readFileSync(new URL('../../config/assistant-protocol.json', import.meta.url), 'utf8'))));

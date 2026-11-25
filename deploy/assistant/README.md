@@ -7,7 +7,7 @@
 
 The guide selects maintained Chronos help: browsing, test checkout, accounts, editorial content, contact, privacy and accessibility. It cannot read customer records or perform actions. Model output must select an approved topic; the browser renders the maintained answer and internal source. Conversations stay in page memory, with bounded turns and no prompt logging by this service.
 
-The current release has `localEnabled=false`: local inference is paused and approved remote classification runs directly. The approved endpoint, total USD 0.10 cap, price/privacy filters and durable journal remain enforced. Nine actual held-out tasks and public acceptance passed for the recorded cohort. Historical local quality remains failed and the engine is blocked by vulnerability findings; reactivation requires a patched engine, fresh task/security acceptance and owner agreement. See [verification](../../docs/VERIFICATION.md).
+The current release has `localEnabled=false`: local inference is paused and approved remote classification runs directly. The approved zero-retention endpoint allow-list, total USD 0.10 cap, price/privacy filters and durable journal remain enforced. Nine actual held-out tasks and public acceptance passed for the recorded cohort. Historical local quality remains failed and the engine is blocked by vulnerability findings; reactivation requires a patched engine, fresh task/security acceptance and owner agreement. See [verification](../../docs/VERIFICATION.md).
 
 
 ## Configuration and local checks
@@ -32,14 +32,14 @@ flowchart LR
   Proxy --> Gate[Host, Origin, input and quota checks]
   Gate --> Policy[Best-effort sensitive/action boundary]
   Policy --> Budget[Approved remote flag and persistent budget]
-  Budget --> Remote[One OpenRouter request, strict price and privacy filters]
+  Budget --> Remote[One OpenRouter request to allow-listed ZDR endpoints, strict price filter]
   Remote -->|validated topic| Answer[Maintained answer and source]
   Remote -->|outage, invalid output or limits| Help[Unknown or unavailable with support links]
 ```
 
 Global concurrency, request rate, per-client quotas, body/output sizes and a process request allowance are bounded. Proxy client identities are accepted only under the explicit trusted-proxy setting; the proxy must overwrite the header. Client buckets expire with the rate window and are not logged. With the deployed CDN/proxy chain, identity is the immediate proxy peer and can group visitors; this is not a verified per-human quota. Cancellation propagates upstream and prevents a new paid fallback. There are no automatic provider retries or paid model substitutions.
 
-The spend journal reserves a conservative full-context amount before transport, flushes append writes, and settles reported credit/upstream costs. Unknown outcomes retain reservations. Missing, corrupt, over-limit or locked accounting fails closed; billing anomalies stop further spending. The process lock permits one writer. After a crash or failed write, reconcile billing and the journal before clearing a stale lock. Never delete/reinitialize accounting to reset the budget. Provider-side BYOK contracts remain a separate verification obligation; local accounting cannot guarantee unknown external invoices.
+The spend journal reserves the worst-case cost of the byte-bounded prompt before transport, flushes append writes, and settles reported credit/upstream costs. A refusal OpenRouter returns before any model runs (400, 401, 402, 403, 404, 429, 503) removes its reservation; after three in a row the paid route stays closed until the guide restarts and logs `routeClosed`. Unknown outcomes retain reservations. Missing, corrupt, over-limit or locked accounting fails closed; billing anomalies stop further spending. The process lock permits one writer. After a crash or failed write, reconcile billing and the journal before clearing a stale lock. Never delete/reinitialize accounting to reset the budget. Provider-side BYOK contracts remain a separate verification obligation; local accounting cannot guarantee unknown external invoices.
 
 ## Existing-host release procedure
 
